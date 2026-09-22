@@ -1,0 +1,271 @@
+* {
+    box-sizing: border-box;
+}
+
+body {
+    margin: 0;
+    min-height: 100vh;
+
+    display: flex;
+    justify-content: center;
+    align-items: center;
+
+    background: #555;
+    font-family: Arial, sans-serif;
+
+    overflow: hidden;
+}
+
+
+/* =========================
+    CARD
+   ========================= */
+
+.card {
+    width: min(520px, 92vw);
+    height: min(700px, 92vh);
+
+    padding: 14px;
+
+    display: flex;
+    flex-direction: column;
+
+    background-color: #C8B27A;
+
+    background-image:
+        repeating-linear-gradient(
+            0deg,
+            rgba(80, 60, 30, 0.06) 0px,
+            rgba(80, 60, 30, 0.06) 1px,
+            transparent 1px,
+            transparent 4px
+        ),
+        repeating-linear-gradient(
+            90deg,
+            rgba(255, 255, 255, 0.08) 0px,
+            rgba(255, 255, 255, 0.08) 1px,
+            transparent 1px,
+            transparent 5px
+        );
+
+    border: 14px solid #171717;
+    border-radius: 20px;
+}
+
+
+/* =========================
+    CARD HEADER
+   ========================= */
+
+.card-header {
+    width: 100%;
+    height: 55px;
+    flex-shrink: 0;
+
+    border: 2px solid;
+    border-image: linear-gradient(
+        to right,
+        #2e7d32,
+        #ffffff
+    ) 1;
+
+    background: #D8C9A8;
+
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    font-size: 16px;
+    font-weight: bold;
+
+    box-shadow:
+        -3px 0 3px rgba(0, 0, 0, 0.7),
+        inset 0 0 0 1px rgba(23, 23, 23, 0.8);
+}
+
+
+/* =========================
+    CARD IMAGE
+   ========================= */
+
+.card-image {
+    width: 100%;
+    height: 260px;
+    flex-shrink: 0;
+
+    margin-top: 0;
+
+    border: 2px solid;
+    border-image: linear-gradient(
+        to right,
+        #2e7d32,
+        #ffffff
+    ) 1;
+
+    background: #CBBFA2;
+
+    overflow: hidden;
+
+    box-shadow:
+        -3px 0 3px rgba(0, 0, 0, 0.7),
+        inset 0 0 0 1px rgba(23, 23, 23, 0.8);
+}
+
+.card-image img {
+    width: 100%;
+    height: 100%;
+
+    object-fit: cover;
+}
+
+
+/* =========================
+    SEARCH
+   ========================= */
+
+.card-search {
+    width: 100%;
+    height: 30px;
+    flex-shrink: 0;
+
+    border: 2px solid;
+    border-bottom: none;
+
+    border-image: linear-gradient(
+        to right,
+        #2e7d32,
+        #ffffff
+    ) 1;
+
+    background: #E2D7BD;
+
+    display: flex;
+    align-items: center;
+
+    padding: 0 12px;
+
+    box-shadow:
+        -3px 0 3px rgba(0, 0, 0, 0.7),
+        inset 0 0 0 1px rgba(23, 23, 23, 0.8);
+}
+
+.card-search input {
+    width: 100%;
+    height: 100%;
+
+    border: none;
+    outline: none;
+
+    background: transparent;
+
+    font-size: 14px;
+    color: #171717;
+}
+
+.card-search input::placeholder {
+    color: #555;
+}
+
+
+/* =========================
+    CARD TEXT
+   ========================= */
+
+.card-text {
+    width: 100%;
+    flex: 1;
+
+    margin-top: 0;
+    padding: 18px;
+
+    border: 2px solid;
+    border-image: linear-gradient(
+        to right,
+        #2e7d32,
+        #ffffff
+    ) 1;
+
+    background: #E2D7BD;
+
+    text-align: center;
+
+    font-size: 15px;
+    line-height: 1.5;
+
+    box-shadow:
+        -3px 0 3px rgba(0, 0, 0, 0.7),
+        inset 0 0 0 1px rgba(23, 23, 23, 0.8);
+
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+
+/* =========================
+    CARD ACTIONS
+   ========================= */
+
+.card-actions {
+    width: 100%;
+    flex-shrink: 0;
+
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    gap: 5px;
+    margin-top: 12px;
+
+    font-size: 10px;
+    white-space: nowrap;
+}
+
+.card-actions p {
+    margin: 0;
+}
+
+.card-actions a {
+    color: #171717;
+    font-weight: bold;
+    text-decoration: none;
+}
+
+.card-actions a:hover {
+    text-decoration: underline;
+}
+
+.card-actions a::after {
+    content: "/";
+    margin-left: 6px;
+}
+
+.card-actions a:last-child::after {
+    content: "";
+}
+
+/* =========================
+    CARD HOVER
+   ========================= */
+
+.card {
+    transition: box-shadow 0.12s ease;
+}
+
+.card:hover {
+    box-shadow:
+        0 0 10px rgba(20, 80, 25, 0.7),
+        0 0 22px rgba(20, 80, 25, 0.55),
+        0 0 40px rgba(20, 80, 25, 0.4);
+}
+
+.card {
+    transition: transform 0.6s ease, box-shadow 0.12s ease;
+
+    transform-style: preserve-3d;
+    backface-visibility: hidden;
+}
+
+.card.flip {
+    transform: rotateY(180deg);
+}

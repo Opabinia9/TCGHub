@@ -1,32 +1,40 @@
-import NotFoundError from "@errortypes/notFoundError.js";
-import Facade from '@services/facade.js'
+import NotFoundError from '@errortypes/notFoundError.js';
+import Facade from '@services/facade.js';
 import type { FastifyRequest, FastifyReply } from 'fastify';
-import type { authLoginBody } from "@routes/api/v1/routeschemas.js";
-import type { userObject } from "@persistence/types.js";
+import type { authLoginBody } from '@routes/api/v1/routeschemas.js';
+import type { userObject } from '@persistence/types.js';
 
 const facade = new Facade();
 
-export default class authController{
-  post(request: FastifyRequest<{ Body: authLoginBody }>, reply: FastifyReply) {
-
+/** Class for the auth api endpoint */
+export default class authController {
+  /**
+   * post request handling for auth/login
+   */
+  async post(request: FastifyRequest<{ Body: authLoginBody }>, reply: FastifyReply) {
     let user: userObject;
     try {
-      user = facade.getUserByEmail(request.body["email"]);
+      user = facade.getUserByEmail(request.body['email']);
     } catch (error) {
       if (error instanceof NotFoundError) {
-        return reply.code(401).send({ "error": "Invalid credentials" })
+        return reply.code(401).send({ error: 'Invalid credentials' });
       }
 
       throw error;
     }
 
-    console.log(user)
-  
-    if (request.body["password"] !== user.password) {
-        return reply.code(401).send({ "error": "Invalid credentials" })
+    if (request.body['password'] !== user.password) {
+      return reply.code(401).send({ error: 'Invalid credentials' });
     }
 
-    return reply.code(200).send({ "access_token": "token goes here" })
-    
+    const access_token = request.server.jwt.sign({ username: user.name });
+    return reply.code(200).send({ access_token: access_token });
+  }
 
-  }}
+  /**
+   * get request handling for auth/protected
+   */
+  async get(request: FastifyRequest, reply: FastifyReply) {
+    return reply.code(200).send({ response: 'verified and logged in' });
+  }
+}

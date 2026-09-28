@@ -9,6 +9,7 @@
     "fastify": "^5.12.5"
   },
   "devDependencies": {
+    "@fastify/jwt": "^10.2.2",
     "@types/node": "^26.6.2",
     "nodemon": "^3.1.14",
     "pino-pretty": "^13.1.3",

@@ -7,5 +7,5 @@ export default async function authRoutes(fastify: Fastify.FastifyInstance, optio
 
   fastify.post<{ Body: authLoginBody }>('/login', { schema: authLoginSchema }, controller.post);
 
-
+  fastify.get('/protected', { preHandler: [fastify.jwt_verify] }, controller.get);
 }

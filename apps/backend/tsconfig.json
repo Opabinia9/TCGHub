@@ -10,6 +10,7 @@
       "@persistence/*": ["./src/persistence/*"],
       "@errortypes/*": ["./src/errortypes/*"],
       "@routes/*": ["./src/routes/*"],
+      "@decorators/*": ["./src/decorators/*"],
     },
 
     // Environment Settings

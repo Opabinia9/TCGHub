@@ -2,7 +2,7 @@ import NotFoundError from '@errortypes/notFoundError.js';
 import Facade from '@services/facade.js';
 import type { FastifyRequest, FastifyReply } from 'fastify';
 import type { authLoginBody } from '@routes/api/v1/routeschemas.js';
-import type { userObject } from '@persistence/types.js';
+import type User from '../models/user.js';
 
 const facade = new Facade();
 
@@ -12,7 +12,7 @@ export default class authController {
    * post request handling for auth/login
    */
   async post(request: FastifyRequest<{ Body: authLoginBody }>, reply: FastifyReply) {
-    let user: userObject;
+    let user: User;
     try {
       user = facade.getUserByEmail(request.body['email']);
     } catch (error) {

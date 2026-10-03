@@ -1,9 +1,9 @@
-import user_repository from "@persistence/user_reposistory.js";
-import NotFoundError from "@errortypes/notFoundError.js";
+import user_repository from '@persistence/user_reposistory.js';
+import NotFoundError from '@errortypes/notFoundError.js';
 import User from '../models/user.js';
 import type { UserCreationInterface } from '../types/userObject.js';
 
-export default class facade {
+export default class Facade {
   user_repo: user_repository;
 
   constructor() {
@@ -18,8 +18,17 @@ export default class facade {
     if (user !== null) {
       return user;
     } else {
-      throw new NotFoundError(`User Not Found`)
+      throw new NotFoundError(`User Not Found`);
     }
   }
-  
+
+  /**
+   *
+   */
+  createUser(userData: UserCreationInterface): User {
+    const { first_name, last_name, email, password } = userData;
+    const user = new User(first_name, last_name, email, password);
+    this.user_repo.add(user);
+    return user;
+  }
 }

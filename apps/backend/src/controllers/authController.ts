@@ -1,7 +1,7 @@
 import NotFoundError from '@errortypes/notFoundError.js';
 import Facade from '@services/facade.js';
 import type { FastifyRequest, FastifyReply } from 'fastify';
-import type { authLoginBody } from '@routes/api/v1/routeschemas.js';
+import type { authLoginBody, authSignupBody } from '@routes/api/v1/routeschemas.js';
 import type User from '../models/user.js';
 
 const facade = new Facade();
@@ -11,7 +11,7 @@ export default class authController {
   /**
    * post request handling for auth/login
    */
-  async post(request: FastifyRequest<{ Body: authLoginBody }>, reply: FastifyReply) {
+  async loginPost(request: FastifyRequest<{ Body: authLoginBody }>, reply: FastifyReply) {
     let user: User;
     try {
       user = facade.getUserByEmail(request.body['email']);
@@ -27,14 +27,33 @@ export default class authController {
       return reply.code(401).send({ error: 'Invalid credentials' });
     }
 
-    const access_token = request.server.jwt.sign({ username: user.name });
+    const access_token = request.server.jwt.sign({ username: user.id });
     return reply.code(200).send({ access_token: access_token });
+  }
+
+  /**
+   * post request handling for auth/signup
+   */
+  async signupPost(request: FastifyRequest<{ Body: authSignupBody }>, reply: FastifyReply) {
+    let existingUser = null;
+    try {
+      existingUser = facade.getUserByEmail(request.body['email']);
+    } catch {
+      existingUser = null;
+    }
+
+    if (existingUser !== null) {
+      return reply.code(400).send({ error: 'Email already registered' });
+    }
+
+    const newUser = facade.createUser(request.body);
+    reply.code(201).send('Account creation successful');
   }
 
   /**
    * get request handling for auth/protected
    */
-  async get(request: FastifyRequest, reply: FastifyReply) {
+  async protectedGet(request: FastifyRequest, reply: FastifyReply) {
     return reply.code(200).send({ response: 'verified and logged in' });
   }
 }

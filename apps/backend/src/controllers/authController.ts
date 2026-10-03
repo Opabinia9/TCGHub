@@ -18,9 +18,10 @@ export default class authController {
     } catch (error) {
       if (error instanceof NotFoundError) {
         return reply.code(401).send({ error: 'Invalid credentials' });
+      } else {
+        /* c8 ignore next */
+        throw error;
       }
-
-      throw error;
     }
 
     if (request.body['password'] !== user.password) {

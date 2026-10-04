@@ -12,209 +12,230 @@
 
 <div class="app">
 
-    <!-- Sidebar -->
-    <aside class="sidebar">
+<!-- Sidebar -->
+<aside class="sidebar">
 
-        <div class="sidebar-logo">
-            <h1>TCG HUB</h1>
+    <div class="sidebar-logo">
+        <h1>TCG HUB</h1>
+    </div>
+
+    <nav class="sidebar-menu">
+
+        <a href="app.html" class="menu-item">
+            <span>⌂</span>
+            HOME
+        </a>
+
+        <a href="cards.html" class="menu-item active">
+            <span>♧</span>
+            CARDS
+        </a>
+
+        <a href="decks.html" class="menu-item">
+            <span>▣</span>
+            DECKS
+        </a>
+
+        <a href="#" class="menu-item">
+            <span>♙</span>
+            PLAYERS
+        </a>
+
+        <a href="#" class="menu-item">
+            <span>↔</span>
+            TRADES
+        </a>
+
+        <a href="#" class="menu-item">
+            <span>☵</span>
+            CHAT
+        </a>
+
+        <div class="menu-divider"></div>
+
+        <a href="#" class="menu-item">
+            <span>♡</span>
+            COLLECTION
+        </a>
+
+        <a href="#" class="menu-item">
+            <span>⌕</span>
+            WANTS
+        </a>
+
+    </nav>
+
+    <div class="sidebar-bottom">
+
+        <a href="#" class="menu-item">
+            <span>⚙</span>
+            PROFILE
+        </a>
+
+    </div>
+
+</aside>
+
+
+<!-- Main content -->
+<main class="main-content">
+
+    <!-- Top bar -->
+    <header class="top-bar">
+
+        <div class="search-bar">
+
+            <div class="search-filter">
+                <span>ALL</span>
+                <span class="arrow">▼</span>
+            </div>
+
+            <div class="search-divider"></div>
+
+            <span class="search-icon">⌕</span>
+
+            <input
+                type="text"
+                placeholder="Search cards, players, decks..."
+            >
+
         </div>
 
-        <nav class="sidebar-menu">
+        <div class="user-info">
+            <span>WELCOME, PLAYER</span>
+        </div>
 
-            <a href="app.html" class="menu-item">
-                <span>⌂</span>
-                HOME
-            </a>
+    </header>
 
-            <a href="cards.html" class="menu-item active">
-                <span>♧</span>
-                CARDS
-            </a>
 
-            <a href="decks.html" class="menu-item">
-                <span>▣</span>
-                DECKS
-            </a>
+    <!-- Cards content -->
+    <section class="content">
 
-            <a href="#" class="menu-item">
-                <span>♙</span>
-                PLAYERS
-            </a>
+        <div class="cards-header">
 
-            <a href="#" class="menu-item">
-                <span>↔</span>
-                TRADES
-            </a>
+            <h1>CARDS</h1>
 
-            <a href="#" class="menu-item">
-                <span>☵</span>
-                CHAT
-            </a>
-
-            <div class="menu-divider"></div>
-
-            <a href="#" class="menu-item">
-                <span>♡</span>
-                COLLECTION
-            </a>
-
-            <a href="#" class="menu-item">
-                <span>⌕</span>
-                WANTS
-            </a>
-
-        </nav>
-
-        <div class="sidebar-bottom">
-
-            <a href="#" class="menu-item">
-                <span>⚙</span>
-                PROFILE
-            </a>
+            <p>
+                Search and discover cards for your collection.
+            </p>
 
         </div>
 
-    </aside>
+
+        <!-- Card search -->
+        <div class="cards-search">
+
+            <span class="search-icon">⌕</span>
+
+            <input
+                type="text"
+                placeholder="Search for a card..."
+            >
+
+        </div>
 
 
-    <!-- Main content -->
-    <main class="main-content">
+        <!-- Filters -->
+        <div class="cards-filters">
 
-        <!-- Top bar -->
-        <header class="top-bar">
+            <button>GAME ▼</button>
 
-            <div class="search-bar">
+            <button>SET ▼</button>
 
-                <div class="search-filter">
-                    <span>ALL</span>
-                    <span class="arrow">▼</span>
+            <button>RARITY ▼</button>
+
+            <button>COLOR ▼</button>
+
+        </div>
+
+
+        <!-- Cards grid -->
+        <div class="cards-grid">
+
+            <article class="card-item">
+
+                <div class="card-image">
+                    <img src="./images/card-image1.webp" alt="Card">
                 </div>
 
-                <div class="search-divider"></div>
+                <div class="card-info">
+                    <h2>Card Name</h2>
+                    <p>SET NAME</p>
+                </div>
 
-                <span class="search-icon">⌕</span>
+                <div class="card-actions">
+                    <button>+ Add to Deck</button>
+                    <button>+ Collection</button>
+                </div>
 
-                <input
-                    type="text"
-                    placeholder="Search cards, players, decks..."
-                >
-
-            </div>
-
-            <div class="user-info">
-                <span>WELCOME, PLAYER</span>
-            </div>
-
-        </header>
+            </article>
 
 
-        <!-- Cards content -->
-        <section class="content">
+            <article class="card-item">
 
-            <div class="cards-header">
+                <div class="card-image">
+                    <img src="./images/card-image2.webp" alt="Card">
+                </div>
 
-                <h1>CARDS</h1>
+                <div class="card-info">
+                    <h2>Card Name</h2>
+                    <p>SET NAME</p>
+                </div>
 
-                <p>
-                    Search and discover cards for your collection.
-                </p>
+                <div class="card-actions">
+                    <button>+ Add to Deck</button>
+                    <button>+ Collection</button>
+                </div>
 
-            </div>
-
-
-            <!-- Card search -->
-            <div class="cards-search">
-
-                <span class="search-icon">⌕</span>
-
-                <input
-                    type="text"
-                    placeholder="Search for a card..."
-                >
-
-            </div>
+            </article>
 
 
-            <!-- Filters -->
-            <div class="cards-filters">
+            <article class="card-item">
 
-                <button>GAME ▼</button>
+                <div class="card-image">
+                    <img src="./images/card-image3.webp" alt="Card">
+                </div>
 
-                <button>SET ▼</button>
+                <div class="card-info">
+                    <h2>Card Name</h2>
+                    <p>SET NAME</p>
+                </div>
 
-                <button>RARITY ▼</button>
+                <div class="card-actions">
+                    <button>+ Add to Deck</button>
+                    <button>+ Collection</button>
+                </div>
 
-                <button>COLOR ▼</button>
-
-            </div>
-
-
-            <!-- Cards grid -->
-            <div class="cards-grid">
-
-                <article class="card-item">
-
-                    <div class="card-image">
-                        <img src="./images/card-placeholder.webp" alt="Card">
-                    </div>
-
-                    <div class="card-info">
-                        <h2>Card Name</h2>
-                        <p>SET NAME</p>
-                    </div>
-
-                </article>
+            </article>
 
 
-                <article class="card-item">
+            <article class="card-item">
 
-                    <div class="card-image">
-                        <img src="./images/card-placeholder.webp" alt="Card">
-                    </div>
+                <div class="card-image">
+                    <img src="./images/card-image4.webp" alt="Card">
+                </div>
 
-                    <div class="card-info">
-                        <h2>Card Name</h2>
-                        <p>SET NAME</p>
-                    </div>
+                <div class="card-info">
+                    <h2>Card Name</h2>
+                    <p>SET NAME</p>
+                </div>
 
-                </article>
+                <div class="card-actions">
+                    <button>+ Add to Deck</button>
+                    <button>+ Collection</button>
+                </div>
 
+            </article>
 
-                <article class="card-item">
+        </div>
 
-                    <div class="card-image">
-                        <img src="./images/card-placeholder.webp" alt="Card">
-                    </div>
+    </section>
 
-                    <div class="card-info">
-                        <h2>Card Name</h2>
-                        <p>SET NAME</p>
-                    </div>
-
-                </article>
-
-
-                <article class="card-item">
-
-                    <div class="card-image">
-                        <img src="./images/card-placeholder.webp" alt="Card">
-                    </div>
-
-                    <div class="card-info">
-                        <h2>Card Name</h2>
-                        <p>SET NAME</p>
-                    </div>
-
-                </article>
-
-            </div>
-
-        </section>
-
-    </main>
+</main>
 
 </div>
 
+<script src="script.js"></script>
 
 </body>
 </html>

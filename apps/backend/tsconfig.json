@@ -11,6 +11,8 @@
       "@errortypes/*": ["./src/errortypes/*"],
       "@routes/*": ["./src/routes/*"],
       "@decorators/*": ["./src/decorators/*"],
+      "@types/*": ["./src/types/*"],
+      "@models/*": ["./src/models/*"],
     },
 
     // Environment Settings

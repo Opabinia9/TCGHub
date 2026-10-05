@@ -11,6 +11,8 @@
       "@errortypes/*": ["./src/errortypes/*"],
       "@routes/*": ["./src/routes/*"],
       "@decorators/*": ["./src/decorators/*"],
+      "@types/*": ["./src/types/*"],
+      "@models/*": ["./src/models/*"],
     },
 
     // Environment Settings
@@ -45,5 +47,6 @@
     "noUncheckedSideEffectImports": true,
     "moduleDetection": "force",
     "skipLibCheck": true,
-  }
+  },
+  "exclude": ["vitest.config.ts", "prisma7.config.ts", "node_modules", "dist", "tests", "**/*.test.ts", "**/*.spec.ts"],
 }

@@ -1,5 +1,5 @@
 import buildServer from './app.js';
-import { ENV } from './env.js';
+import { ENV } from './utils/env.js';
 
 const server = buildServer({
   logger: {
@@ -9,7 +9,7 @@ const server = buildServer({
   },
 });
 
-server.listen({ port: ENV.PORT }, (err, address) => {
+server.listen({ port: ENV.SERVER_PORT }, (err, address) => {
   if (err) {
     console.error(err);
     process.exit(1);

@@ -13,7 +13,7 @@ function CustomDrawerContent(props: DrawerContentComponentProps) {
   const theme = useTheme();
   const router = useRouter();
   const segments = useSegments();
-  const currentRoute = segments[0] || 'drawer';
+  const currentRoute = segments[0] || '(drawer)';
   const navigateTo = (routeName: Href) => {
     router.navigate(routeName);
   };

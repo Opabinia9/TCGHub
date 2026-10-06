@@ -1,16 +1,13 @@
 import { Drawer } from 'expo-router/drawer';
-import { Drawer as PaperDrawer, Avatar, Text, useTheme } from 'react-native-paper';
-import { MaterialCommunityIcons } from '@expo/vector-icons';
-import React from 'react';
+import { Drawer as PaperDrawer, useTheme } from 'react-native-paper';
 import { View, StyleSheet } from 'react-native';
 import { useRouter, useSegments, Href } from 'expo-router';
-import { DrawerContentComponentProps } from '@react-navigation/drawer';
 import { GestureHandlerRootView } from 'react-native-gesture-handler';
 import { PaperProvider } from 'react-native-paper';
+import { Image } from 'expo-image';
 
 
-function CustomDrawerContent(props: DrawerContentComponentProps) {
-  const theme = useTheme();
+function CustomDrawerContent() {
   const router = useRouter();
   const segments = useSegments();
   const currentRoute = segments[0] || '(drawer)';
@@ -19,9 +16,11 @@ function CustomDrawerContent(props: DrawerContentComponentProps) {
   };
 
   return (
-	<View style={{ flex: 1 }}>
-
-      <PaperDrawer.Section title="Navigation">
+	<View style={ styles.drawer } >
+		<View style={styles.imageContainer}>
+		  <Image source={require('@/assets/images/tcghub_banner.png')} style={styles.imageContainer} contentFit="cover" />
+		</View>
+      <PaperDrawer.Section>
 
 		<PaperDrawer.Item
           label="Home"
@@ -54,8 +53,8 @@ function CustomDrawerContent(props: DrawerContentComponentProps) {
 		<PaperDrawer.Item
           label="Chat"
 		  icon="chat"
-		  active={currentRoute === 'cards'}
-          onPress={() => navigateTo('/cards')}
+		  active={currentRoute === 'chat'}
+          onPress={() => navigateTo('/chat')}
 		/>
 
 		<PaperDrawer.Item
@@ -70,6 +69,13 @@ function CustomDrawerContent(props: DrawerContentComponentProps) {
 		  icon="handshake"
 		  active={currentRoute === 'trades'}
           onPress={() => navigateTo('/trades')}
+		/>
+
+		<PaperDrawer.Item
+          label="login"
+		  icon="lock"
+		  active={currentRoute === 'login'}
+          onPress={() => navigateTo('/login')}
 		/>
 
       </PaperDrawer.Section >
@@ -90,8 +96,8 @@ function CustomDrawerContent(props: DrawerContentComponentProps) {
 		  <PaperDrawer.Item
 			label="Profile"
 			icon="wizard-hat"
-			active={currentRoute === 'decks'}
-			onPress={() => navigateTo('/decks')}
+			active={currentRoute === 'profile'}
+			onPress={() => navigateTo('/profile')}
 		  />
 
 		</PaperDrawer.Section>
@@ -109,18 +115,10 @@ export default function RootLayout () {
         <Drawer
           drawerContent={(props) => <CustomDrawerContent />}
           screenOptions={{
-            headerShown: true, // Shows standard toggle header
-          }}
-        >
-          {/* Target screens mapped to your file structure */}
-          <Drawer.Screen
-            name="home"
-            options={{ title: 'Home Dashboard' }}
-          />
-          <Drawer.Screen
-            name="profile"
-            options={{ title: 'App Settings' }}
-          />
+            headerShown: false, // Shows standard toggle header
+          }}>
+          <Drawer.Screen name="home" />
+          <Drawer.Screen name="profile" />
         </Drawer>
       </PaperProvider>
     </GestureHandlerRootView>
@@ -128,8 +126,23 @@ export default function RootLayout () {
 }
 
 const styles = StyleSheet.create({
+  drawer: {
+	backgroundColor: "#E2D7BD",
+	flex: 1,
+	borderTopRightRadius: 16,
+	borderWidth: 3,
+	borderColor: "black",
+  },
   content: {
 	flex: 1,
 	justifyContent: 'flex-end',
   },
+  imageContainer: {
+	alignItems: 'center',
+	width: '100%',
+	height: 16,
+	borderTopRightRadius: 10,
+	overflow: 'hidden',
+  }
 });
+

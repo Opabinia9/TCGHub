@@ -5,7 +5,7 @@ export default function Profile() {
   const theme = useTheme();
   return (
     <View style={{ flex: 1, alignItems: 'center', justifyContent: 'center', backgroundColor: theme.colors.background }}>
-      <Text variant="headlineMedium">Profile</Text>
+      <Text variant="headlineMedium">Collection</Text>
       <Button mode="contained" onPress={() => {}}>Button</Button>
     </View>
   );

@@ -56,7 +56,7 @@ async function insertBatch(batch: any[], batchNumber: number) {
     let successCount = 0;
     for (const item of batch) {
       try {
-        await prisma.card.upsert({
+        await prisma.cards.upsert({
           where: { scryfallId: item.scryfallId },
           update: { rawData: item.rawData },
           create: item,

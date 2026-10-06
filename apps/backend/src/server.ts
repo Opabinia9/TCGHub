@@ -9,7 +9,7 @@ const server = buildServer({
   },
 });
 
-server.listen({ port: ENV.SERVER_PORT }, (err, address) => {
+server.listen({ port: ENV.SERVER_PORT, host: '0.0.0.0' }, (err, address) => {
   if (err) {
     console.error(err);
     process.exit(1);

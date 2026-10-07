@@ -3,7 +3,6 @@
     "main": "expo-router/entry",
     "version": "1.0.0",
     "engines": {
-        "npm": ">=12.2.0 <13.0.0",
         "node": ">=26.10.0 <27.0.0"
     },
     "dependencies": {

@@ -5,7 +5,7 @@ import {
   authSignupSchema,
   type authLoginBody,
   type authSignupBody,
-} from './routeschemas.js';
+} from './routeSchemas.js';
 
 export default async function authRoutes(fastify: Fastify.FastifyInstance, options: object) {
   const controller = new authController();

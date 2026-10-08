@@ -46,7 +46,7 @@ async function downloadFile(url: string, filePath: string): Promise<void> {
 
 async function insertBatch(batch: any[], batchNumber: number) {
   try {
-    await prisma.cards.createMany({
+    await prisma.card.createMany({
       data: batch,
       skipDuplicates: true,
     });
@@ -56,7 +56,7 @@ async function insertBatch(batch: any[], batchNumber: number) {
     let successCount = 0;
     for (const item of batch) {
       try {
-        await prisma.cards.upsert({
+        await prisma.card.upsert({
           where: { scryfallId: item.scryfallId },
           update: { rawData: item.rawData },
           create: item,

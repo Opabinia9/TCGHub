@@ -6,16 +6,18 @@ datasource db {
   provider = "postgresql"
 }
 
-model blocks {
-  id                             String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
-  blocker_id                     String?  @db.Uuid
-  blocked_id                     String?  @db.Uuid
-  created_at                     DateTime @default(now()) @db.Timestamp(6)
-  users_blocks_blocked_idTousers users?   @relation("blocks_blocked_idTousers", fields: [blocked_id], references: [id], onUpdate: NoAction)
-  users_blocks_blocker_idTousers users?   @relation("blocks_blocker_idTousers", fields: [blocker_id], references: [id], onUpdate: NoAction)
+model Block {
+  id                           String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  blocker_id                   String?  @db.Uuid
+  blocked_id                   String?  @db.Uuid
+  created_at                   DateTime @default(now()) @db.Timestamp(6)
+  Block_blocked_idToUser       User?  @relation("blocks_blocked_idToUser", fields: [blocked_id], references: [id], onUpdate: NoAction)
+  Block_blocker_idToUser       User?  @relation("blocks_blocker_idToUser", fields: [blocker_id], references: [id], onUpdate: NoAction)
+
+  @@map("blocks")
 }
 
-model cards {
+model Card {
   id              String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
   scryfallId      String   @unique
   oracleId        String?
@@ -40,33 +42,39 @@ model cards {
   prices          Json?
   rawData         Json
   createdAt       DateTime @default(now())
-  user_cards      user_cards[]
+  UserCard        UserCard[]
+
   @@index([name])
   @@index([scryfallId])
   @@index([colors])
   @@index([setCode])
+  @@map("cards")
 }
 
-model conversations {
-  id                                  String     @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
-  user1_id                            String?    @db.Uuid
-  user2_id                            String?    @db.Uuid
-  users_conversations_user1_idTousers users?     @relation("conversations_user1_idTousers", fields: [user1_id], references: [id], onUpdate: NoAction)
-  users_conversations_user2_idTousers users?     @relation("conversations_user2_idTousers", fields: [user2_id], references: [id], onUpdate: NoAction)
-  messages                            messages[]
+model Conversation {
+  id                                String     @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  user1_id                          String?    @db.Uuid
+  user2_id                          String?    @db.Uuid
+  Conversation_user1_idToUser       User?      @relation("conversations_user1_idToUser", fields: [user1_id], references: [id], onUpdate: NoAction)
+  Conversation_user2_idToUser       User?      @relation("conversations_user2_idToUser", fields: [user2_id], references: [id], onUpdate: NoAction)
+  messages                          Message[]
+
+  @@map("conversations")
 }
 
-model messages {
+model Message {
   id              String         @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
   conversation_id String?        @db.Uuid
   sender_id       String?        @db.Uuid
   content         String
   created_at      DateTime       @default(now()) @db.Timestamp(6)
-  conversations   conversations? @relation(fields: [conversation_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
-  users           users?         @relation(fields: [sender_id], references: [id], onUpdate: NoAction)
+  Conversation    Conversation?  @relation(fields: [conversation_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  User            User?          @relation(fields: [sender_id], references: [id], onUpdate: NoAction)
+
+  @@map("messages")
 }
 
-model reports {
+model Report {
   id                               String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
   reporter_id                      String?  @db.Uuid
   reported_id                      String?  @db.Uuid
@@ -74,33 +82,44 @@ model reports {
   reason_detail                    String?
   status                           String   @default("pending")
   created_at                       DateTime @default(now()) @db.Timestamp(6)
-  users_reports_reported_idTousers users?   @relation("reports_reported_idTousers", fields: [reported_id], references: [id], onUpdate: NoAction)
-  users_reports_reporter_idTousers users?   @relation("reports_reporter_idTousers", fields: [reporter_id], references: [id], onUpdate: NoAction)
+  Report_reported_idToUser         User?    @relation("reports_reported_idToUser", fields: [reported_id], references: [id], onUpdate: NoAction)
+  Report_reporter_idToUser         User?    @relation("reports_reporter_idToUser", fields: [reporter_id], references: [id], onUpdate: NoAction)
+
+  @@map("reports")
 }
 
-model user_cards {
-  id        String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
-  user_id   String   @db.Uuid
-  card_id   String   @db.Uuid
-  quantity  Int      @default(1)
-  condition String?
-  for_trade Boolean? @default(false)
-  cards     cards    @relation(fields: [card_id], references: [id], onDelete: Cascade, onUpdate: NoAction)
-  users     users    @relation(fields: [user_id], references: [id], onDelete: Cascade, onUpdate: NoAction)
+model UserCard {
+  id         String    @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  user_id    String    @db.Uuid
+  card_id    String    @db.Uuid
+  quantity   Int       @default(1)
+  condition  String?
+  for_trade  Boolean?  @default(false)
+  Card       Card      @relation(fields: [card_id], references: [id], onDelete: Cascade, onUpdate: NoAction)
+  User       User      @relation(fields: [user_id], references: [id], onDelete: Cascade, onUpdate: NoAction)
+
+  @@map("user_cards")
 }
 
-model users {
-  id                                          String          @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
-  email                                       String          @unique
-  last_lat                                    Float?
-  last_long                                   Float?
-  created_at                                  DateTime        @default(now()) @db.Timestamp(6)
-  blocks_blocks_blocked_idTousers             blocks[]        @relation("blocks_blocked_idTousers")
-  blocks_blocks_blocker_idTousers             blocks[]        @relation("blocks_blocker_idTousers")
-  conversations_conversations_user1_idTousers conversations[] @relation("conversations_user1_idTousers")
-  conversations_conversations_user2_idTousers conversations[] @relation("conversations_user2_idTousers")
-  messages                                    messages[]
-  reports_reports_reported_idTousers          reports[]       @relation("reports_reported_idTousers")
-  reports_reports_reporter_idTousers          reports[]       @relation("reports_reporter_idTousers")
-  user_cards                                  user_cards[]
+model User {
+  id                                           String          @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  email                                        String          @unique
+  username                                     String          @unique
+  first_name                                   String
+  last_name                                    String
+  password                                     String
+  last_lat                                     Float?
+  last_long                                    Float?
+  created_at                                   DateTime        @default(now()) @db.Timestamp(6)
+  updated_at                                   DateTime        @updatedAt
+  messages                                     Message[]
+  user_cards                                   UserCard[]
+  Block_Blocked_idToUser                       Block[]         @relation("blocks_blocked_idToUser")
+  Block_Blocker_idToUser                       Block[]         @relation("blocks_blocker_idToUser")
+  Conversation_user1_idToUser                  Conversation[]  @relation("conversations_user1_idToUser")
+  Conversation_user2_idToUser                  Conversation[]  @relation("conversations_user2_idToUser")
+  Report_reported_idToUser                     Report[]        @relation("reports_reported_idToUser")
+  Report_reporter_idToUser                     Report[]        @relation("reports_reporter_idToUser")
+
+  @@map("users")
 }

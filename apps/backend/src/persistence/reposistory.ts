@@ -1,17 +1,7 @@
-import type BaseModel from '../models/baseclass.js';
+import type { PrismaClient } from '@prisma/client';
 
-export default class repository<BaseType extends BaseModel> {
-  __storage: Record<string, BaseType>;
-
-  constructor() {
-    this.__storage = {};
-  }
-
-  add(obj: BaseType): void {
-    this.__storage[obj.id] = obj;
-  }
-
-  get(id: string): BaseType | null {
-    return this.__storage[id] ?? null;
-  }
+export default abstract class repository<BaseType> {
+  abstract db: PrismaClient;
+  abstract add(obj: BaseType): Promise<void>;
+  abstract get(objID: string): Promise<BaseType | null>;
 }

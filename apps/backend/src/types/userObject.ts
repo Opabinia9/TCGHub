@@ -1,12 +1,6 @@
-export interface UserCreationInterface {
-  first_name: string;
-  last_name: string;
-  email: string;
-  password: string;
-}
+import type { User } from '@prisma/client';
 
-export interface UserInterface extends UserCreationInterface {
-  id: string;
-  created_at: number;
-  updated_at: number;
-}
+export type UserCreationInterface = Pick<
+  User,
+  'username' | 'email' | 'password' | 'first_name' | 'last_name'
+>;

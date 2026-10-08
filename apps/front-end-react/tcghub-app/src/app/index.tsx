@@ -57,9 +57,7 @@ export default function Login() {
 						defaultValue={passwd}
 						style={styles.input}
 						secureTextEntry={passwdVisibility}
-					>
-						<Pressable onPress={togglePasswd} />
-					</TextInput>
+					></TextInput>
 				</View>
 			</View>
 			<Button children="Login" onPress={handleLogin} />

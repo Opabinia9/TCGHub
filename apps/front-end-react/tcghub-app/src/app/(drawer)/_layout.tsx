@@ -130,7 +130,7 @@ const styles = StyleSheet.create({
 	imageContainer: {
 		alignItems: "center",
 		width: "100%",
-		height: 16,
+		height: 160,
 		borderTopRightRadius: 10,
 		overflow: "hidden",
 	},

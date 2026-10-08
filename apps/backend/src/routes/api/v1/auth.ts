@@ -1,5 +1,5 @@
 import Fastify from 'fastify';
-import authController from '@controllers/authController.js';
+import authController from '@/controllers/authController.js';
 import {
   authLoginSchema,
   authSignupSchema,

@@ -1,4 +1,4 @@
-import repository from '@persistence/reposistory.js';
+import repository from '@/persistence/reposistory.js';
 import { prisma } from '@/utils/prisma.js';
 import type { PrismaClient, User } from '@prisma/client';
 import type { UserCreationInterface } from '@/types/userObject.js';

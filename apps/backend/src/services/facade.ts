@@ -1,5 +1,5 @@
-import user_repository from '@persistence/user_reposistory.js';
-import NotFoundError from '@errortypes/notFoundError.js';
+import user_repository from '@/persistence/user_reposistory.js';
+import NotFoundError from '@/errortypes/notFoundError.js';
 import type { UserCreationInterface } from '@/types/userObject.js';
 import type { User } from '@prisma/client';
 

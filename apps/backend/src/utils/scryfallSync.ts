@@ -1,9 +1,9 @@
-import { prisma } from './prisma.js';
+import { prisma } from '@/utils/prisma.js';
 import * as fs from 'fs';
 import * as zlib from 'zlib';
 import * as readline from 'readline';
-import { scryfallBulkEndpointSchema } from './scryfalltypes.js';
-import type { ScryfallCard } from './scryfalltypes.js';
+import { scryfallBulkEndpointSchema } from '@/utils/scryfalltypes.js';
+import type { ScryfallCard } from '@/utils/scryfalltypes.js';
 
 function transformCard(card: ScryfallCard) {
   return {

@@ -1,7 +1,7 @@
-import NotFoundError from '@errortypes/notFoundError.js';
-import Facade from '@services/facade.js';
+import NotFoundError from '@/errortypes/notFoundError.js';
+import Facade from '@/services/facade.js';
 import type { FastifyRequest, FastifyReply } from 'fastify';
-import type { authLoginBody, authSignupBody } from '@routes/api/v1/routeschemas.js';
+import type { authLoginBody, authSignupBody } from '@/routes/api/v1/routeschemas.js';
 import type { User } from '@prisma/client';
 
 const facade = new Facade();

@@ -1,5 +1,5 @@
-import buildServer from './app.js';
-import { ENV } from './utils/env.js';
+import buildServer from '@/app.js';
+import { ENV } from '@/utils/env.js';
 
 const server = buildServer({
   logger: {

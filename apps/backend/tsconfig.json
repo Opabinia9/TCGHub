@@ -6,14 +6,6 @@
     "outDir": "./dist",
     "paths": {
       "@/*": ["./src/*"],
-      "@controllers/*": ["./src/controllers/*"],
-      "@services/*": ["./src/services/*"],
-      "@persistence/*": ["./src/persistence/*"],
-      "@errortypes/*": ["./src/errortypes/*"],
-      "@routes/*": ["./src/routes/*"],
-      "@decorators/*": ["./src/decorators/*"],
-      "@types/*": ["./src/types/*"],
-      "@models/*": ["./src/models/*"],
     },
 
     // Environment Settings

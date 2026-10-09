@@ -1,4 +1,4 @@
-export interface authLoginBody {
+export interface AuthLoginBody {
   email: string;
   password: string;
 }
@@ -17,7 +17,7 @@ export const authLoginSchema = {
   },
 };
 
-export interface authSignupBody {
+export interface AuthSignupBody {
   first_name: string;
   last_name: string;
   email: string;

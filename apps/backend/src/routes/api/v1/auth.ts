@@ -1,22 +1,22 @@
 import Fastify from 'fastify';
-import authController from '@/controllers/authController.js';
+import AuthController from '@/controllers/authController.js';
 import {
   authLoginSchema,
   authSignupSchema,
-  type authLoginBody,
-  type authSignupBody,
+  type AuthLoginBody,
+  type AuthSignupBody,
 } from './routeSchemas.js';
 
 export default async function authRoutes(fastify: Fastify.FastifyInstance, options: object) {
-  const controller = new authController();
+  const controller = new AuthController();
 
-  fastify.post<{ Body: authLoginBody }>(
+  fastify.post<{ Body: AuthLoginBody }>(
     '/login',
     { schema: authLoginSchema },
     controller.loginPost,
   );
 
-  fastify.post<{ Body: authSignupBody }>(
+  fastify.post<{ Body: AuthSignupBody }>(
     '/signup',
     { schema: authSignupSchema },
     controller.signupPost,

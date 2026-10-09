@@ -1,9 +1,9 @@
-import repository from '@/persistence/reposistory.js';
+import Repository from '@/persistence/reposistory.js';
 import { prisma } from '@/utils/prisma.js';
 import type { PrismaClient, User } from '@prisma/client';
 import type { UserCreationInterface } from '@/types/userObject.js';
 
-export default class user_repository extends repository<User> {
+export default class UserRepository extends Repository<User> {
   db: PrismaClient;
   constructor() {
     super();

@@ -1,9 +1,12 @@
 import user_repository from '@persistence/user_reposistory.js';
 import NotFoundError from '@errortypes/notFoundError.js';
-import User from '../models/user.js';
-import type { UserCreationInterface } from '../types/userObject.js';
+import type { UserCreationInterface } from '@/types/userObject.js';
+import type { User } from '@prisma/client';
 
 export default class Facade {
+  getUserByusername(arg0: string): any {
+    throw new Error('Method not implemented.');
+  }
   user_repo: user_repository;
 
   constructor() {
@@ -12,8 +15,18 @@ export default class Facade {
 
   /** User functions  */
 
-  getUserByEmail(email: string): User {
-    const user = this.user_repo.getByAttribute('email', email);
+  async getUserByEmail(email: string): Promise<User> {
+    const user = await this.user_repo.getUserByEmail(email);
+
+    if (user !== null) {
+      return user;
+    } else {
+      throw new NotFoundError(`User Not Found`);
+    }
+  }
+
+  async getUserByUsername(username: string): Promise<User> {
+    const user = await this.user_repo.getUserByUsername(username);
 
     if (user !== null) {
       return user;
@@ -25,10 +38,7 @@ export default class Facade {
   /**
    *
    */
-  createUser(userData: UserCreationInterface): User {
-    const { first_name, last_name, email, password } = userData;
-    const user = new User(first_name, last_name, email, password);
-    this.user_repo.add(user);
-    return user;
+  async createUser(userData: UserCreationInterface): Promise<void> {
+    this.user_repo.add(userData);
   }
 }

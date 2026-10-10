@@ -22,11 +22,12 @@ export interface authSignupBody {
   last_name: string;
   email: string;
   password: string;
+  username: string;
 }
 export const authSignupSchema = {
   body: {
     type: 'object',
-    required: ['first_name', 'last_name', 'email', 'password'],
+    required: ['first_name', 'last_name', 'email', 'password', 'username'],
     additionalProperties: false,
     properties: {
       first_name: { type: 'string' },
@@ -36,6 +37,7 @@ export const authSignupSchema = {
         format: 'email',
       },
       password: { type: 'string' },
+      username: { type: 'string' },
     },
   },
 };

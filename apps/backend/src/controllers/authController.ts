@@ -2,7 +2,7 @@ import NotFoundError from '@errortypes/notFoundError.js';
 import Facade from '@services/facade.js';
 import type { FastifyRequest, FastifyReply } from 'fastify';
 import type { authLoginBody, authSignupBody } from '@routes/api/v1/routeschemas.js';
-import type User from '../models/user.js';
+import type { User } from '@prisma/client';
 
 const facade = new Facade();
 
@@ -14,7 +14,7 @@ export default class authController {
   async loginPost(request: FastifyRequest<{ Body: authLoginBody }>, reply: FastifyReply) {
     let user: User;
     try {
-      user = facade.getUserByEmail(request.body['email']);
+      user = await facade.getUserByEmail(request.body['email']);
     } catch (error) {
       if (error instanceof NotFoundError) {
         return reply.code(401).send({ error: 'Invalid credentials' });
@@ -38,16 +38,28 @@ export default class authController {
   async signupPost(request: FastifyRequest<{ Body: authSignupBody }>, reply: FastifyReply) {
     let existingUser = null;
     try {
-      existingUser = facade.getUserByEmail(request.body['email']);
-    } catch {
-      existingUser = null;
-    }
-
-    if (existingUser !== null) {
+      existingUser = await facade.getUserByEmail(request.body['email']);
       return reply.code(400).send({ error: 'Email already registered' });
+    } catch (error) {
+      if (error instanceof NotFoundError) {
+        try {
+          existingUser = await facade.getUserByUsername(request.body['username']);
+        } catch (error) {
+          if (error instanceof NotFoundError) {
+            existingUser = null;
+          } else {
+            throw error;
+          }
+        }
+      } else {
+        throw error;
+      }
+    }
+    if (existingUser !== null) {
+      return reply.code(400).send({ error: 'Username already registered' });
     }
 
-    const newUser = facade.createUser(request.body);
+    await facade.createUser(request.body);
     reply.code(201).send('Account creation successful');
   }
 

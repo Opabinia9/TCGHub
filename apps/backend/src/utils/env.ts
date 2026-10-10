@@ -5,6 +5,7 @@ dotenv.config();
 
 const envSchema = z.object({
   SERVER_PORT: z.coerce.number().int().min(1).max(65535),
+  SERVER_SECRET: z.string(),
   POSTGRES_USER: z.string(),
   POSTGRES_PASSWORD: z.string(),
   POSTGRES_PORT: z.coerce.number().int().min(1).max(65535),

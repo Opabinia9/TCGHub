@@ -1,16 +1,13 @@
-import user_repository from '@persistence/user_reposistory.js';
-import NotFoundError from '@errortypes/notFoundError.js';
+import userRepository from '@/persistence/userReposistory.js';
+import NotFoundError from '@/errortypes/NotFoundError.js';
 import type { UserCreationInterface } from '@/types/userObject.js';
 import type { User } from '@prisma/client';
 
 export default class Facade {
-  getUserByusername(arg0: string): any {
-    throw new Error('Method not implemented.');
-  }
-  user_repo: user_repository;
+  user_repo: userRepository;
 
   constructor() {
-    this.user_repo = new user_repository();
+    this.user_repo = new userRepository();
   }
 
   /** User functions  */

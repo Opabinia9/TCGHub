@@ -1,17 +1,17 @@
-import NotFoundError from '@errortypes/notFoundError.js';
-import Facade from '@services/facade.js';
+import NotFoundError from '@/errortypes/NotFoundError.js';
+import Facade from '@/services/facade.js';
 import type { FastifyRequest, FastifyReply } from 'fastify';
-import type { authLoginBody, authSignupBody } from '@routes/api/v1/routeschemas.js';
+import type { AuthLoginBody, AuthSignupBody } from '@/routes/api/v1/routeSchemas.js';
 import type { User } from '@prisma/client';
 
 const facade = new Facade();
 
 /** Class for the auth api endpoint */
-export default class authController {
+export default class AuthController {
   /**
    * post request handling for auth/login
    */
-  async loginPost(request: FastifyRequest<{ Body: authLoginBody }>, reply: FastifyReply) {
+  async loginPost(request: FastifyRequest<{ Body: AuthLoginBody }>, reply: FastifyReply) {
     let user: User;
     try {
       user = await facade.getUserByEmail(request.body['email']);
@@ -35,7 +35,7 @@ export default class authController {
   /**
    * post request handling for auth/signup
    */
-  async signupPost(request: FastifyRequest<{ Body: authSignupBody }>, reply: FastifyReply) {
+  async signupPost(request: FastifyRequest<{ Body: AuthSignupBody }>, reply: FastifyReply) {
     let existingUser = null;
     try {
       existingUser = await facade.getUserByEmail(request.body['email']);

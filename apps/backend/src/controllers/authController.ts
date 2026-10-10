@@ -44,6 +44,7 @@ export default class AuthController {
       if (error instanceof NotFoundError) {
         try {
           existingUser = await facade.getUserByUsername(request.body['username']);
+          return reply.code(400).send({ error: 'Username already registered' });
         } catch (error) {
           if (error instanceof NotFoundError) {
             existingUser = null;
@@ -55,12 +56,9 @@ export default class AuthController {
         throw error;
       }
     }
-    if (existingUser !== null) {
-      return reply.code(400).send({ error: 'Username already registered' });
-    }
 
     await facade.createUser(request.body);
-    reply.code(201).send('Account creation successful');
+    reply.code(201).send({ response: 'Account creation successful' });
   }
 
   /**

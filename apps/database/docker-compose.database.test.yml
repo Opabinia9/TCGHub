@@ -1,7 +1,7 @@
 services:
   postgres:
     image: postgres
-    container_name: tcghub_database
+    container_name: tcghub_database_test
     environment:
       POSTGRES_USER: ${POSTGRES_USER}
       POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
@@ -9,8 +9,7 @@ services:
     ports:
       - "${POSTGRES_PORT}:${POSTGRES_HOST_PORT}"
     volumes:
-      - postgres_data2:/var/lib/postgresql
+      - postgres_data_test:/var/lib/postgresql
 
 volumes:
-  # postgres_data:
-  postgres_data2:
+  postgres_data_test:

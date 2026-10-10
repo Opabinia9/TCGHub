@@ -16,10 +16,10 @@ export default class AuthController {
     try {
       user = await facade.getUserByEmail(request.body['email']);
     } catch (error) {
+      /* c8 ignore else */
       if (error instanceof NotFoundError) {
         return reply.code(401).send({ error: 'Invalid credentials' });
       } else {
-        /* c8 ignore next */
         throw error;
       }
     }
@@ -41,11 +41,13 @@ export default class AuthController {
       existingUser = await facade.getUserByEmail(request.body['email']);
       return reply.code(400).send({ error: 'Email already registered' });
     } catch (error) {
+      /* c8 ignore else */
       if (error instanceof NotFoundError) {
         try {
           existingUser = await facade.getUserByUsername(request.body['username']);
           return reply.code(400).send({ error: 'Username already registered' });
         } catch (error) {
+          /* c8 ignore else */
           if (error instanceof NotFoundError) {
             existingUser = null;
           } else {

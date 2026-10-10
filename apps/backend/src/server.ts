@@ -1,13 +1,16 @@
 import buildServer from '@/app.js';
 import { ENV } from '@/utils/env.js';
 
-const server = buildServer({
-  logger: {
-    transport: {
-      target: 'pino-pretty',
+const server = await buildServer(
+  {
+    logger: {
+      transport: {
+        target: 'pino-pretty',
+      },
     },
   },
-});
+  ENV,
+);
 
 server.listen({ port: ENV.SERVER_PORT, host: '0.0.0.0' }, (err, address) => {
   if (err) {

@@ -16,14 +16,6 @@ export default class UserRepository extends Repository<User> {
     });
   }
 
-  async get(userID: string): Promise<User | null> {
-    return this.db.user.findUnique({
-      where: {
-        id: userID,
-      },
-    });
-  }
-
   async getUserByEmail(email: string): Promise<User | null> {
     return this.db.user.findUnique({
       where: {

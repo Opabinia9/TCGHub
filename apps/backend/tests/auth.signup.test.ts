@@ -6,9 +6,12 @@ import {
   createDefaultUser,
   defaultUser2Details,
   defaultUserDetails,
+  defaultUserStored,
 } from './helpers/userPresets.js';
 import { prisma } from '../src/utils/prisma.js';
 import { UserCreationInterface } from '../src/types/userObject.js';
+import { AuthSignupBody } from '../src/routes/api/v1/routeSchemas.js';
+import { verifyPassword } from '../src/utils/hashing.js';
 
 const server = await buildServer({}, ENV);
 
@@ -29,12 +32,18 @@ describe('/api/v1/auth/signup', () => {
 
     expect(response.statusCode).toBe(201);
     expect(payload).toMatchObject({ response: 'Account creation successful' });
-    expect(databaseUser).toMatchObject(defaultUserDetails);
+    expect(databaseUser).toMatchObject({
+      username: defaultUserDetails.username,
+      email: defaultUserDetails.email,
+      first_name: defaultUserDetails.first_name,
+      last_name: defaultUserDetails.last_name,
+    });
+    expect(await verifyPassword(databaseUser.hash, defaultUserDetails.password));
   });
 
   it('blocks signup with used email', async () => {
     await createDefaultUser();
-    const requestPayload: UserCreationInterface = {
+    const requestPayload: AuthSignupBody = {
       ...defaultUser2Details,
       email: defaultUserDetails.email,
     };
@@ -52,7 +61,7 @@ describe('/api/v1/auth/signup', () => {
 
   it('blocks signup with used username', async () => {
     await createDefaultUser();
-    const requestPayload: UserCreationInterface = {
+    const requestPayload: AuthSignupBody = {
       ...defaultUser2Details,
       username: defaultUserDetails.username,
     };

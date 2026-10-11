@@ -107,7 +107,7 @@ model User {
   username                                     String          @unique
   first_name                                   String
   last_name                                    String
-  password                                     String
+  hash                                         String
   last_lat                                     Float?
   last_long                                    Float?
   created_at                                   DateTime        @default(now()) @db.Timestamp(6)

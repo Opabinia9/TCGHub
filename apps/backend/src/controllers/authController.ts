@@ -3,6 +3,7 @@ import Facade from '@/services/facade.js';
 import type { FastifyRequest, FastifyReply } from 'fastify';
 import type { AuthLoginBody, AuthSignupBody } from '@/routes/api/v1/routeSchemas.js';
 import type { User } from '@prisma/client';
+import { verifyPassword } from '@/utils/hashing.js';
 
 const facade = new Facade();
 
@@ -24,7 +25,7 @@ export default class AuthController {
       }
     }
 
-    if (request.body['password'] !== user.password) {
+    if (!(await verifyPassword(request.body['password'], user.hash))) {
       return reply.code(401).send({ error: 'Invalid credentials' });
     }
 

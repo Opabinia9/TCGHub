@@ -140,6 +140,7 @@ describe('/api/v1/auth/login', () => {
       },
     });
     const payload = await response.json();
+
     expect(response.statusCode).toBe(401);
     expect(payload).toMatchObject({
       error: 'Invalid credentials',

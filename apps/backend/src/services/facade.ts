@@ -2,6 +2,8 @@ import userRepository from '@/persistence/userReposistory.js';
 import NotFoundError from '@/errortypes/NotFoundError.js';
 import type { UserCreationInterface } from '@/types/userObject.js';
 import type { User } from '@prisma/client';
+import { hashPassword } from '@/utils/hashing.js';
+import type { AuthSignupBody } from '@/routes/api/v1/routeSchemas.js';
 
 export default class Facade {
   user_repo: userRepository;
@@ -35,7 +37,10 @@ export default class Facade {
   /**
    *
    */
-  async createUser(userData: UserCreationInterface): Promise<void> {
+  async createUser(signupData: AuthSignupBody): Promise<void> {
+    const { password, ...include } = signupData;
+    const hash = await hashPassword(signupData.password);
+    const userData: UserCreationInterface = { ...include, hash: hash };
     this.user_repo.add(userData);
   }
 }

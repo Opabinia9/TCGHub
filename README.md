@@ -14,36 +14,31 @@
 
 ## Running the backend:
 
-`cd app/backend`
-`npm install`
-`npx prisma generate`
-
-create a .env and put in the credential, examples in .env.example:
+1. `cd apps/backend`
+2. `npm install`
+3. Create a `.env` file and fill in your credentials (see `.env.example`):
 ```
-# port number for server
-SERVER_PORT=PORT_NUMBER
-# username for postgres
-POSTGRES_USER=
-# password for postgres
-POSTGRES_PASSWORD=
-# port for postgres
-POSTGRES_PORT=
-# ip/url for postgres
-POSTGRES_URL=
-# postgres database to use
-POSTGRES_DATABASE=
-# URL of database in format "postgres://${POSTGRES_USER}:${POSTGRES_PASSWORD}@${POSTGRES_URL}:${POSTGRES_PORT}/${POSTGRES_DATABASE}"
-DATABASE_URL=
+   # port number for server
+   SERVER_PORT=PORT_NUMBER
+   # secret used to sign JWTs
+   SERVER_SECRET=
+   # username for postgres
+   POSTGRES_USER=
+   # password for postgres
+   POSTGRES_PASSWORD=
+   # port for postgres
+   POSTGRES_PORT=
+   # ip/url for postgres
+   POSTGRES_URL=
+   # postgres database to use
+   POSTGRES_DATABASE=
+   # URL of database in format "postgres://${POSTGRES_USER}:${POSTGRES_PASSWORD}@${POSTGRES_URL}:${POSTGRES_PORT}/${POSTGRES_DATABASE}"
+   DATABASE_URL=
 ```
-
-for one off:
-`npm run build`
-`npm run start`
-
-for reloading on changes:
-`watchexec -r -w src npm run build`
-`npm run dev`
-
-if schema.prisma is in the the prisma directory, the data can be placed in the database with:
-`npx prisma migrate dev --name init`
-
+   **This step must happen before the next one** — `npx prisma generate` requires `DATABASE_URL` to already be set, and will fail with a `PrismaConfigEnvError` if `.env` doesn't exist yet.
+4. `npx prisma generate`
+5. If `schema.prisma` is in the `prisma/` directory and this is your first time setting up the database, apply the schema:
+   `npx prisma migrate dev --name init`
+6. Run it:
+   - One-off: `npm run build` then `npm run start`
+   - Reloading on changes: `watchexec -r -w src npm run build` then `npm run dev`

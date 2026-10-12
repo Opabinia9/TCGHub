@@ -6,6 +6,7 @@
         "node": ">=26.10.0 <27.0.0"
     },
     "dependencies": {
+        "@expo-google-fonts/barlow-condensed": "^0.4.1",
         "@expo/ui": "~57.0.21",
         "@expo/vector-icons": "^15.0.2",
         "@react-navigation/drawer": "^7.14.3",

@@ -16,12 +16,7 @@
 
 1. `cd apps/backend`
 2. `npm install`
-3. Approve the install scripts for Prisma
-   `npm approve-scripts @prisma/engines`
-   `npm approve-scripts fsevents`
-   `npm approve-scripts prisma`
-   `npm install`
-4. Create a `.env` file and fill in your credentials (see `.env.example`):
+3. Create a `.env` file and fill in your credentials (see `.env.example`):
 ```
    # port number for server
    SERVER_PORT=PORT_NUMBER
@@ -41,9 +36,9 @@
    DATABASE_URL=
 ```
    **This step must happen before the next one** — `npx prisma generate` requires `DATABASE_URL` to already be set, and will fail with a `PrismaConfigEnvError` if `.env` doesn't exist yet.
-5. `npx prisma generate`
-6. If `schema.prisma` is in the `prisma/` directory and this is your first time setting up the database, apply the schema:
+4. `npx prisma generate`
+5. If `schema.prisma` is in the `prisma/` directory and this is your first time setting up the database, apply the schema:
    `npx prisma migrate dev --name init`
-7. Run it:
+6. Run it:
    - One-off: `npm run build` then `npm run start`
    - Reloading on changes: `watchexec -r -w src npm run build` then `npm run dev`

@@ -1,25 +1,10 @@
+import NotFoundError from "@errortypes/notFoundError.js";
 import Repository from "@/persistence/repository.js";
 import { prisma } from "@/utils/prisma.js";
 import type { Card, Prisma, PrismaClient } from "@prisma/client";
+import type { CardSearchFilters } from "@/types/cardObjects.js";
 
 export type CardSummary = Omit<Card, "rawData">;
-
-export interface CardSearchFilters {
-	name?: string | undefined;
-	set?: string | undefined;
-	rarity?: string | undefined;
-	colors?: string | undefined;
-	oracleText?: string | undefined;
-	typeLine?: string | undefined;
-	manaCost?: string | undefined;
-	cmc?: number | undefined;
-	releasedAt?: string | undefined;
-	prices?: number | undefined;
-	legalities?: string | undefined;
-	colorIdentity?: string | undefined;
-	page: number;
-	limit: number;
-}
 
 export default class CardRepository extends Repository<CardSummary> {
 	db: PrismaClient;
@@ -29,9 +14,7 @@ export default class CardRepository extends Repository<CardSummary> {
 	}
 
 	async add() {
-		throw new Error(
-			"Cards are not created through the API, they are loaded by scryfallSync.",
-		);
+		throw NotFoundError;
 	}
 
 	async get(cardID: string): Promise<Card | null> {
@@ -71,17 +54,17 @@ export default class CardRepository extends Repository<CardSummary> {
 		if (filters.cmc) {
 			where.cmc = filters.cmc;
 		}
-		if (filters.releasedAt) {
-			if (/^\d{4}$/.test(filters.releasedAt)) {
-				// Regex: ^ start of string, \d digit, {4} 4 chars
-				where.releasedAt = { startsWith: filters.releasedAt };
-			} else {
-				where.releasedAt = {
-					contains: filters.releasedAt,
-					mode: "insensitive",
-				};
-			}
-		}
+		// if (filters.releasedAt) {
+		// 	if (/^\d{4}$/.test(filters.releasedAt)) {
+		// 		// Regex: ^ start of string, \d digit, {4} 4 chars
+		// 		where.releasedAt = { startsWith: filters.releasedAt };
+		// 	} else {
+		// 		where.releasedAt = {
+		// 			contains: filters.releasedAt,
+		// 			mode: "insensitive",
+		// 		};
+		// 	}
+		// }
 		if (filters.prices) {
 			where.prices = {
 				path: ["usd"],

@@ -1,5 +1,5 @@
-import NotFoundError from "@errortypes/notFoundError.js";
-import Repository from "@/persistence/repository.js";
+import NotFoundError from "@/errortypes/NotFoundError.js";
+import Repository from "@/persistence/reposistory.js";
 import { prisma } from "@/utils/prisma.js";
 import type { Card, Prisma, PrismaClient } from "@prisma/client";
 import type { CardSearchFilters } from "@/types/cardObjects.js";

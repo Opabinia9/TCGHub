@@ -1,9 +1,9 @@
 import Fastify from "fastify";
-import cardController from "@controllers/cardController.js";
+import cardController from "@/controllers/cardController.js";
 import {
 	// cardIdParamsSchema,
 	cardSearchQuerySchema,
-} from "@routes/api/v1/routeschemas.js";
+} from "@/routes/api/v1/routeSchemas.js";
 // import type { cardIdParams } from "@/types/cardObjects.js";
 const controller = new cardController();
 

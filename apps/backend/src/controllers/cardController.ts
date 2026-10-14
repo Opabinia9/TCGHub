@@ -1,4 +1,4 @@
-import Facade from "@services/facade.js";
+import Facade from "@/services/facade.js";
 import type { FastifyRequest, FastifyReply } from "fastify";
 import type { cardSearchQuery } from "@/types/cardObjects.js";
 

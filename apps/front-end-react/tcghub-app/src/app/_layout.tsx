@@ -8,8 +8,10 @@ import {
 import { GestureHandlerRootView } from 'react-native-gesture-handler';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { StatusBar } from 'expo-status-bar';
+import { useFonts, BarlowCondensed_700Bold } from '@expo-google-fonts/barlow-condensed';
 
 export default function RootLayout() {
+  const [fontsLoaded] = useFonts({ BarlowCondensed_700Bold });
   const isDark = useColorScheme() === 'dark';
   const theme = isDark ? MD3DarkTheme : MD3LightTheme;
 

@@ -2,7 +2,7 @@ import Fastify from 'fastify';
 import fastify_jwt from '@fastify/jwt';
 import authRoutes from '@/routes/api/v1/auth.js';
 import registerJwtDecorator from '@/decorators/jwtDecorator.js';
-import { validateDatabaseConnection } from './utils/validateDatabaseConnection.js';
+import { validateDatabaseConnection } from '@/utils/validateDatabaseConnection.js';
 import type { Env } from '@/utils/env.js';
 import type { IncomingMessage, ServerResponse } from 'http';
 import type {
@@ -11,6 +11,7 @@ import type {
   FastifyTypeProviderDefault,
   RawServerDefault,
 } from 'fastify';
+import chatRoutes from '@/routes/api/v1/chats.js';
 
 export default async function buildServer(
   opts = {},
@@ -30,6 +31,7 @@ export default async function buildServer(
 
   server.register(fastify_jwt, { secret: env.SERVER_SECRET });
   server.register(authRoutes, { prefix: '/api/v1/auth' });
+  server.register(chatRoutes, { prefix: '/api/v1/chats' });
 
   await validateDatabaseConnection();
   return server;

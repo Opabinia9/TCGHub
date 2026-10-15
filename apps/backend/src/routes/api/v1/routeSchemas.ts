@@ -41,3 +41,15 @@ export const authSignupSchema = {
     },
   },
 };
+
+export interface ChatGetParams {
+  chatId: string;
+}
+export const chatGetSchema = {
+  params: {
+    type: 'object',
+    properties: {
+      chatId: { type: 'string' },
+    },
+  },
+};

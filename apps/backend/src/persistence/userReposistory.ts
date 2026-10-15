@@ -1,7 +1,11 @@
 import Repository from '@/persistence/reposistory.js';
 import { prisma } from '@/utils/prisma.js';
 import type { PrismaClient, User } from '@prisma/client';
-import type { UserCreationInterface } from '@/types/userObject.js';
+import {
+  userWithChats,
+  type UserCreationInterface,
+  type UserWithChats,
+} from '@/types/userObject.js';
 
 export default class UserRepository extends Repository<User> {
   db: PrismaClient;
@@ -13,6 +17,14 @@ export default class UserRepository extends Repository<User> {
   async add(user: UserCreationInterface): Promise<void> {
     await this.db.user.create({
       data: user,
+    });
+  }
+
+  async get(id: string): Promise<User | null> {
+    return this.db.user.findUnique({
+      where: {
+        id: id,
+      },
     });
   }
 
@@ -29,6 +41,15 @@ export default class UserRepository extends Repository<User> {
       where: {
         username: username,
       },
+    });
+  }
+
+  async getUserWithChats(id: string): Promise<UserWithChats | null> {
+    return this.db.user.findUnique({
+      where: {
+        id: id,
+      },
+      ...userWithChats,
     });
   }
 }

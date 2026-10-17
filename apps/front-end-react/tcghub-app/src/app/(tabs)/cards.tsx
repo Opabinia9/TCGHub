@@ -10,7 +10,7 @@ import {
 } from "react-native";
 import { Text, TextInput } from "react-native-paper";
 import { Ionicons } from "@expo/vector-icons";
-import { fetchCards, type MagicCard } from "@/api/cards";
+import { fetchCards, type MagicCard, type Pagination } from "@/api/cards";
 
 const FILTERS = [
 	"All",
@@ -31,6 +31,8 @@ export default function CardsScreen() {
 	const [cards, setCards] = useState<MagicCard[]>([]);
 	const [loading, setLoading] = useState(true);
 	const [error, setError] = useState<string | null>(null);
+	const [pagination, setPagination] = useState<Pagination | null>(null);
+	const [loadingMore, setLoadingMore] = useState(false);
 
 	useEffect(() => {
 		let cancelled = false;
@@ -40,7 +42,8 @@ export default function CardsScreen() {
 			try {
 				const result = await fetchCards(searchQuery.trim());
 				if (!cancelled) {
-					setCards(result);
+					setCards(result.items);
+					setPagination(result.pagination);
 				}
 			} catch (error) {
 				if (!cancelled)
@@ -58,6 +61,23 @@ export default function CardsScreen() {
 			clearTimeout(timer);
 		};
 	}, [searchQuery]);
+
+	async function loadMore() {
+		if (loading) return;
+		if (!pagination) return;
+		if (pagination.page >= pagination.totalPages) return;
+		if (loadingMore) return;
+		try {
+			setLoadingMore(true);
+			const result = await fetchCards(searchQuery.trim(), pagination.page + 1);
+			setCards((prev) => [...prev, ...result.items]);
+			setPagination(result.pagination);
+		} catch {
+			/* empty page handling needed */
+		} finally {
+			setLoadingMore(false);
+		}
+	}
 
 	const filteredCards = cards.filter(
 		(card) => activeFilter === "All" || card.category === activeFilter,
@@ -176,7 +196,22 @@ export default function CardsScreen() {
 						</View>
 					))}
 				</View>
-
+				{pagination &&
+					pagination.page < pagination.totalPages &&
+					!loading &&
+					!loadingMore && (
+						<Pressable
+							style={styles.filterButton}
+							onPress={() => loadMore()}
+							accessibilityRole="button"
+							accessibilityLabel="Load More"
+						>
+							<Text style={styles.filterText}>Load More</Text>
+						</Pressable>
+					)}
+				{loadingMore && (
+					<ActivityIndicator style={{ marginVertical: 32 }} color="#171717" />
+				)}
 				{loading && (
 					<ActivityIndicator style={{ marginVertical: 32 }} color="#171717" />
 				)}

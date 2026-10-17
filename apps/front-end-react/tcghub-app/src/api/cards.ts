@@ -1,5 +1,22 @@
 const API_URL = "http://192.168.20.13:8080";
 
+export type Pagination = {
+	page: number;
+	limit: number;
+	total: number;
+	totalPages: number;
+};
+
+export type CardsPage = {
+	items: Array<MagicCard>;
+	pagination: Pagination;
+};
+
+type CardsApiResponse = {
+	items: Array<ApiCard>;
+	pagination: Pagination;
+};
+
 export type CardCategory =
 	| "Creature"
 	| "Sorcery"
@@ -58,7 +75,7 @@ export async function fetchCards(
 	search: string,
 	page = 1,
 	limit = 20,
-): Promise<MagicCard[]> {
+): Promise<CardsPage> {
 	const params = new URLSearchParams({
 		page: String(page),
 		limit: String(limit),
@@ -70,6 +87,6 @@ export async function fetchCards(
 	if (!res.ok) {
 		throw new Error(`Failed to load cards (${res.status})`);
 	}
-	const data = await res.json();
-	return (data.items as ApiCard[]).map(toMagicCard);
+	const data: CardsApiResponse = await res.json();
+	return { items: data.items.map(toMagicCard), pagination: data.pagination };
 }

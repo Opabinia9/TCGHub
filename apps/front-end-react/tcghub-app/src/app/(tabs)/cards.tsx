@@ -158,7 +158,6 @@ export default function CardsScreen() {
 									}
 									style={styles.cardImage}
 									contentFit="cover"
-									onLoad={() => console.log("loaded", card.name)}
 								/>
 
 								<View style={styles.cardTypeBadge}>

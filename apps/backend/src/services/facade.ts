@@ -5,7 +5,7 @@ import CardRepository, {
 import NotFoundError from "@/errortypes/NotFoundError.js";
 import type { UserCreationInterface } from "@/types/userObject.js";
 import type { CardSearchQuery } from "@/types/cardObject.js";
-import type { User, Card } from "@prisma/client";
+import type { User } from "@prisma/client";
 import { hashPassword } from "@/utils/hashing.js";
 import type { AuthSignupBody } from "@/routes/api/v1/routeSchemas.js";
 

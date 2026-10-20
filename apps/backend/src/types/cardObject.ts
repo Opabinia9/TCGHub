@@ -1,3 +1,4 @@
+import type { Card } from '@prisma/client';
 export interface CardSearchFilters {
   name?: string | undefined;
   set?: string | undefined;
@@ -16,3 +17,4 @@ export interface CardSearchFilters {
 }
 export type CardIdParams = { id: string };
 export type CardSearchQuery = CardSearchFilters;
+export type CardSummary = Omit<Card, 'rawData'>;

@@ -1,20 +1,23 @@
-import userRepository from '@/persistence/userReposistory.js';
+import UserRepository from '@/persistence/userReposistory.js';
 import CardRepository from '@/persistence/cardRepository.js';
+import UserCardsRepository from '@/persistence/userCardsRepository.js';
 import type { CardSummary } from '@/types/cardObject.js';
 import NotFoundError from '@/errortypes/NotFoundError.js';
 import type { UserCreationInterface } from '@/types/userObject.js';
 import type { CardSearchQuery } from '@/types/cardObject.js';
-import type { User } from '@prisma/client';
+import type { User, UserCard } from '@prisma/client';
 import { hashPassword } from '@/utils/hashing.js';
 import type { AuthSignupBody } from '@/routes/api/v1/routeSchemas.js';
 
 export default class Facade {
-  user_repo: userRepository;
+  user_repo: UserRepository;
   card_repo: CardRepository;
+  user_cards_repo: UserCardsRepository;
 
   constructor() {
-    this.user_repo = new userRepository();
+    this.user_repo = new UserRepository();
     this.card_repo = new CardRepository();
+    this.user_cards_repo = new UserCardsRepository();
   }
 
   /** User functions  */
@@ -65,5 +68,23 @@ export default class Facade {
 
   async listSets() {
     return this.card_repo.listSets();
+  }
+
+  /** User Cards Functions (Collections) */
+  async addCard(user_card: UserCard): Promise<void> {
+    await this.user_cards_repo.add(user_card);
+  }
+
+  async getCollection(user_id: string): Promise<Array<UserCard> | null> {
+    const collection = await this.user_cards_repo.get(user_id);
+    const result = collection.map(this.searchID());
+  }
+
+  async updateCard(user_card: UserCard): Promise<void> {
+    await this.user_cards_repo.update(user_card);
+  }
+
+  async delCard(user_card: UserCard): Promise<void> {
+    await this.user_cards_repo.delete(user_card);
   }
 }

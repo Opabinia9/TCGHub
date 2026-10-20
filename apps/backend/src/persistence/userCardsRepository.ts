@@ -1,12 +1,12 @@
-import NotFoundError from '@/errortypes/NotFoundError.js';
 import Repository from '@/persistence/reposistory.js';
 import { prisma } from '@/utils/prisma.js';
 import type { PrismaClient, UserCard } from '@prisma/client';
-import { Prisma } from '@prisma/client';
+import {
+  type UserCollection,
+  userCardWithCards,
+} from '@/types/userCardObject.js';
 
-type x = Prisma.UserCardWhereUniqueInput;
-
-export default class CollectionsRepository extends Repository<UserCard> {
+export default class UserCardsRepository extends Repository<UserCard> {
   db: PrismaClient;
   constructor() {
     super();
@@ -17,11 +17,12 @@ export default class CollectionsRepository extends Repository<UserCard> {
     await this.db.userCard.create({ data: user_card });
   }
 
-  async get(user_id: string): Promise<Array<UserCard> | null> {
+  async get(user_id: string): Promise<UserCollection | null> {
     return this.db.userCard.findMany({
       where: {
         user_id: user_id,
       },
+      ...userCardWithCards,
     });
   }
 

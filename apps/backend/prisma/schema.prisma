@@ -92,11 +92,11 @@ model Report {
 model UserCard {
   user_id    String    @db.Uuid
   card_id    String    @db.Uuid
-  quantity   Int       @default (autoincrement())
+  quantity   Int?      @default (autoincrement())
   condition  String?
   for_trade  Boolean?  @default(false)
   Card       Card      @relation(fields: [card_id], references: [id], onDelete: Cascade, onUpdate: NoAction)
-  User       User      @relation(fields: [user_id], references: [id],- onDelete: Cascade, onUpdate: NoAction)
+  User       User      @relation(fields: [user_id], references: [id], onDelete: Cascade, onUpdate: NoAction)
 
   @@id([user_id, card_id])
   @@map("user_cards")

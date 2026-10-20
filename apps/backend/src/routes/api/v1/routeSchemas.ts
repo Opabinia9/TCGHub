@@ -46,7 +46,8 @@ export const cardIdParamsSchema = {
   type: 'object',
   required: ['id'],
   properties: { id: { type: 'string', minLength: 1 } },
-} as const;
+};
+
 export const cardSearchQuerySchema = {
   type: 'object',
   properties: {
@@ -65,4 +66,8 @@ export const cardSearchQuerySchema = {
     page: { type: 'integer', minimum: 1, default: 1 },
     limit: { type: 'integer', minimum: 1, maximum: 100, default: 20 },
   },
-} as const;
+};
+
+export interface collectionBodyInterface {
+  card_id: string;
+}

@@ -7,7 +7,6 @@ import type { UserCreationInterface } from '@/types/userObject.js';
 import type { CardSearchQuery } from '@/types/cardObject.js';
 import type { User, UserCard } from '@prisma/client';
 import type { UserCollection } from '@/types/userCardObject.js';
-import { UserJwt, type UserJwtType } from '@/types/JWTObject.js';
 import { hashPassword } from '@/utils/hashing.js';
 import type { AuthSignupBody } from '@/routes/api/v1/routeSchemas.js';
 
@@ -85,16 +84,15 @@ export default class Facade {
     return null;
   }
 
-  async isCardOwned(user_card: UserCard): Promise<number> {
-    const result = await this.user_cards_repo.isCardOwned(user_card);
+  async isCardOwned(
+    user_id: string,
+    card_id: string,
+  ): Promise<UserCard | null> {
+    const result = await this.user_cards_repo.isCardOwned(user_id, card_id);
     return result;
   }
 
   async updateCard(user_card: UserCard): Promise<void> {
     await this.user_cards_repo.update(user_card);
-  }
-
-  async delCard(user_card: UserCard): Promise<void> {
-    await this.user_cards_repo.delete(user_card);
   }
 }

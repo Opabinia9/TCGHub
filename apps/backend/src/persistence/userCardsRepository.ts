@@ -5,7 +5,6 @@ import {
   type UserCollection,
   userCardWithCards,
 } from '@/types/userCardObject.js';
-import { Prisma } from '@prisma/client';
 
 export default class UserCardsRepository extends Repository<UserCard> {
   db: PrismaClient;
@@ -18,20 +17,19 @@ export default class UserCardsRepository extends Repository<UserCard> {
     await this.db.userCard.create({ data: user_card });
   }
 
-  async isCardOwned(user_card: UserCard): Promise<number> {
+  async isCardOwned(
+    user_id: string,
+    card_id: string,
+  ): Promise<UserCard | null> {
     const result = await this.db.userCard.findUnique({
       where: {
         user_id_card_id: {
-          user_id: user_card.user_id,
-          card_id: user_card.card_id,
+          user_id: user_id,
+          card_id: card_id,
         },
       },
     });
-    if (result?.quantity) {
-      return result.quantity;
-    } else {
-      return 0;
-    }
+    return result;
   }
 
   async get(user_id: string): Promise<UserCollection | null> {
@@ -56,17 +54,6 @@ export default class UserCardsRepository extends Repository<UserCard> {
         },
       },
       data: user_card,
-    });
-  }
-
-  async delete(user_card: UserCard) {
-    await this.db.userCard.delete({
-      where: {
-        user_id_card_id: {
-          user_id: user_card.user_id,
-          card_id: user_card.card_id,
-        },
-      },
     });
   }
 }

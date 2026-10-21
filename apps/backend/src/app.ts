@@ -2,6 +2,7 @@ import Fastify from 'fastify';
 import fastify_jwt from '@fastify/jwt';
 import authRoutes from '@/routes/api/v1/auth.js';
 import cardRoutes from '@/routes/api/v1/cards.js';
+import collectionRoutes from './routes/api/v1/userCards.js';
 import registerJwtDecorator from '@/decorators/jwtDecorator.js';
 import { validateDatabaseConnection } from './utils/validateDatabaseConnection.js';
 import type { Env } from '@/utils/env.js';
@@ -33,7 +34,7 @@ export default async function buildServer(
   server.register(authRoutes, { prefix: '/api/v1/auth' });
   server.register(cardRoutes, { prefix: '/api/v1/cards' });
   server.register(cardRoutes, { prefix: '/api/v1/:id' });
-  server.register(cardRoutes, { prefix: '/api/v1/collection' });
+  server.register(collectionRoutes, { prefix: '/api/v1/collection' });
 
   await validateDatabaseConnection();
   return server;

@@ -1,3 +1,5 @@
+import type { UserCard } from '@prisma/client';
+
 export interface AuthLoginBody {
   email: string;
   password: string;
@@ -68,6 +70,4 @@ export const cardSearchQuerySchema = {
   },
 };
 
-export interface collectionBodyInterface {
-  card_id: string;
-}
+export type collectionBodyInterface = Omit<UserCard, 'user_id'>;

@@ -8,7 +8,7 @@ import type { CardSearchQuery } from '@/types/cardObject.js';
 
 const controller = new userCardsController();
 
-export default async function collectionRoute(
+export default async function collectionRoutes(
   fastify: Fastify.FastifyInstance,
 ) {
   fastify.get<{ Querystring: CardSearchQuery }>(
@@ -25,6 +25,6 @@ export default async function collectionRoute(
     {
       preHandler: [fastify.jwt_verify],
     },
-    controller.addUserCards,
+    controller.updateUserCards,
   );
 }

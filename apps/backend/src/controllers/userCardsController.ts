@@ -4,33 +4,50 @@ import { UserJwt, type UserJwtType } from '@/types/JWTObject.js';
 import type { CardSearchQuery } from '@/types/cardObject.js';
 import type { UserCollection } from '@/types/userCardObject.js';
 import type { collectionBodyInterface } from '@/routes/api/v1/routeSchemas.js';
+import type { UserCard } from '@prisma/client';
 
 const facade = new Facade();
 
 export default class UserCardsController {
-  async addUserCards(
+  async updateUserCards(
     request: FastifyRequest<{ Body: collectionBodyInterface }>,
-    reply: FastifyReply,
   ): Promise<void> {
     const jwt: UserJwtType = UserJwt.parse(request.user);
     const user_id = jwt.userId;
-    const quantity: number | null = await facade.isCardOwned({
-      user_id: user_id,
-      card_id: request.body.card_id,
-      quantity: 0,
-      condition: null,
-      for_trade: null,
-    });
+    let quantity: number = request.body.quantity;
 
-    const user_card = {
-      user_id: user_id,
-      card_id: request.body.card_id,
-      quantity: quantity,
-      condition: 'unmarked',
-      for_trade: false,
-    };
+    const record: UserCard | null = await facade.isCardOwned(
+      user_id,
+      request.body.card_id,
+    );
 
-    await facade.addCard(user_card);
+    if (record !== null) {
+      if (quantity < 0 && Math.abs(quantity) > record.quantity) {
+        quantity = -1 * record.quantity;
+      }
+
+      const user_card = {
+        user_id: record.user_id,
+        card_id: record.card_id,
+        quantity: record.quantity === null ? 1 : record.quantity + quantity,
+        condition: request.body.condition
+          ? request.body.condition
+          : record.condition,
+        for_trade: request.body.for_trade
+          ? request.body.for_trade
+          : record.for_trade,
+      };
+      await facade.updateCard(user_card); /* Primary Key Exists! -> Update */
+    } else {
+      const user_card = {
+        user_id: user_id,
+        card_id: request.body.card_id,
+        quantity: 1,
+        condition: 'unmarked',
+        for_trade: false,
+      };
+      await facade.addCard(user_card);
+    }
   }
 
   async getUserCards(
@@ -54,9 +71,4 @@ export default class UserCardsController {
     }
     return null;
   }
-
-  async updateUserCards(
-    request: FastifyRequest,
-    reply: FastifyReply,
-  ): Promise<void> {}
 }

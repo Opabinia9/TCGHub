@@ -6,6 +6,7 @@ export const userCardWithCards = {
   },
 } satisfies Prisma.UserCardDefaultArgs;
 
-export type UserCollection = Array<
-  Prisma.UserCardGetPayload<typeof userCardWithCards>
->;
+export type UserCollection = {
+  items: Array<Prisma.UserCardGetPayload<typeof userCardWithCards>>;
+  total: number;
+};

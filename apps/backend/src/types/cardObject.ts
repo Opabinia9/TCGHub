@@ -1,5 +1,6 @@
 import type { Card } from '@prisma/client';
 export interface CardSearchFilters {
+  id?: string | undefined;
   name?: string | undefined;
   set?: string | undefined;
   rarity?: string | undefined;

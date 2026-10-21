@@ -6,6 +6,8 @@ import NotFoundError from '@/errortypes/NotFoundError.js';
 import type { UserCreationInterface } from '@/types/userObject.js';
 import type { CardSearchQuery } from '@/types/cardObject.js';
 import type { User, UserCard } from '@prisma/client';
+import type { UserCollection } from '@/types/userCardObject.js';
+import { UserJwt, type UserJwtType } from '@/types/JWTObject.js';
 import { hashPassword } from '@/utils/hashing.js';
 import type { AuthSignupBody } from '@/routes/api/v1/routeSchemas.js';
 
@@ -75,9 +77,17 @@ export default class Facade {
     await this.user_cards_repo.add(user_card);
   }
 
-  async getCollection(user_id: string): Promise<Array<UserCard> | null> {
+  async getCollection(user_id: string): Promise<UserCollection | null> {
     const collection = await this.user_cards_repo.get(user_id);
-    const result = collection.map(this.searchID());
+    if (collection !== null) {
+      return collection;
+    }
+    return null;
+  }
+
+  async isCardOwned(user_card: UserCard): Promise<number> {
+    const result = await this.user_cards_repo.isCardOwned(user_card);
+    return result;
   }
 
   async updateCard(user_card: UserCard): Promise<void> {

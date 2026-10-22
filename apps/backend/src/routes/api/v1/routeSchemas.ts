@@ -1,3 +1,5 @@
+import { ChatType } from '@prisma/client';
+
 export interface AuthLoginBody {
   email: string;
   password: string;
@@ -42,14 +44,42 @@ export const authSignupSchema = {
   },
 };
 
-export interface ChatGetParams {
+export interface ChatParamsInterface {
   chatId: string;
 }
-export const chatGetSchema = {
-  params: {
-    type: 'object',
-    properties: {
-      chatId: { type: 'string' },
+export const chatParamsSchema = {
+  type: 'object',
+  properties: {
+    chatId: { type: 'string' },
+  },
+};
+
+export interface ChatPostBodyInterface {
+  body: string;
+}
+
+export const chatPostBodySchema = {
+  type: 'object',
+  required: ['body'],
+  additionalProperties: false,
+  properties: {
+    body: { type: 'string' },
+  },
+};
+
+export const chatCreationBodySchema = {
+  type: 'object',
+  required: ['title', 'type', 'members'],
+  additionalProperties: false,
+  properties: {
+    title: { type: 'string' },
+    type: { type: 'string', enum: Object.values(ChatType) },
+
+    members: {
+      type: 'array',
+      items: {
+        type: 'string',
+      },
     },
   },
 };

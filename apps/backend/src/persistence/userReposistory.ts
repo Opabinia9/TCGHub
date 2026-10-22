@@ -20,6 +20,7 @@ export default class UserRepository extends Repository<User> {
     });
   }
 
+  // nothing currently uses this function, it is kept to match the abstract and for future use
   async get(id: string): Promise<User | null> {
     return this.db.user.findUnique({
       where: {

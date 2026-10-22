@@ -2,13 +2,13 @@ import { LightMyRequestResponse } from 'fastify';
 import { describe, it, expect, beforeEach } from 'vitest';
 import buildServer from '../src/app.js';
 import { ENV } from '../src/utils/env.js';
-import { createDefaultUser, defaultUserDetails } from './helpers/userPresets.js';
+import { createUser, userOne, userOneHash, userOnePassword } from './helpers/userPresets.js';
 
 const server = await buildServer({}, ENV);
 
 describe('/api/v1/auth/protected', () => {
   beforeEach(async () => {
-    await createDefaultUser();
+    await createUser({ ...userOne, hash: userOneHash });
   });
 
   it('accepts a valid access token', async () => {
@@ -18,8 +18,8 @@ describe('/api/v1/auth/protected', () => {
       url: '/api/v1/auth/login',
       headers: { 'content-type': 'application/json' },
       payload: {
-        email: defaultUserDetails.email,
-        password: defaultUserDetails.password,
+        email: userOne.email,
+        password: userOnePassword,
       },
     });
     const payload = await response.json();

@@ -3,13 +3,14 @@ import buildServer from '../src/app.js';
 import { describe, it, expect } from 'vitest';
 import { ENV } from '../src/utils/env.js';
 import {
-  createDefaultUser,
-  defaultUser2Details,
-  defaultUserDetails,
-  defaultUserStored,
+  createUser,
+  userOne,
+  userOneHash,
+  userOnePassword,
+  userTwo,
+  userTwoPassword,
 } from './helpers/userPresets.js';
 import { prisma } from '../src/utils/prisma.js';
-import { UserCreationInterface } from '../src/types/userObject.js';
 import { AuthSignupBody } from '../src/routes/api/v1/routeSchemas.js';
 import { verifyPassword } from '../src/utils/hashing.js';
 
@@ -21,31 +22,35 @@ describe('/api/v1/auth/signup', () => {
       method: 'POST',
       url: '/api/v1/auth/signup',
       headers: { 'content-type': 'application/json' },
-      payload: defaultUserDetails,
+      payload: { ...userOne, password: userOnePassword },
     });
     const payload = await response.json();
     const databaseUser = await prisma.user.findUnique({
       where: {
-        username: defaultUserDetails.username,
+        username: userOne.username,
       },
     });
+    if (databaseUser === null) {
+      throw new Error('user not in database');
+    }
 
     expect(response.statusCode).toBe(201);
     expect(payload).toMatchObject({ response: 'Account creation successful' });
     expect(databaseUser).toMatchObject({
-      username: defaultUserDetails.username,
-      email: defaultUserDetails.email,
-      first_name: defaultUserDetails.first_name,
-      last_name: defaultUserDetails.last_name,
+      username: userOne.username,
+      email: userOne.email,
+      first_name: userOne.first_name,
+      last_name: userOne.last_name,
     });
-    expect(await verifyPassword(databaseUser.hash, defaultUserDetails.password));
+    expect(await verifyPassword(databaseUser.hash, userOnePassword));
   });
 
   it('blocks signup with used email', async () => {
-    await createDefaultUser();
+    await createUser({ ...userOne, hash: userOneHash });
     const requestPayload: AuthSignupBody = {
-      ...defaultUser2Details,
-      email: defaultUserDetails.email,
+      ...userTwo,
+      password: userTwoPassword,
+      email: userOne.email,
     };
     const response: LightMyRequestResponse = await server.inject({
       method: 'POST',
@@ -60,10 +65,11 @@ describe('/api/v1/auth/signup', () => {
   });
 
   it('blocks signup with used username', async () => {
-    await createDefaultUser();
+    await createUser({ ...userOne, hash: userOneHash });
     const requestPayload: AuthSignupBody = {
-      ...defaultUser2Details,
-      username: defaultUserDetails.username,
+      ...userTwo,
+      password: userTwoPassword,
+      username: userOne.username,
     };
     const response: LightMyRequestResponse = await server.inject({
       method: 'POST',

@@ -1,3 +1,5 @@
+import { ChatType } from '@prisma/client';
+
 export interface AuthLoginBody {
   email: string;
   password: string;
@@ -42,11 +44,52 @@ export const authSignupSchema = {
   },
 };
 
+export interface ChatParamsInterface {
+  chatId: string;
+}
+export const chatParamsSchema = {
+  type: 'object',
+  properties: {
+    chatId: { type: 'string' },
+  },
+};
+
+export interface ChatPostBodyInterface {
+  body: string;
+}
+
+export const chatPostBodySchema = {
+  type: 'object',
+  required: ['body'],
+  additionalProperties: false,
+  properties: {
+    body: { type: 'string' },
+  },
+};
+
+export const chatCreationBodySchema = {
+  type: 'object',
+  required: ['title', 'type', 'members'],
+  additionalProperties: false,
+  properties: {
+    title: { type: 'string' },
+    type: { type: 'string', enum: Object.values(ChatType) },
+
+    members: {
+      type: 'array',
+      items: {
+        type: 'string',
+      },
+    },
+  },
+};
+
 export const cardIdParamsSchema = {
   type: 'object',
   required: ['id'],
   properties: { id: { type: 'string', minLength: 1 } },
-} as const;
+};
+
 export const cardSearchQuerySchema = {
   type: 'object',
   properties: {
@@ -65,4 +108,4 @@ export const cardSearchQuerySchema = {
     page: { type: 'integer', minimum: 1, default: 1 },
     limit: { type: 'integer', minimum: 1, maximum: 100, default: 20 },
   },
-} as const;
+};

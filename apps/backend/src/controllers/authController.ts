@@ -4,6 +4,7 @@ import type { FastifyRequest, FastifyReply } from 'fastify';
 import type { AuthLoginBody, AuthSignupBody } from '@/routes/api/v1/routeSchemas.js';
 import type { User } from '@prisma/client';
 import { verifyPassword } from '@/utils/hashing.js';
+import type { UserJwt, UserJwtType } from '@/types/JWTObject.js';
 
 const facade = new Facade();
 
@@ -29,7 +30,8 @@ export default class AuthController {
       return reply.code(401).send({ error: 'Invalid credentials' });
     }
 
-    const access_token = request.server.jwt.sign({ username: user.id });
+    const jwtDetails: UserJwtType = { userId: user.id };
+    const access_token = request.server.jwt.sign(jwtDetails);
     return reply.code(200).send({ access_token: access_token });
   }
 

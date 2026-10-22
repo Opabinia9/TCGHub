@@ -4,16 +4,19 @@ import { describe, it, expect, beforeEach } from 'vitest';
 import { ENV } from '../src/utils/env.js';
 import {
   badEmail,
-  createDefaultUser,
-  defaultUserDetails,
-  invalidUserDetails,
+  createUser,
+  invalidUser,
+  invalidUserPassword,
+  userOne,
+  userOneHash,
+  userOnePassword,
 } from './helpers/userPresets.js';
 
 const server = await buildServer({}, ENV);
 
 describe('/api/v1/auth/login', () => {
   beforeEach(async () => {
-    await createDefaultUser();
+    await createUser({ ...userOne, hash: userOneHash });
   });
 
   it('accepts valid credentials', async () => {
@@ -22,8 +25,8 @@ describe('/api/v1/auth/login', () => {
       url: '/api/v1/auth/login',
       headers: { 'content-type': 'application/json' },
       payload: {
-        email: defaultUserDetails.email,
-        password: defaultUserDetails.password,
+        email: userOne.email,
+        password: userOnePassword,
       },
     });
     const payload = await response.json();
@@ -38,8 +41,8 @@ describe('/api/v1/auth/login', () => {
       url: '/api/v1/auth/login',
       headers: { 'content-type': 'application/json' },
       payload: {
-        email: invalidUserDetails.email,
-        password: invalidUserDetails.password,
+        email: invalidUser.email,
+        password: invalidUserPassword,
       },
     });
     const payload = await response.json();
@@ -56,7 +59,7 @@ describe('/api/v1/auth/login', () => {
       url: '/api/v1/auth/login',
       headers: { 'content-type': 'application/json' },
       payload: {
-        password: defaultUserDetails.password,
+        password: userOnePassword,
       },
     });
     const payload = await response.json();
@@ -77,7 +80,7 @@ describe('/api/v1/auth/login', () => {
       headers: { 'content-type': 'application/json' },
       payload: {
         email: badEmail,
-        password: defaultUserDetails.password,
+        password: userOnePassword,
       },
     });
     const payload = await response.json();
@@ -97,8 +100,8 @@ describe('/api/v1/auth/login', () => {
       url: '/api/v1/auth/login',
       headers: { 'content-type': 'application/json' },
       payload: {
-        email: invalidUserDetails.email,
-        password: defaultUserDetails.password,
+        email: invalidUser.email,
+        password: userOnePassword,
       },
     });
     const payload = await response.json();
@@ -115,7 +118,7 @@ describe('/api/v1/auth/login', () => {
       url: '/api/v1/auth/login',
       headers: { 'content-type': 'application/json' },
       payload: {
-        email: defaultUserDetails.email,
+        email: userOne.email,
       },
     });
     const payload = await response.json();
@@ -135,8 +138,8 @@ describe('/api/v1/auth/login', () => {
       url: '/api/v1/auth/login',
       headers: { 'content-type': 'application/json' },
       payload: {
-        email: defaultUserDetails.email,
-        password: invalidUserDetails.password,
+        email: userOne.email,
+        password: invalidUserPassword,
       },
     });
     const payload = await response.json();

@@ -25,7 +25,14 @@ export default async function buildServer(
     FastifyTypeProviderDefault
   >
 > {
-  const server: Fastify.FastifyInstance = Fastify(opts);
+  const server: Fastify.FastifyInstance = Fastify({
+    ...opts,
+    ajv: {
+      customOptions: {
+        coerceTypes: false,
+      },
+    },
+  });
 
   registerJwtDecorator(server);
 

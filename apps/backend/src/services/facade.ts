@@ -3,6 +3,8 @@ import ChatRepository from '@/persistence/chatReposistory.js';
 import MessageRepository from '@/persistence/messageReposistory.js';
 import NotFoundError from '@/errortypes/NotFoundError.js';
 import type { UserCreationInterface, UserWithChats } from '@/types/userObject.js';
+import CardRepository, { type CardSummary } from '@/persistence/cardRepository.js';
+import type { CardSearchQuery } from '@/types/cardObject.js';
 import type { User } from '@prisma/client';
 import { hashPassword } from '@/utils/hashing.js';
 import type { AuthSignupBody } from '@/routes/api/v1/routeSchemas.js';
@@ -13,11 +15,13 @@ export default class Facade {
   userRepo: UserRepository;
   chatRepo: ChatRepository;
   messageRepo: MessageRepository;
+  cardRepo: CardRepository;
 
   constructor() {
     this.userRepo = new UserRepository();
     this.chatRepo = new ChatRepository();
     this.messageRepo = new MessageRepository();
+    this.cardRepo = new CardRepository();
   }
 
   /** User functions  */
@@ -38,7 +42,7 @@ export default class Facade {
     if (user !== null) {
       return user;
     } else {
-      throw new NotFoundError(`User Not Found`);
+      throw new NotFoundError('User Not Found');
     }
   }
 
@@ -48,7 +52,7 @@ export default class Facade {
     if (user !== null) {
       return user;
     } else {
-      throw new NotFoundError(`User Not Found`);
+      throw new NotFoundError('User Not Found');
     }
   }
 
@@ -90,5 +94,23 @@ export default class Facade {
 
   async createChatWithMembers(chat: ChatWithMembersCreationInterface) {
     return await this.chatRepo.addChatWithMembers(chat);
+  }
+
+  /**  Card Functions */
+
+  async searchId(id: string): Promise<CardSummary> {
+    const card = await this.cardRepo.get(id);
+    if (card === null) {
+      throw new NotFoundError('Card not Found');
+    }
+    return card;
+  }
+
+  async searchCards(filters: CardSearchQuery) {
+    return this.cardRepo.search(filters);
+  }
+
+  async listSets() {
+    return this.cardRepo.listSets();
   }
 }

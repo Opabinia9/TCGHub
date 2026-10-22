@@ -1,5 +1,6 @@
 import { Tabs } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
+import MaterialIcons from '@expo/vector-icons/MaterialIcons';
 
 export default function TabsLayout() {
   return (
@@ -25,7 +26,7 @@ export default function TabsLayout() {
         options={{
           title: 'Home',
           tabBarIcon: ({ color, size }) => (
-            <Ionicons name="home-outline" size={size} color={color} />
+            <Ionicons name="home" size={size} color={color} />
           ),
         }}
       />
@@ -35,7 +36,7 @@ export default function TabsLayout() {
         options={{
           title: 'Cards',
           tabBarIcon: ({ color, size }) => (
-            <Ionicons name="albums-outline" size={size} color={color} />
+            <Ionicons name="copy" size={size} color={color} />
           ),
         }}
       />
@@ -45,17 +46,7 @@ export default function TabsLayout() {
         options={{
           title: 'Decks',
           tabBarIcon: ({ color, size }) => (
-            <Ionicons name="library-outline" size={size} color={color} />
-          ),
-        }}
-      />
-
-      <Tabs.Screen
-        name="players"
-        options={{
-          title: 'Players',
-          tabBarIcon: ({ color, size }) => (
-            <Ionicons name="people-outline" size={size} color={color} />
+            <Ionicons name="layers" size={size} color={color} />
           ),
         }}
       />
@@ -65,10 +56,22 @@ export default function TabsLayout() {
         options={{
           title: 'Trade',
           tabBarIcon: ({ color, size }) => (
-            <Ionicons name="chatbubbles-outline" size={size} color={color} />
+            <MaterialIcons name="swap-horiz" size={size} color={color} />
           ),
         }}
       />
+
+      <Tabs.Screen
+        name="players"
+        options={{
+          title: 'Profile',
+          tabBarIcon: ({ color, size }) => (
+            <Ionicons name="person" size={size} color={color} />
+          ),
+        }}
+      />
+
+
     </Tabs>
   );
 }

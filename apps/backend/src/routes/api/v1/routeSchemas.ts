@@ -83,3 +83,29 @@ export const chatCreationBodySchema = {
     },
   },
 };
+
+export const cardIdParamsSchema = {
+  type: 'object',
+  required: ['id'],
+  properties: { id: { type: 'string', minLength: 1 } },
+};
+
+export const cardSearchQuerySchema = {
+  type: 'object',
+  properties: {
+    name: { type: 'string', minLength: 1 },
+    set: { type: 'string', minLength: 1 },
+    rarity: { type: 'string', minLength: 1 },
+    colors: { type: 'string', minLength: 1 },
+    oracleText: { type: 'string', minLength: 1 },
+    typeLine: { type: 'string', minLength: 1 },
+    manaCost: { type: 'string', minLength: 1 },
+    cmc: { type: 'number', minimum: 0 },
+    releasedAt: { type: 'string', minLength: 1 },
+    prices: { type: 'number', minimum: 0 },
+    legalities: { type: 'string', minLength: 1 },
+    colorIdentity: { type: 'string', minLength: 1 },
+    page: { type: 'integer', minimum: 1, default: 1 },
+    limit: { type: 'integer', minimum: 1, maximum: 100, default: 20 },
+  },
+};

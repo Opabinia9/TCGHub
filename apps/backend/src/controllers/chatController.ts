@@ -13,7 +13,7 @@ import type { FastifyReply, FastifyRequest } from 'fastify';
 
 const facade = new Facade();
 
-export default class chatController {
+export default class ChatController {
   async getChats(request: FastifyRequest, reply: FastifyReply) {
     return reply.code(503).send({ error: 'not implemented yet' });
   }

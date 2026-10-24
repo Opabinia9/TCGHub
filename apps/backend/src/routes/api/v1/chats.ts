@@ -1,5 +1,5 @@
 import Fastify from 'fastify';
-import chatController from '@/controllers/chatController.js';
+import ChatController from '@/controllers/chatController.js';
 import {
   chatCreationBodySchema,
   chatParamsSchema,
@@ -12,7 +12,7 @@ import type {
 } from './routeSchemas.js';
 
 export default async function chatRoutes(fastify: Fastify.FastifyInstance, options: object) {
-  const controller = new chatController();
+  const controller = new ChatController();
 
   fastify.get('/', { preHandler: [fastify.jwt_verify] }, controller.getChats);
 

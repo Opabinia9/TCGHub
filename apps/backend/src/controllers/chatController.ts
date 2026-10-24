@@ -1,5 +1,9 @@
 import NotFoundError from '@/errortypes/NotFoundError.js';
-import type { ChatParamsInterface, ChatPostBodyInterface } from '@/routes/api/v1/routeSchemas.js';
+import type {
+  ChatCreationBodyInterface,
+  ChatParamsInterface,
+  ChatPostMessageBodyInterface,
+} from '@/routes/api/v1/routeSchemas.js';
 import Facade from '@/services/facade.js';
 import type { ChatWithMembersCreationInterface, ChatWithMessages } from '@/types/chatObject.js';
 import { type UserJwtType, UserJwt } from '@/types/JWTObject.js';
@@ -10,7 +14,43 @@ import type { FastifyReply, FastifyRequest } from 'fastify';
 const facade = new Facade();
 
 export default class chatController {
-  async getChat(request: FastifyRequest<{ Params: ChatParamsInterface }>, reply: FastifyReply) {
+  async getChats(request: FastifyRequest, reply: FastifyReply) {
+    return reply.code(503).send({ error: 'not implemented yet' });
+  }
+
+  async createChat(
+    request: FastifyRequest<{ Body: ChatCreationBodyInterface }>,
+    reply: FastifyReply,
+  ) {
+    const jwt: UserJwtType = UserJwt.parse(request.user);
+    const chatDetails: ChatWithMembersCreationInterface = request.body;
+    chatDetails.members.push(jwt.userId);
+    const chat = await facade.createChatWithMembers(chatDetails);
+    return reply.code(201).send({ success: 'Chat created', chatID: chat.id });
+  }
+
+  async deleteChat(request: FastifyRequest<{ Body: {} }>, reply: FastifyReply) {
+    return reply.code(503).send({ error: 'not implemented yet' });
+  }
+
+  async getChatDetails(
+    request: FastifyRequest<{ Params: ChatParamsInterface }>,
+    reply: FastifyReply,
+  ) {
+    return reply.code(503).send({ error: 'not implemented yet' });
+  }
+
+  async updateChatDetails(
+    request: FastifyRequest<{ Params: ChatParamsInterface }>,
+    reply: FastifyReply,
+  ) {
+    return reply.code(503).send({ error: 'not implemented yet' });
+  }
+
+  async getChatMessages(
+    request: FastifyRequest<{ Params: ChatParamsInterface }>,
+    reply: FastifyReply,
+  ) {
     const jwt: UserJwtType = UserJwt.parse(request.user);
 
     let user;
@@ -39,7 +79,7 @@ export default class chatController {
   }
 
   async postMessage(
-    request: FastifyRequest<{ Params: ChatParamsInterface; Body: ChatPostBodyInterface }>,
+    request: FastifyRequest<{ Params: ChatParamsInterface; Body: ChatPostMessageBodyInterface }>,
     reply: FastifyReply,
   ) {
     const jwt: UserJwtType = UserJwt.parse(request.user);
@@ -57,16 +97,5 @@ export default class chatController {
       body: message,
     });
     return reply.code(200).send({ success: 'message sent' });
-  }
-
-  async postChat(
-    request: FastifyRequest<{ Body: ChatWithMembersCreationInterface }>,
-    reply: FastifyReply,
-  ) {
-    const jwt: UserJwtType = UserJwt.parse(request.user);
-    const chatDetails: ChatWithMembersCreationInterface = request.body;
-    chatDetails.members.push(jwt.userId);
-    const chat = await facade.createChatWithMembers(chatDetails);
-    return reply.code(201).send({ success: 'Chat created', chatID: chat.id });
   }
 }

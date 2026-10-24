@@ -12,7 +12,6 @@ import {
   userTwoHash,
 } from './helpers/userPresets.js';
 import { createChat } from './helpers/chatPresets.js';
-import { prisma } from '../src/utils/prisma.js';
 import { createMessages } from './helpers/messagePresets.js';
 
 const server = await buildServer({}, ENV);
@@ -25,7 +24,7 @@ describe('/api/v1/chats/:chatId', () => {
     const messageText = 'this is a message';
     const response: LightMyRequestResponse = await server.inject({
       method: 'POST',
-      url: `/api/v1/chats/${chat.id}`,
+      url: `/api/v1/chats/${chat.id}/messages`,
       headers: {
         'content-type': 'application/json',
         Authorization: `Bearer ${userOneAccessToken}`,
@@ -54,7 +53,7 @@ describe('/api/v1/chats/:chatId', () => {
     const invalidChatId = 'helloworld';
     const response: LightMyRequestResponse = await server.inject({
       method: 'POST',
-      url: `/api/v1/chats/${invalidChatId}`,
+      url: `/api/v1/chats/${invalidChatId}/messages`,
       headers: {
         'content-type': 'application/json',
         Authorization: `Bearer ${userOneAccessToken}`,
@@ -84,7 +83,7 @@ describe('/api/v1/chats/:chatId', () => {
 
     const response = await server.inject({
       method: 'GET',
-      url: `/api/v1/chats/${chat.id}`,
+      url: `/api/v1/chats/${chat.id}/messages`,
       headers: {
         Authorization: `Bearer ${userOneAccessToken}`,
       },
@@ -103,7 +102,7 @@ describe('/api/v1/chats/:chatId', () => {
     const invalidChatId = 'helloworld';
     const response = await server.inject({
       method: 'GET',
-      url: `/api/v1/chats/${invalidChatId}`,
+      url: `/api/v1/chats/${invalidChatId}/messages`,
       headers: {
         Authorization: `Bearer ${userOneAccessToken}`,
       },
@@ -120,7 +119,7 @@ describe('/api/v1/chats/:chatId', () => {
     const chat = await createChat('chatOne', 'DIRECT', [userOne.id, userTwo.id]);
     const response = await server.inject({
       method: 'GET',
-      url: `/api/v1/chats/${chat.id}`,
+      url: `/api/v1/chats/${chat.id}/messages`,
       headers: {
         Authorization: `Bearer ${invalidUserAccessToken}`,
       },

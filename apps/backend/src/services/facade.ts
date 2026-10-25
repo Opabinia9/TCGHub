@@ -1,24 +1,31 @@
 import UserRepository from '@/persistence/userReposistory.js';
 import CardRepository from '@/persistence/cardRepository.js';
 import UserCardsRepository from '@/persistence/userCardsRepository.js';
+import DeckRepository from '@/persistence/deckRepository.js';
 import type { CardSummary } from '@/types/cardObject.js';
 import NotFoundError from '@/errortypes/NotFoundError.js';
 import type { UserCreationInterface } from '@/types/userObject.js';
 import type { CardSearchQuery } from '@/types/cardObject.js';
-import type { User, UserCard } from '@prisma/client';
+import type { Deck, User, UserCard } from '@prisma/client';
 import type { UserCollection } from '@/types/userCardObject.js';
 import { hashPassword } from '@/utils/hashing.js';
-import type { AuthSignupBody } from '@/routes/api/v1/routeSchemas.js';
+import type {
+  AuthSignupBody,
+  deckCreationInterface,
+  userDecks,
+} from '@/routes/api/v1/routeSchemas.js';
 
 export default class Facade {
   user_repo: UserRepository;
   card_repo: CardRepository;
   user_cards_repo: UserCardsRepository;
+  deck_repo: DeckRepository;
 
   constructor() {
     this.user_repo = new UserRepository();
     this.card_repo = new CardRepository();
     this.user_cards_repo = new UserCardsRepository();
+    this.deck_repo = new DeckRepository();
   }
 
   /** User functions  */
@@ -88,11 +95,23 @@ export default class Facade {
     user_id: string,
     card_id: string,
   ): Promise<UserCard | null> {
-    const result = await this.user_cards_repo.isCardOwned(user_id, card_id);
-    return result;
+    return await this.user_cards_repo.isCardOwned(user_id, card_id);
   }
 
   async updateCard(user_card: UserCard): Promise<void> {
     await this.user_cards_repo.update(user_card);
+  }
+
+  /** Decks Functions */
+  async createDeck(deck: deckCreationInterface): Promise<void> {
+    await this.deck_repo.add(deck);
+  }
+
+  async getUserDecks(user_id: string): Promise<userDecks> {
+    return await this.deck_repo.getUserDecks(user_id);
+  }
+
+  async getDeck(user_id: string, deck_id: string): Promise<Deck | null> {
+    return await this.deck_repo.getDeck(user_id, deck_id);
   }
 }

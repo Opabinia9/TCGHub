@@ -1,4 +1,5 @@
-import type { UserCard } from '@prisma/client';
+import type { Deck, UserCard } from '@prisma/client';
+import { maxLength } from 'zod';
 
 export interface AuthLoginBody {
   email: string;
@@ -71,3 +72,15 @@ export const cardSearchQuerySchema = {
 };
 
 export type collectionBodyInterface = Omit<UserCard, 'user_id'>;
+export type deckBodyInterface = Omit<Omit<Deck, 'id'>, 'owner_id'>;
+export type deckCreationInterface = Omit<Deck, 'id'>;
+export type userDecks = Array<Deck> | void;
+export type DeckIdParams = { id: string };
+
+export const deckIdParamsSchema = {
+  type: 'object',
+  required: ['id'],
+  properties: {
+    id: { type: 'string', format: 'uuid' },
+  },
+};

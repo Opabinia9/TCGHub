@@ -4,7 +4,7 @@ import type {
   userDecks,
 } from '@/routes/api/v1/routeSchemas.js';
 import { prisma } from '@/utils/prisma.js';
-import type { PrismaClient, Deck } from '@prisma/client';
+import type { PrismaClient, Deck, DeckCard } from '@prisma/client';
 
 export default class DeckRepository extends Repository<Deck> {
   db: PrismaClient;
@@ -33,5 +33,9 @@ export default class DeckRepository extends Repository<Deck> {
         id: deck_id,
       },
     });
+  }
+
+  async addDeckCard(deck_card: DeckCard): Promise<DeckCard | null> {
+    return await this.db.deckCard.create({ data: deck_card });
   }
 }

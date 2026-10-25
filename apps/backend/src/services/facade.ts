@@ -6,7 +6,7 @@ import type { CardSummary } from '@/types/cardObject.js';
 import NotFoundError from '@/errortypes/NotFoundError.js';
 import type { UserCreationInterface } from '@/types/userObject.js';
 import type { CardSearchQuery } from '@/types/cardObject.js';
-import type { Deck, User, UserCard } from '@prisma/client';
+import type { Deck, DeckCard, User, UserCard } from '@prisma/client';
 import type { UserCollection } from '@/types/userCardObject.js';
 import { hashPassword } from '@/utils/hashing.js';
 import type {
@@ -113,5 +113,9 @@ export default class Facade {
 
   async getDeck(user_id: string, deck_id: string): Promise<Deck | null> {
     return await this.deck_repo.getDeck(user_id, deck_id);
+  }
+
+  async addDeckCard(deck_card: DeckCard): Promise<DeckCard | null> {
+    return await this.deck_repo.addDeckCard(deck_card);
   }
 }

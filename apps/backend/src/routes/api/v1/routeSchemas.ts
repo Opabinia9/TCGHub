@@ -1,5 +1,5 @@
 import type { Deck, UserCard } from '@prisma/client';
-import { maxLength } from 'zod';
+import { maxLength, minLength } from 'zod';
 
 export interface AuthLoginBody {
   email: string;
@@ -82,5 +82,15 @@ export const deckIdParamsSchema = {
   required: ['id'],
   properties: {
     id: { type: 'string', format: 'uuid' },
+  },
+};
+
+export type DeckCardParams = { card_id: string };
+
+export const deckCardParamsSchema = {
+  type: 'object',
+  required: ['card_id'],
+  properties: {
+    card_id: { type: 'string', minLength: 1 },
   },
 };

@@ -70,4 +70,12 @@ export default async function deckRoutes(fastify: Fastify.FastifyInstance) {
   //   },
   //   controller.updateDeckCard,
   // );
+  // fastify.delete<{ Params: DeckCardParams }>(
+  //   '/:id/cards/:cardId',
+  //   {
+  //     preHandler: [fastify.jwt_verify],
+  //     schema: { params: deckIdParamsSchema },
+  //   },
+  //   controller.delDeckCard,
+  // );
 }

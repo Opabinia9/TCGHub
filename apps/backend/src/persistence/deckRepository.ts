@@ -17,6 +17,28 @@ export default class DeckRepository extends Repository<Deck> {
     await this.db.deck.create({ data: deck });
   }
 
+  async delDeck(user_id: string, deck_id: string): Promise<void> {
+    await this.db.deck.delete({
+      where: {
+        id: deck_id,
+        owner_id: user_id,
+      },
+    });
+  }
+
+  async updDeck(deck: Deck): Promise<Deck | null> {
+    await this.db.deck.update({
+      where: {
+        id: deck.id,
+        owner_id: deck.owner_id,
+      },
+      data: deck,
+    });
+    return await this.db.deck.findUnique({
+      where: deck,
+    });
+  }
+
   async getUserDecks(user_id: string): Promise<userDecks> {
     const user_decks = await this.db.deck.findMany({
       where: {
@@ -38,4 +60,14 @@ export default class DeckRepository extends Repository<Deck> {
   async addDeckCard(deck_card: DeckCard): Promise<DeckCard | null> {
     return await this.db.deckCard.create({ data: deck_card });
   }
-}
+
+  async delDeckCard(deck_card: DeckCard): Promise<void> {
+    await this.db.deckCard.delete({ data: deck_card });
+  }
+
+  async updDeckCard(deck_card: DeckCard, quantity: number): Promise<DeckCard | null> {
+    const deck_card = await this.db.deckCard.findUnique({
+      where: {
+        deck_id_card_id: {deck_id: deck_card.deck_id, card_id: deck_card.card_id
+      }
+    })

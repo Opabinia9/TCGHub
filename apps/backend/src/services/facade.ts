@@ -107,6 +107,14 @@ export default class Facade {
     await this.deck_repo.add(deck);
   }
 
+  async delDeck(user_id: string, deck_id: string): Promise<void> {
+    await this.deck_repo.delDeck(user_id, deck_id);
+  }
+
+  async updDeck(deck: Deck): Promise<Deck | null> {
+    return await this.deck_repo.updDeck(deck);
+  }
+
   async getUserDecks(user_id: string): Promise<userDecks> {
     return await this.deck_repo.getUserDecks(user_id);
   }

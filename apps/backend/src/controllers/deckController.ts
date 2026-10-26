@@ -23,6 +23,29 @@ export default class DecksController {
     });
   }
 
+  async delDeck(
+    request: FastifyRequest<{ Body: DeckIdParams }>,
+  ): Promise<void> {
+    const { userId } = UserJwt.parse(request.user);
+    await facade.delDeck(userId, request.body.id);
+  }
+
+  async updDeck(
+    request: FastifyRequest<{ Params: DeckIdParams; Body: deckBodyInterface }>,
+  ): Promise<Deck | null> {
+    const { userId } = UserJwt.parse(request.user);
+    const { id } = request.params;
+    const { deck_name } = request.body;
+    const deck = await facade.getDeck(userId, id);
+
+    if (!deck) {
+      return null;
+    } else {
+      deck.deck_name = deck_name;
+      return await facade.updDeck(deck);
+    }
+  }
+
   async getUserDecks(request: FastifyRequest): Promise<userDecks> {
     const jwt: UserJwtType = UserJwt.parse(request.user);
     const user_id = jwt.userId;
@@ -55,4 +78,6 @@ export default class DecksController {
       quantity: 1,
     });
   }
+
+
 }

@@ -6,6 +6,7 @@ import {
   type DeckIdParams,
   type DeckCardParams,
   deckCardParamsSchema,
+  type deckBodyInterface,
 } from './routeSchemas.js';
 
 const controller = new deckController();
@@ -17,6 +18,24 @@ export default async function deckRoutes(fastify: Fastify.FastifyInstance) {
       preHandler: [fastify.jwt_verify],
     },
     controller.createDeck,
+  );
+
+  fastify.delete<{ Body: DeckIdParams }>(
+    '/',
+    {
+      preHandler: [fastify.jwt_verify],
+      schema: { params: deckIdParamsSchema },
+    },
+    controller.delDeck,
+  );
+
+  fastify.patch<{ Params: DeckIdParams; Body: deckBodyInterface }>(
+    '/:id/cards/',
+    {
+      preHandler: [fastify.jwt_verify],
+      schema: { params: deckIdParamsSchema },
+    },
+    controller.updDeck,
   );
 
   fastify.get(
@@ -50,13 +69,5 @@ export default async function deckRoutes(fastify: Fastify.FastifyInstance) {
   //     schema: { params: deckCardParamsSchema },
   //   },
   //   controller.updateDeckCard,
-  // );
-  // fastify.delete<{ Params: DeckCardParams }>(
-  //   '/:id/cards/:cardId',
-  //   {
-  //     preHandler: [fastify.jwt_verify],
-  //     schema: { params: deckIdParamsSchema },
-  //   },
-  //   controller.delDeckCard,
   // );
 }

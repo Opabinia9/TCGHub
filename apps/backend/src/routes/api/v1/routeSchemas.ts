@@ -1,5 +1,4 @@
 import type { Deck, UserCard } from '@prisma/client';
-import { maxLength, minLength } from 'zod';
 
 export interface AuthLoginBody {
   email: string;

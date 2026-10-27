@@ -6,7 +6,17 @@ export type UserCreationInterface = Pick<
 >;
 
 export const userWithChats = {
-  include: { chats: true },
+  include: {
+    chats: {
+      include: {
+        Chat: {
+          include: {
+            members: true,
+          },
+        },
+      },
+    },
+  },
 } satisfies Prisma.UserDefaultArgs;
 
 export type UserWithChats = Prisma.UserGetPayload<typeof userWithChats>;

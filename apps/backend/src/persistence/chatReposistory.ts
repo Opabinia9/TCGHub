@@ -1,7 +1,6 @@
 import Repository from '@/persistence/reposistory.js';
 import {
   chatWithMessages,
-  type ChatCreationInterface,
   type ChatWithMembersCreationInterface,
   type ChatWithMessages,
 } from '@/types/chatObject.js';
@@ -28,7 +27,7 @@ export default class ChatRepository extends Repository<Chat> {
       data: {
         title: chat.title,
         type: chat.type,
-        ChatMembers: {
+        members: {
           create: chat.members.map((memberId) => {
             return {
               User: {

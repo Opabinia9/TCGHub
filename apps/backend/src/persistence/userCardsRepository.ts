@@ -10,8 +10,8 @@ export default class UserCardsRepository extends Repository<UserCard> {
     this.db = prisma;
   }
 
-  async add(user_card: UserCard) {
-    await this.db.userCard.create({ data: user_card });
+  async add(user_card: UserCard): Promise<UserCard> {
+    return await this.db.userCard.create({ data: user_card });
   }
 
   async getUserCard(user_id: string, card_id: string): Promise<UserCard | null> {

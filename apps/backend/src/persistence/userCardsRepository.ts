@@ -1,10 +1,7 @@
 import Repository from '@/persistence/reposistory.js';
 import { prisma } from '@/utils/prisma.js';
 import type { PrismaClient, UserCard } from '@prisma/client';
-import {
-  type UserCollection,
-  userCardWithCards,
-} from '@/types/userCardObject.js';
+import { type UserCollection, userCardWithCards } from '@/types/userCardObject.js';
 
 export default class UserCardsRepository extends Repository<UserCard> {
   db: PrismaClient;
@@ -17,10 +14,7 @@ export default class UserCardsRepository extends Repository<UserCard> {
     await this.db.userCard.create({ data: user_card });
   }
 
-  async isCardOwned(
-    user_id: string,
-    card_id: string,
-  ): Promise<UserCard | null> {
+  async getUserCard(user_id: string, card_id: string): Promise<UserCard | null> {
     const result = await this.db.userCard.findUnique({
       where: {
         user_id_card_id: {

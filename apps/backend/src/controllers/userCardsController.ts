@@ -9,17 +9,12 @@ import type { UserCard } from '@prisma/client';
 const facade = new Facade();
 
 export default class UserCardsController {
-  async updateUserCards(
-    request: FastifyRequest<{ Body: collectionBodyInterface }>,
-  ): Promise<void> {
+  async updateUserCards(request: FastifyRequest<{ Body: collectionBodyInterface }>): Promise<void> {
     const jwt: UserJwtType = UserJwt.parse(request.user);
     const user_id = jwt.userId;
     let quantity: number = request.body.quantity;
 
-    const record: UserCard | null = await facade.isCardOwned(
-      user_id,
-      request.body.card_id,
-    );
+    const record: UserCard | null = await facade.getUserCard(user_id, request.body.card_id);
 
     if (record !== null) {
       if (quantity < 0 && Math.abs(quantity) > record.quantity) {
@@ -30,12 +25,8 @@ export default class UserCardsController {
         user_id: record.user_id,
         card_id: record.card_id,
         quantity: record.quantity === null ? 1 : record.quantity + quantity,
-        condition: request.body.condition
-          ? request.body.condition
-          : record.condition,
-        for_trade: request.body.for_trade
-          ? request.body.for_trade
-          : record.for_trade,
+        condition: request.body.condition ? request.body.condition : record.condition,
+        for_trade: request.body.for_trade ? request.body.for_trade : record.for_trade,
       };
       await facade.updateCard(user_card); /* Primary Key Exists! -> Update */
     } else {

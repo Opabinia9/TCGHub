@@ -68,16 +68,28 @@ export default class Facade {
   }
 
   async searchCards(filters: CardSearchQuery) {
-    return this.card_repo.search(filters);
+    const cards = this.card_repo.search(filters);
+    if (cards === null) {
+      throw new NotFoundError('No Cards Found');
+    }
+    return cards;
   }
 
   async listSets() {
-    return this.card_repo.listSets();
+    const sets = this.card_repo.listSets();
+    if (sets === null) {
+      throw new NotFoundError('No Sets Found');
+    }
+    return sets;
   }
 
   /** User Cards Functions (Collections) */
   async addCard(user_card: UserCard): Promise<void> {
-    await this.user_cards_repo.add(user_card);
+    const card = await this.user_cards_repo.add(user_card);
+    if (card === null) {
+      throw new NotFoundError('Card Not Added');
+    }
+    return card;
   }
 
   async getCollection(user_id: string): Promise<UserCollection | null> {
@@ -88,17 +100,29 @@ export default class Facade {
     return null;
   }
 
-  async isCardOwned(user_id: string, card_id: string): Promise<UserCard | null> {
-    return await this.user_cards_repo.isCardOwned(user_id, card_id);
+  async getUserCard(user_id: string, card_id: string): Promise<UserCard | null> {
+    const card = await this.user_cards_repo.getUserCard(user_id, card_id);
+    if (card === null) {
+      return null;
+    }
+    return card;
   }
 
   async updateCard(user_card: UserCard): Promise<void> {
-    await this.user_cards_repo.update(user_card);
+    const card = await this.user_cards_repo.update(user_card);
+    if (card === null) {
+      throw new NotFoundError('Card Not Updated');
+    }
+    return card;
   }
 
   /** Decks Functions */
   async createDeck(deck: DeckCreationInterface): Promise<void> {
-    await this.deck_repo.add(deck);
+    const new_deck = await this.deck_repo.add(deck);
+    if (deck === null) {
+      throw new Error('Deck Not Added');
+    }
+    return new_deck;
   }
 
   async delDeck(deck: DeckRef): Promise<void> {
@@ -106,19 +130,35 @@ export default class Facade {
   }
 
   async updDeck(deck: Deck): Promise<Deck | null> {
-    return await this.deck_repo.updDeck(deck);
+    const updated_deck = await this.deck_repo.updDeck(deck);
+    if (updated_deck === null) {
+      throw new NotFoundError('Deck Not Updated');
+    }
+    return updated_deck;
   }
 
   async getUserDecks(user_id: string): Promise<userDecks> {
-    return await this.deck_repo.getUserDecks(user_id);
+    const user_decks = await this.deck_repo.getUserDecks(user_id);
+    if (user_decks === null) {
+      throw new NotFoundError('No Decks Found');
+    }
+    return user_decks;
   }
 
   async getDeck(deck: DeckRef): Promise<Deck | null> {
-    return await this.deck_repo.getDeck(deck);
+    const user_deck = await this.deck_repo.getDeck(deck);
+    if (user_deck === null) {
+      throw new NotFoundError('Deck Not Found');
+    }
+    return user_deck;
   }
 
   async addDeckCard(deck_card: DeckCard): Promise<DeckCard | null> {
-    return await this.deck_repo.addDeckCard(deck_card);
+    const new_deck_card = await this.deck_repo.addDeckCard(deck_card);
+    if (new_deck_card === null) {
+      throw new NotFoundError('Card Not Added');
+    }
+    return new_deck_card;
   }
 
   async delDeckCard(deck_card: DeckCardParams): Promise<void> {
@@ -126,6 +166,10 @@ export default class Facade {
   }
 
   async updDeckCard(deck_card: DeckCard): Promise<DeckCard | null> {
-    return await this.deck_repo.updDeckCard(deck_card);
+    const updated_deck_card = await this.deck_repo.updDeckCard(deck_card);
+    if (updated_deck_card === null) {
+      throw new NotFoundError('Deck Not Updated');
+    }
+    return updated_deck_card;
   }
 }

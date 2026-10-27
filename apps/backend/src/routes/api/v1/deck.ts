@@ -1,18 +1,20 @@
 import Fastify from 'fastify';
 import deckController from '@/controllers/deckController.js';
 import {
-  type deckCreationInterface,
   deckIdParamsSchema,
   type DeckIdParams,
   type DeckCardParams,
   deckCardParamsSchema,
   type deckBodyInterface,
+  DeckCardSchema,
+  DeckBodySchema,
 } from './routeSchemas.js';
+import type { DeckCardInterface } from '@/types/deckObject.js';
 
 const controller = new deckController();
 
 export default async function deckRoutes(fastify: Fastify.FastifyInstance) {
-  fastify.post<{ Body: deckCreationInterface }>(
+  fastify.post<{ Body: deckBodyInterface }>(
     '/',
     {
       preHandler: [fastify.jwt_verify],
@@ -20,8 +22,8 @@ export default async function deckRoutes(fastify: Fastify.FastifyInstance) {
     controller.createDeck,
   );
 
-  fastify.delete<{ Body: DeckIdParams }>(
-    '/',
+  fastify.delete<{ Params: DeckIdParams }>(
+    '/:deck_id/cards/',
     {
       preHandler: [fastify.jwt_verify],
       schema: { params: deckIdParamsSchema },
@@ -30,10 +32,10 @@ export default async function deckRoutes(fastify: Fastify.FastifyInstance) {
   );
 
   fastify.patch<{ Params: DeckIdParams; Body: deckBodyInterface }>(
-    '/:id/cards/',
+    '/:deck_id/cards/',
     {
       preHandler: [fastify.jwt_verify],
-      schema: { params: deckIdParamsSchema },
+      schema: { params: deckIdParamsSchema, body: DeckBodySchema },
     },
     controller.updDeck,
   );
@@ -47,35 +49,38 @@ export default async function deckRoutes(fastify: Fastify.FastifyInstance) {
   );
 
   fastify.get<{ Params: DeckIdParams }>(
-    '/:id/cards',
+    '/:deck_id/cards',
     {
       preHandler: [fastify.jwt_verify],
       schema: { params: deckIdParamsSchema },
     },
     controller.getDeck,
   );
-  fastify.post<{ Params: DeckIdParams; Body: DeckCardParams }>(
-    '/:id/cards',
+
+  fastify.post<{ Params: DeckCardParams; Body: DeckCardInterface }>(
+    '/:deck_id/cards/:card_id',
     {
       preHandler: [fastify.jwt_verify],
-      schema: { params: deckIdParamsSchema, body: deckCardParamsSchema },
+      schema: { params: deckCardParamsSchema, body: DeckCardSchema },
     },
     controller.addDeckCard,
   );
-  // fastify.patch<{ Params: DeckCardParams }>(
-  //   '/:id/cards/:cardId',
-  //   {
-  //     preHandler: [fastify.jwt_verify],
-  //     schema: { params: deckCardParamsSchema },
-  //   },
-  //   controller.updateDeckCard,
-  // );
-  // fastify.delete<{ Params: DeckCardParams }>(
-  //   '/:id/cards/:cardId',
-  //   {
-  //     preHandler: [fastify.jwt_verify],
-  //     schema: { params: deckIdParamsSchema },
-  //   },
-  //   controller.delDeckCard,
-  // );
+
+  fastify.patch<{ Params: DeckCardParams; Body: DeckCardInterface }>(
+    '/:deck_id/cards/:card_id',
+    {
+      preHandler: [fastify.jwt_verify],
+      schema: { params: deckCardParamsSchema },
+    },
+    controller.updDeckCard,
+  );
+
+  fastify.delete<{ Params: DeckCardParams }>(
+    '/:deck_id/cards/:card_id',
+    {
+      preHandler: [fastify.jwt_verify],
+      schema: { params: deckCardParamsSchema },
+    },
+    controller.delDeckCard,
+  );
 }

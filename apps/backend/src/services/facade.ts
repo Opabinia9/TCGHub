@@ -9,11 +9,8 @@ import type { CardSearchQuery } from '@/types/cardObject.js';
 import type { Deck, DeckCard, User, UserCard } from '@prisma/client';
 import type { UserCollection } from '@/types/userCardObject.js';
 import { hashPassword } from '@/utils/hashing.js';
-import type {
-  AuthSignupBody,
-  deckCreationInterface,
-  userDecks,
-} from '@/routes/api/v1/routeSchemas.js';
+import type { AuthSignupBody, DeckCardParams } from '@/routes/api/v1/routeSchemas.js';
+import type { DeckCreationInterface, DeckRef, userDecks } from '@/types/deckObject.js';
 
 export default class Facade {
   user_repo: UserRepository;
@@ -91,10 +88,7 @@ export default class Facade {
     return null;
   }
 
-  async isCardOwned(
-    user_id: string,
-    card_id: string,
-  ): Promise<UserCard | null> {
+  async isCardOwned(user_id: string, card_id: string): Promise<UserCard | null> {
     return await this.user_cards_repo.isCardOwned(user_id, card_id);
   }
 
@@ -103,12 +97,12 @@ export default class Facade {
   }
 
   /** Decks Functions */
-  async createDeck(deck: deckCreationInterface): Promise<void> {
+  async createDeck(deck: DeckCreationInterface): Promise<void> {
     await this.deck_repo.add(deck);
   }
 
-  async delDeck(user_id: string, deck_id: string): Promise<void> {
-    await this.deck_repo.delDeck(user_id, deck_id);
+  async delDeck(deck: DeckRef): Promise<void> {
+    await this.deck_repo.delDeck(deck);
   }
 
   async updDeck(deck: Deck): Promise<Deck | null> {
@@ -119,11 +113,19 @@ export default class Facade {
     return await this.deck_repo.getUserDecks(user_id);
   }
 
-  async getDeck(user_id: string, deck_id: string): Promise<Deck | null> {
-    return await this.deck_repo.getDeck(user_id, deck_id);
+  async getDeck(deck: DeckRef): Promise<Deck | null> {
+    return await this.deck_repo.getDeck(deck);
   }
 
   async addDeckCard(deck_card: DeckCard): Promise<DeckCard | null> {
     return await this.deck_repo.addDeckCard(deck_card);
+  }
+
+  async delDeckCard(deck_card: DeckCardParams): Promise<void> {
+    await this.deck_repo.delDeckCard(deck_card);
+  }
+
+  async updDeckCard(deck_card: DeckCard): Promise<DeckCard | null> {
+    return await this.deck_repo.updDeckCard(deck_card);
   }
 }

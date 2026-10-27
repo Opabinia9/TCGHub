@@ -34,9 +34,8 @@ export default async function buildServer(
   server.register(fastify_jwt, { secret: env.SERVER_SECRET });
   server.register(authRoutes, { prefix: '/api/v1/auth' });
   server.register(cardRoutes, { prefix: '/api/v1/cards' });
-  server.register(cardRoutes, { prefix: '/api/v1/:id' });
   server.register(collectionRoutes, { prefix: '/api/v1/collection' });
-  server.register(deckRoutes, { prefix: '/api/v1/decks/' });
+  server.register(deckRoutes, { prefix: '/api/v1/decks' });
 
   await validateDatabaseConnection();
   return server;

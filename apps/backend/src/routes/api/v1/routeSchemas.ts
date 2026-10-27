@@ -1,4 +1,5 @@
-import type { Deck, UserCard } from '@prisma/client';
+import type { Deck, DeckCard, UserCard } from '@prisma/client';
+import { minLength } from 'zod';
 
 export interface AuthLoginBody {
   email: string;
@@ -71,25 +72,39 @@ export const cardSearchQuerySchema = {
 };
 
 export type collectionBodyInterface = Omit<UserCard, 'user_id'>;
-export type deckBodyInterface = Omit<Omit<Deck, 'id'>, 'owner_id'>;
-export type deckCreationInterface = Omit<Deck, 'id'>;
-export type userDecks = Array<Deck> | void;
-export type DeckIdParams = { id: string };
+export type deckBodyInterface = Omit<Deck, 'id' | 'owner_id'>;
+export type DeckIdParams = Omit<Deck, 'owner_id' | 'deck_name'>;
 
 export const deckIdParamsSchema = {
   type: 'object',
-  required: ['id'],
+  required: ['deck_id'],
   properties: {
     id: { type: 'string', format: 'uuid' },
   },
 };
 
-export type DeckCardParams = { card_id: string };
+export type DeckCardParams = Omit<DeckCard, 'quantity'>;
 
 export const deckCardParamsSchema = {
   type: 'object',
-  required: ['card_id'],
+  required: ['deck_id', 'card_id'],
   properties: {
     card_id: { type: 'string', minLength: 1 },
+  },
+};
+
+export const DeckCardSchema = {
+  type: 'object',
+  required: ['quantity'],
+  properties: {
+    quantity: { type: 'number' },
+  },
+};
+
+export const DeckBodySchema = {
+  type: 'object',
+  required: ['deck_name'],
+  properties: {
+    quantity: { type: 'string', minLength: 1 },
   },
 };

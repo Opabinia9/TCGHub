@@ -1,3 +1,4 @@
+import type { ChatWithMembersCreationInterface } from '@/types/chatObject.js';
 import { ChatType } from '@prisma/client';
 
 export interface AuthLoginBody {
@@ -54,11 +55,11 @@ export const chatParamsSchema = {
   },
 };
 
-export interface ChatPostBodyInterface {
+export interface ChatPostMessageBodyInterface {
   body: string;
 }
 
-export const chatPostBodySchema = {
+export const chatPostMessageBodySchema = {
   type: 'object',
   required: ['body'],
   additionalProperties: false,
@@ -66,6 +67,8 @@ export const chatPostBodySchema = {
     body: { type: 'string' },
   },
 };
+
+export type ChatCreationBodyInterface = ChatWithMembersCreationInterface;
 
 export const chatCreationBodySchema = {
   type: 'object',
@@ -107,5 +110,16 @@ export const cardSearchQuerySchema = {
     colorIdentity: { type: 'string', minLength: 1 },
     page: { type: 'integer', minimum: 1, default: 1 },
     limit: { type: 'integer', minimum: 1, maximum: 100, default: 20 },
+  },
+};
+
+export interface UserIdParamsInterface {
+  userId: string;
+}
+
+export const UserIdParamsSchema = {
+  type: 'object',
+  properties: {
+    userId: { type: 'string' },
   },
 };

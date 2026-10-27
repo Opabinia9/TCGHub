@@ -9,3 +9,9 @@ export const chatWithMessages = {
 } satisfies Prisma.ChatDefaultArgs;
 
 export type ChatWithMessages = Prisma.ChatGetPayload<typeof chatWithMessages>;
+
+export const chatWithMembers = {
+  include: { members: true },
+} satisfies Prisma.ChatDefaultArgs;
+
+export type ChatWithMembers = Prisma.ChatGetPayload<typeof chatWithMembers>;

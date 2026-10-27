@@ -12,8 +12,8 @@ export default class CardRepository extends Repository<CardSummary> {
     this.db = prisma;
   }
 
-  async add() {
-    throw NotFoundError;
+  async add(card: CardSummary): Promise<CardSummary> {
+    throw new Error(`${card}`);
   }
 
   async get(cardID: string): Promise<CardSummary | null> {

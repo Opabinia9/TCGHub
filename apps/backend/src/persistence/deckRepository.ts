@@ -11,8 +11,8 @@ export default class DeckRepository extends Repository<Deck> {
     this.db = prisma;
   }
 
-  async add(deck: DeckCreationInterface): Promise<void> {
-    await this.db.deck.create({
+  async add(deck: DeckCreationInterface): Promise<Deck> {
+    return await this.db.deck.create({
       data: {
         owner_id: deck.owner_id,
         deck_name: deck.deck_name,

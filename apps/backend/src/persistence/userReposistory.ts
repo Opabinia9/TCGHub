@@ -10,8 +10,8 @@ export default class UserRepository extends Repository<User> {
     this.db = prisma;
   }
 
-  async add(user: UserCreationInterface): Promise<void> {
-    await this.db.user.create({
+  async add(user: UserCreationInterface): Promise<User> {
+    return await this.db.user.create({
       data: user,
     });
   }

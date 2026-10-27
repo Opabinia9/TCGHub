@@ -1,21 +1,21 @@
-# (/api/v1)[#/api/v1]
+# [/api/v1](#/api/v1)
 
-* (/:endpoint)[#ANY /api/v1/ endpoint]
-* (/auth)[#/api/v1/auth]
-	* (POST /signup)[#POST /api/v1/auth/signup]
-	* (POST /login)[#POST /api/v1/auth/login]
-* (/user)[#api/v1/user]
-	* (GET /user/:userId)[#GET /api/v1/user/ userId]
-	* (PATCH /user/:userId)[#PATCH /api/v1/user/ userId]
-	* (DELETE /user/:userId)[#DELETE /api/v1/user/ userId]
-* (/chats)[#/api/v1/chats]
-	* (GET /chats)[#GET /api/v1/chats]
-	* (POST /chats)[#POST /api/v1/chats]
-	* (DELETE /chats)[#DELETE /api/v1/chats/]
-		* (GET /:chatId)[#GET /api/v1/chats/ chatId]
-		* (PATCH /:chatId)[#PATCH /api/v1/chats/ chatId]
-			* (GET /messages)[#GET /api/v1/chats/ chatId/messages]
-			* (POST /messages)[#POST /api/v1/chats/ chatId/messages]
+* [/:endpoint](#ANY /api/v1/ endpoint)
+* [/auth](#/api/v1/auth)
+	* [POST /signup](#POST /api/v1/auth/signup)
+	* [POST /login](#POST /api/v1/auth/login)
+* [/user](#api/v1/user)
+	* [GET /user/:userId](#GET /api/v1/user/ userId)
+	* [PATCH /user/:userId](#PATCH /api/v1/user/ userId)
+	* [DELETE /user/:userId](#DELETE /api/v1/user/ userId)
+* [/chats](#/api/v1/chats)
+	* [GET /chats](#GET /api/v1/chats)
+	* [POST /chats](#POST /api/v1/chats)
+	* [DELETE /chats](#DELETE /api/v1/chats/)
+		* [GET /:chatId](#GET /api/v1/chats/ chatId)
+		* [PATCH /:chatId](#PATCH /api/v1/chats/ chatId)
+			* [GET /messages](#GET /api/v1/chats/ chatId/messages)
+			* [POST /messages](#POST /api/v1/chats/ chatId/messages)
 
 # ENDPOINTS:
 

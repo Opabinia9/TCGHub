@@ -27,7 +27,7 @@ export default function TabsLayout() {
         options={{
           title: 'Home',
           tabBarIcon: ({ color, size }) => (
-            <Ionicons name="home" size={size} color={color} />
+            <Ionicons name="home" size={size} color={String(color)} />
           ),
         }}
       />
@@ -37,7 +37,7 @@ export default function TabsLayout() {
         options={{
           title: 'Cards',
           tabBarIcon: ({ color, size }) => (
-            <Ionicons name="copy" size={size} color={color} />
+            <Ionicons name="copy" size={size} color={String(color)} />
           ),
         }}
       />
@@ -47,7 +47,7 @@ export default function TabsLayout() {
         options={{
           title: 'Decks',
           tabBarIcon: ({ color, size }) => (
-            <Ionicons name="layers" size={size} color={color} />
+            <Ionicons name="layers" size={size} color={String(color)} />
           ),
         }}
       />
@@ -55,9 +55,9 @@ export default function TabsLayout() {
       <Tabs.Screen
         name="trade"
         options={{
-          title: 'Trade',
+          title: 'Trades',
           tabBarIcon: ({ color, size }) => (
-            <MaterialIcons name="swap-horiz" size={size} color={color} />
+            <MaterialIcons name="swap-horiz" size={size} color={String(color)} />
           ),
         }}
       />
@@ -69,17 +69,17 @@ export default function TabsLayout() {
           tabBarBadge: unreadCount > 0 ? unreadCount : undefined,
           tabBarBadgeStyle: { backgroundColor: '#2e7d32', color: '#FFFFFF' },
           tabBarIcon: ({ color, size }) => (
-            <Ionicons name="chatbubble" size={size} color={color} />
+            <Ionicons name="chatbubble" size={size} color={String(color)} />
           ),
         }}
       />
 
       <Tabs.Screen
-        name="players"
+        name="profile"
         options={{
           title: 'Profile',
           tabBarIcon: ({ color, size }) => (
-            <Ionicons name="person" size={size} color={color} />
+            <Ionicons name="person" size={size} color={String(color)} />
           ),
         }}
       />

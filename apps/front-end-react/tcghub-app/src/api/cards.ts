@@ -1,4 +1,4 @@
-const API_URL = "http://192.168.20.13:8080";
+const API_URL = "http://192.168.4.20:8080";
 
 export type Pagination = {
 	page: number;

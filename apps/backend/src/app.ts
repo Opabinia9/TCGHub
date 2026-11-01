@@ -14,6 +14,10 @@ import type {
   FastifyTypeProviderDefault,
   RawServerDefault,
 } from 'fastify';
+import {
+  serializerCompiler,
+  validatorCompiler,
+} from 'fastify-type-provider-zod';
 
 export default async function buildServer(
   opts = {},
@@ -28,6 +32,8 @@ export default async function buildServer(
   >
 > {
   const server: Fastify.FastifyInstance = Fastify(opts);
+  server.setValidatorCompiler(validatorCompiler);
+  server.setSerializerCompiler(serializerCompiler);
 
   registerJwtDecorator(server);
 

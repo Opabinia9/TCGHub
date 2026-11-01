@@ -11,6 +11,8 @@ import type { IncomingMessage, ServerResponse } from 'http';
 import type {
   FastifyBaseLogger,
   FastifyInstance,
+  FastifyReply,
+  FastifyRequest,
   FastifyTypeProviderDefault,
   RawServerDefault,
 } from 'fastify';
@@ -18,6 +20,7 @@ import {
   serializerCompiler,
   validatorCompiler,
 } from 'fastify-type-provider-zod';
+import type { PrismaClientKnownRequestError } from '@prisma/client/runtime/client';
 
 export default async function buildServer(
   opts = {},
@@ -34,6 +37,22 @@ export default async function buildServer(
   const server: Fastify.FastifyInstance = Fastify(opts);
   server.setValidatorCompiler(validatorCompiler);
   server.setSerializerCompiler(serializerCompiler);
+
+  server.setErrorHandler(
+    (
+      error: PrismaClientKnownRequestError,
+      request: FastifyRequest,
+      reply: FastifyReply,
+    ) => {
+      if (error.code === 'P2025' || error.code === 'P2003') {
+        return reply.code(404).send({ error: 'Not found' });
+      }
+      if (error.code === 'P2002') {
+        return reply.code(409).send({ error: 'Record exists' });
+      }
+      return reply.send(error);
+    },
+  );
 
   registerJwtDecorator(server);
 

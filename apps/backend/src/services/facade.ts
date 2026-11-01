@@ -2,10 +2,9 @@ import UserRepository from '@/persistence/userReposistory.js';
 import CardRepository from '@/persistence/cardRepository.js';
 import UserCardsRepository from '@/persistence/userCardsRepository.js';
 import DeckRepository from '@/persistence/deckRepository.js';
-import type { CardSummary } from '@/types/cardObject.js';
 import NotFoundError from '@/errortypes/NotFoundError.js';
 import type { UserCreationInterface } from '@/types/userObject.js';
-import type { CardSearchQuery } from '@/types/cardObject.js';
+import type { CardSearchQuery, CardSummary } from '@/types/cardObject.js';
 import type { Deck, DeckCard, User, UserCard } from '@prisma/client';
 import type { UserCollection } from '@/types/userCardObject.js';
 import { hashPassword } from '@/utils/hashing.js';
@@ -61,7 +60,7 @@ export default class Facade {
     const { password, ...include } = signupData;
     const hash = await hashPassword(signupData.password);
     const userData: UserCreationInterface = { ...include, hash: hash };
-    this.user_repo.add(userData);
+    await this.user_repo.add(userData);
   }
 
   /**  Card Functions */

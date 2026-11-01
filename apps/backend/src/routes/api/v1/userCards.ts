@@ -1,6 +1,10 @@
 import Fastify from 'fastify';
 import userCardsController from '@/controllers/userCardsController.js';
-import { cardSearchQuerySchema, type CollectionBody } from './routeSchemas.js';
+import {
+  cardSearchQuerySchema,
+  collectionBodyInterface,
+  type CollectionBody,
+} from './routeSchemas.js';
 import type { CardSearchQuery } from '@/types/cardObject.js';
 import type { ZodTypeProvider } from 'fastify-type-provider-zod';
 
@@ -22,6 +26,7 @@ export default async function collectionRoutes(
     '/',
     {
       onRequest: [fastify.jwt_verify],
+      schema: { body: collectionBodyInterface },
     },
     controller.updateUserCards,
   );

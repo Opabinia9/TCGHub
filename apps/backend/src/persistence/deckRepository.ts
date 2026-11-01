@@ -97,9 +97,9 @@ export default class DeckRepository extends Repository<Deck> {
         deck_id_card_id: {
           deck_id: deck_card.deck_id,
           card_id: deck_card.card_id,
-          Deck: {
-            owner_id: owner_id,
-          },
+        },
+        Deck: {
+          owner_id: owner_id,
         },
       },
       data: {

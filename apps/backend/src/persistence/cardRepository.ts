@@ -1,4 +1,3 @@
-import NotFoundError from '@/errortypes/NotFoundError.js';
 import Repository from '@/persistence/reposistory.js';
 import { prisma } from '@/utils/prisma.js';
 import type { Prisma, PrismaClient } from '@prisma/client';

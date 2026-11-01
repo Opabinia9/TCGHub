@@ -5,6 +5,7 @@ import type { CardSearchQuery } from '@/types/cardObject.js';
 import type { UserCollection } from '@/types/userCardObject.js';
 import type { UserCard } from '@prisma/client';
 import type { CollectionBody } from '@/routes/api/v1/routeSchemas.js';
+import NotFoundError from '@/errortypes/NotFoundError.js';
 
 const facade = new Facade();
 
@@ -15,26 +16,32 @@ export default class UserCardsController {
     const { userId } = UserJwt.parse(request.user);
     let quantity: number = request.body.quantity;
 
-    const record: UserCard | null = await facade.getUserCard(
-      userId,
-      request.body.card_id,
-    );
-
+    let record: UserCard | null = null;
+    try {
+      record = await facade.getUserCard(userId, request.body.card_id);
+    } catch (error) {
+      if (!(error instanceof NotFoundError)) {
+        throw error;
+      }
+    }
     if (record !== null) {
       if (quantity < 0 && Math.abs(quantity) > record.quantity) {
         quantity = -1 * record.quantity;
       }
-
+      if (request.body.for_trade && request.body.wishlist) {
+        if (record.wishlist) {
+          request.body.for_trade = false;
+        } else {
+          request.body.wishlist = false;
+        }
+      }
       const user_card = {
         user_id: record.user_id,
         card_id: record.card_id,
         quantity: record.quantity === null ? 1 : record.quantity + quantity,
-        condition: request.body.condition
-          ? request.body.condition
-          : record.condition,
-        for_trade: request.body.for_trade
-          ? request.body.for_trade
-          : record.for_trade,
+        condition: request.body.condition ?? record.condition,
+        for_trade: request.body.for_trade,
+        wishlist: request.body.wishlist,
       };
       return await facade.updateCard(
         user_card,
@@ -46,6 +53,7 @@ export default class UserCardsController {
         quantity: 1,
         condition: 'unmarked',
         for_trade: false,
+        wishlist: false,
       };
       return await facade.addCard(user_card);
     }

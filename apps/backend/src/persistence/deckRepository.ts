@@ -1,6 +1,10 @@
 import Repository from '@/persistence/reposistory.js';
 import type { DeckCardParams } from '@/routes/api/v1/routeSchemas.js';
-import type { DeckCreationInterface, DeckRef, userDecks } from '@/types/deckObject.js';
+import type {
+  DeckCreationInterface,
+  DeckRef,
+  UserDecks,
+} from '@/types/deckObject.js';
 import { prisma } from '@/utils/prisma.js';
 import type { PrismaClient, Deck, DeckCard } from '@prisma/client';
 
@@ -20,8 +24,8 @@ export default class DeckRepository extends Repository<Deck> {
     });
   }
 
-  async delDeck(deck: DeckRef): Promise<void> {
-    await this.db.deck.delete({
+  async delDeck(deck: DeckRef): Promise<Deck> {
+    return await this.db.deck.delete({
       where: {
         id: deck.id,
         owner_id: deck.owner_id,
@@ -42,13 +46,12 @@ export default class DeckRepository extends Repository<Deck> {
     });
   }
 
-  async getUserDecks(user_id: string): Promise<userDecks> {
-    const user_decks = await this.db.deck.findMany({
+  async getUserDecks(user_id: string): Promise<UserDecks> {
+    return await this.db.deck.findMany({
       where: {
         owner_id: user_id,
       },
     });
-    return user_decks;
   }
 
   async getDeck(deck: DeckRef): Promise<Deck | null> {
@@ -60,43 +63,50 @@ export default class DeckRepository extends Repository<Deck> {
     });
   }
 
-  async addDeckCard(card: DeckCard): Promise<DeckCard | null> {
-    return await this.db.deckCard.create({ data: card });
+  async addDeckCard(
+    owner_id: string,
+    card: DeckCard,
+  ): Promise<DeckCard | null> {
+    return await this.db.deckCard.create({
+      data: {
+        quantity: card.quantity,
+        Deck: { connect: { id: card.deck_id, owner_id } },
+        Card: { connect: { id: card.card_id } },
+      },
+    });
   }
 
-  async delDeckCard(deck_card: DeckCardParams): Promise<void> {
-    await this.db.deckCard.delete({
+  async delDeckCard(
+    owner_id: string,
+    deck_card: DeckCardParams,
+  ): Promise<void> {
+    await this.db.deckCard.deleteMany({
       where: {
-        deck_id_card_id: {
-          deck_id: deck_card.deck_id,
-          card_id: deck_card.card_id,
+        deck_id: deck_card.deck_id,
+        card_id: deck_card.card_id,
+        Deck: {
+          owner_id: owner_id,
         },
       },
     });
   }
 
-  async updDeckCard(deck_card: DeckCard): Promise<DeckCard | null> {
-    const existing_card = await this.db.deckCard.findUnique({
+  async updDeckCard(owner_id: string, deck_card: DeckCard): Promise<DeckCard> {
+    return await this.db.deckCard.update({
       where: {
         deck_id_card_id: {
           deck_id: deck_card.deck_id,
           card_id: deck_card.card_id,
-        },
-      },
-    });
-
-    if (existing_card !== null) {
-      existing_card.quantity += deck_card.quantity;
-      return await this.db.deckCard.update({
-        where: {
-          deck_id_card_id: {
-            deck_id: existing_card.deck_id,
-            card_id: existing_card.card_id,
+          Deck: {
+            owner_id: owner_id,
           },
         },
-        data: existing_card,
-      });
-    }
-    return null;
+      },
+      data: {
+        quantity: {
+          increment: deck_card.quantity,
+        },
+      },
+    });
   }
 }

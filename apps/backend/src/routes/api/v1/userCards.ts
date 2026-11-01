@@ -1,10 +1,8 @@
 import Fastify from 'fastify';
 import userCardsController from '@/controllers/userCardsController.js';
-import {
-  cardSearchQuerySchema,
-  type collectionBodyInterface,
-} from './routeSchemas.js';
+import { cardSearchQuerySchema, type CollectionBody } from './routeSchemas.js';
 import type { CardSearchQuery } from '@/types/cardObject.js';
+import type { ZodTypeProvider } from 'fastify-type-provider-zod';
 
 const controller = new userCardsController();
 
@@ -14,16 +12,16 @@ export default async function collectionRoutes(
   fastify.get<{ Querystring: CardSearchQuery }>(
     '/',
     {
-      preHandler: [fastify.jwt_verify],
+      onRequest: [fastify.jwt_verify],
       schema: { querystring: cardSearchQuerySchema },
     },
     controller.getUserCards,
   );
 
-  fastify.post<{ Body: collectionBodyInterface }>(
+  fastify.withTypeProvider<ZodTypeProvider>().post<{ Body: CollectionBody }>(
     '/',
     {
-      preHandler: [fastify.jwt_verify],
+      onRequest: [fastify.jwt_verify],
     },
     controller.updateUserCards,
   );

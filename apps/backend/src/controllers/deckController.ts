@@ -120,7 +120,7 @@ export default class DecksController {
       const { deck_id, card_id } = request.params;
       const { quantity } = request.body;
       return reply.code(201).send(
-        await facade.addDeckCard(owner_id: userId, deck_card: {
+        await facade.addDeckCard(userId, {
           deck_id: deck_id,
           card_id: card_id,
           quantity: quantity,
@@ -147,7 +147,7 @@ export default class DecksController {
       const { deck_id, card_id } = request.params;
       const { quantity } = request.body;
       return reply.code(200).send(
-        await facade.updDeckCard(owner_id: userId, deck_card: {
+        await facade.updDeckCard(userId, {
           deck_id: deck_id,
           card_id: card_id,
           quantity: quantity,
@@ -169,7 +169,7 @@ export default class DecksController {
     const { userId } = UserJwt.parse(request.user);
     try {
       const { deck_id, card_id } = request.params;
-      await facade.delDeckCard(owner_id: userId, deck_card: {
+      await facade.delDeckCard(userId, {
         deck_id: deck_id,
         card_id: card_id,
       });

@@ -5,24 +5,26 @@ import {
   type DeckIdParams,
   type DeckCardParams,
   deckCardParamsSchema,
-  type deckBodyInterface,
   DeckCardSchema,
   DeckBodySchema,
+  type DeckBody,
+  DeckCardBody,
 } from './routeSchemas.js';
-import type { DeckCardInterface } from '@/types/deckObject.js';
+import type { ZodTypeProvider } from 'fastify-type-provider-zod';
 
 const controller = new deckController();
 
 export default async function deckRoutes(fastify: Fastify.FastifyInstance) {
-  fastify.post<{ Body: deckBodyInterface }>(
+  fastify.withTypeProvider<ZodTypeProvider>().post<{ Body: DeckBody }>(
     '/',
     {
-      preHandler: [fastify.jwt_verify],
+      onRequest: [fastify.jwt_verify],
+      schema: { body: DeckBodySchema },
     },
     controller.createDeck,
   );
 
-  fastify.delete<{ Params: DeckIdParams }>(
+  fastify.withTypeProvider<ZodTypeProvider>().delete<{ Params: DeckIdParams }>(
     '/:deck_id/cards/',
     {
       preHandler: [fastify.jwt_verify],
@@ -31,16 +33,18 @@ export default async function deckRoutes(fastify: Fastify.FastifyInstance) {
     controller.delDeck,
   );
 
-  fastify.patch<{ Params: DeckIdParams; Body: deckBodyInterface }>(
-    '/:deck_id/cards/',
-    {
-      preHandler: [fastify.jwt_verify],
-      schema: { params: deckIdParamsSchema, body: DeckBodySchema },
-    },
-    controller.updDeck,
-  );
+  fastify
+    .withTypeProvider<ZodTypeProvider>()
+    .patch<{ Params: DeckIdParams; Body: DeckBody }>(
+      '/:deck_id/cards/',
+      {
+        preHandler: [fastify.jwt_verify],
+        schema: { params: deckIdParamsSchema, body: DeckBodySchema },
+      },
+      controller.updDeck,
+    );
 
-  fastify.get(
+  fastify.withTypeProvider<ZodTypeProvider>().get(
     '/',
     {
       preHandler: [fastify.jwt_verify],
@@ -48,7 +52,7 @@ export default async function deckRoutes(fastify: Fastify.FastifyInstance) {
     controller.getUserDecks,
   );
 
-  fastify.get<{ Params: DeckIdParams }>(
+  fastify.withTypeProvider<ZodTypeProvider>().get<{ Params: DeckIdParams }>(
     '/:deck_id/cards',
     {
       preHandler: [fastify.jwt_verify],
@@ -57,30 +61,36 @@ export default async function deckRoutes(fastify: Fastify.FastifyInstance) {
     controller.getDeck,
   );
 
-  fastify.post<{ Params: DeckCardParams; Body: DeckCardInterface }>(
-    '/:deck_id/cards/:card_id',
-    {
-      preHandler: [fastify.jwt_verify],
-      schema: { params: deckCardParamsSchema, body: DeckCardSchema },
-    },
-    controller.addDeckCard,
-  );
+  fastify
+    .withTypeProvider<ZodTypeProvider>()
+    .post<{ Params: DeckCardParams; Body: DeckCardBody }>(
+      '/:deck_id/cards/:card_id',
+      {
+        preHandler: [fastify.jwt_verify],
+        schema: { params: deckCardParamsSchema, body: DeckCardSchema },
+      },
+      controller.addDeckCard,
+    );
 
-  fastify.patch<{ Params: DeckCardParams; Body: DeckCardInterface }>(
-    '/:deck_id/cards/:card_id',
-    {
-      preHandler: [fastify.jwt_verify],
-      schema: { params: deckCardParamsSchema },
-    },
-    controller.updDeckCard,
-  );
+  fastify
+    .withTypeProvider<ZodTypeProvider>()
+    .patch<{ Params: DeckCardParams; Body: DeckCardBody }>(
+      '/:deck_id/cards/:card_id',
+      {
+        preHandler: [fastify.jwt_verify],
+        schema: { params: deckCardParamsSchema },
+      },
+      controller.updDeckCard,
+    );
 
-  fastify.delete<{ Params: DeckCardParams }>(
-    '/:deck_id/cards/:card_id',
-    {
-      preHandler: [fastify.jwt_verify],
-      schema: { params: deckCardParamsSchema },
-    },
-    controller.delDeckCard,
-  );
+  fastify
+    .withTypeProvider<ZodTypeProvider>()
+    .delete<{ Params: DeckCardParams }>(
+      '/:deck_id/cards/:card_id',
+      {
+        preHandler: [fastify.jwt_verify],
+        schema: { params: deckCardParamsSchema },
+      },
+      controller.delDeckCard,
+    );
 }

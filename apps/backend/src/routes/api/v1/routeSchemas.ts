@@ -1,5 +1,7 @@
-import type { Deck, DeckCard, UserCard } from '@prisma/client';
-import { minLength } from 'zod';
+import { DeckCardInterfaceSchema } from '@/types/deckObject.js';
+import { z } from 'zod';
+
+/** Auth Types & Interfaces */
 
 export interface AuthLoginBody {
   email: string;
@@ -45,11 +47,11 @@ export const authSignupSchema = {
   },
 };
 
-export const cardIdParamsSchema = {
-  type: 'object',
-  required: ['id'],
-  properties: { id: { type: 'string', minLength: 1 } },
-};
+/** Card Types & Interfaces */
+
+export const cardIdParamsSchema = z.object({
+  id: z.uuid(),
+});
 
 export const cardSearchQuerySchema = {
   type: 'object',
@@ -71,40 +73,44 @@ export const cardSearchQuerySchema = {
   },
 };
 
-export type collectionBodyInterface = Omit<UserCard, 'user_id'>;
-export type deckBodyInterface = Omit<Deck, 'id' | 'owner_id'>;
-export type DeckIdParams = Omit<Deck, 'owner_id' | 'deck_name'>;
+/** Collections Types & Interfaces */
 
-export const deckIdParamsSchema = {
-  type: 'object',
-  required: ['deck_id'],
-  properties: {
-    id: { type: 'string', format: 'uuid' },
-  },
-};
+export const collectionBodyInterface = z.object({
+  card_id: z.uuid(),
+  quantity: z.number().int().min(-999).max(999),
+  condition: z.string().trim().min(3).max(20),
+  for_trade: z.boolean(),
+  wishlist: z.boolean(),
+});
 
-export type DeckCardParams = Omit<DeckCard, 'quantity'>;
+export type CollectionBody = z.infer<typeof collectionBodyInterface>;
 
-export const deckCardParamsSchema = {
-  type: 'object',
-  required: ['deck_id', 'card_id'],
-  properties: {
-    card_id: { type: 'string', minLength: 1 },
-  },
-};
+/** Deck Types & Interfaces */
 
-export const DeckCardSchema = {
-  type: 'object',
-  required: ['quantity'],
-  properties: {
-    quantity: { type: 'number' },
-  },
-};
+export type DeckIdParams = z.infer<typeof deckIdParamsSchema>;
 
-export const DeckBodySchema = {
-  type: 'object',
-  required: ['deck_name'],
-  properties: {
-    quantity: { type: 'string', minLength: 1 },
-  },
-};
+export const deckIdParamsSchema = z.object({
+  deck_id: z.uuid(),
+});
+
+export const DeckBodySchema = z.object({
+  deck_name: z.string().trim().min(1).max(100),
+});
+
+export type DeckBody = z.infer<typeof DeckBodySchema>;
+
+/** DeckCard Types & Interfaces */
+
+export const deckCardParamsSchema = z.object({
+  deck_id: z.uuid(),
+  card_id: z.uuid(),
+});
+
+export type DeckCardParams = z.infer<typeof deckCardParamsSchema>;
+
+export const DeckCardSchema = z.object({
+  quantity: z.number().int().min(-999).max(999),
+});
+
+export const DeckCardBody = DeckCardInterfaceSchema;
+export type DeckCardBody = z.infer<typeof DeckCardBody>;

@@ -1,129 +1,185 @@
+import NotFoundError from '@/errortypes/NotFoundError.js';
 import type {
-  deckBodyInterface,
+  DeckBody,
+  DeckCardBody,
   DeckCardParams,
   DeckIdParams,
 } from '@/routes/api/v1/routeSchemas.js';
 import Facade from '@/services/facade.js';
-import type { DeckCardInterface, userDecks } from '@/types/deckObject.js';
-import { UserJwt, type UserJwtType } from '@/types/JWTObject.js';
-import type { Deck, DeckCard } from '@prisma/client';
+import { UserJwt } from '@/types/JWTObject.js';
 import type { FastifyReply, FastifyRequest } from 'fastify';
 
 const facade = new Facade();
 
+/** Deck API Endpoint Class */
 export default class DecksController {
-  async createDeck(request: FastifyRequest<{ Body: deckBodyInterface }>): Promise<void> {
-    const { userId }: UserJwtType = UserJwt.parse(request.user);
-    await facade.createDeck({
-      owner_id: userId,
-      deck_name: request.body.deck_name,
-    });
-  }
-
-  async delDeck(request: FastifyRequest<{ Params: DeckIdParams }>): Promise<void> {
+  /** decks/ POST */
+  async createDeck(
+    request: FastifyRequest<{ Body: DeckBody }>,
+    reply: FastifyReply,
+  ): Promise<FastifyReply> {
     const { userId } = UserJwt.parse(request.user);
-    await facade.delDeck({
-      id: request.params.id,
-      owner_id: userId,
-    });
-  }
-
-  async updDeck(
-    request: FastifyRequest<{ Params: DeckIdParams; Body: deckBodyInterface }>,
-  ): Promise<Deck | null> {
-    const { userId } = UserJwt.parse(request.user);
-    const { id } = request.params;
-    const { deck_name } = request.body;
-    const deck = await facade.getDeck({
-      owner_id: userId,
-      id: id,
-    });
-
-    if (!deck) {
-      return null;
-    } else {
-      deck.deck_name = deck_name;
-      return await facade.updDeck(deck);
+    try {
+      const deck = await facade.createDeck({
+        owner_id: userId,
+        deck_name: request.body.deck_name,
+      });
+      return reply.code(201).send(deck);
+    } catch (error) {
+      if (error instanceof NotFoundError) {
+        // Might need to be dropped
+        return reply.code(404).send({ error: 'Could not create deck' });
+      } else {
+        throw error;
+      }
     }
   }
 
-  async getUserDecks(request: FastifyRequest): Promise<userDecks> {
-    const jwt: UserJwtType = UserJwt.parse(request.user);
-    const user_id = jwt.userId;
-    return await facade.getUserDecks(user_id);
+  async delDeck(
+    request: FastifyRequest<{ Params: DeckIdParams }>,
+    reply: FastifyReply,
+  ): Promise<FastifyReply> {
+    const { userId } = UserJwt.parse(request.user);
+    try {
+      await facade.delDeck({
+        id: request.params.deck_id,
+        owner_id: userId,
+      });
+      return reply.code(204).send();
+    } catch (error) {
+      if (error instanceof NotFoundError) {
+        return reply.code(404).send({ error: 'Deck not found' });
+      } else {
+        throw error;
+      }
+    }
+  }
+
+  async updDeck(
+    request: FastifyRequest<{ Params: DeckIdParams; Body: DeckBody }>,
+    reply: FastifyReply,
+  ): Promise<FastifyReply> {
+    const { userId } = UserJwt.parse(request.user);
+    try {
+      const { deck_id } = request.params;
+      const { deck_name } = request.body;
+      return reply.code(200).send(
+        await facade.updDeck({
+          id: deck_id,
+          owner_id: userId,
+          deck_name: deck_name,
+        }),
+      );
+    } catch (error) {
+      if (error instanceof NotFoundError) {
+        return reply.code(404).send({ error: 'Deck not found' });
+      } else {
+        throw error;
+      }
+    }
+  }
+
+  async getUserDecks(
+    request: FastifyRequest,
+    reply: FastifyReply,
+  ): Promise<FastifyReply> {
+    const { userId } = UserJwt.parse(request.user);
+    return reply.code(200).send(await facade.getUserDecks(userId));
   }
 
   async getDeck(
     request: FastifyRequest<{ Params: DeckIdParams }>,
     reply: FastifyReply,
-  ): Promise<Deck | null> {
+  ): Promise<FastifyReply> {
     const { userId } = UserJwt.parse(request.user);
-    const deck = await facade.getDeck({
-      id: request.params.id,
-      owner_id: userId,
-    });
-    if (!deck) return reply.code(404).send({ error: 'Deck not found' });
-    return deck;
+    try {
+      return reply.code(200).send(
+        await facade.getDeck({
+          id: request.params.deck_id,
+          owner_id: userId,
+        }),
+      );
+    } catch (error) {
+      if (error instanceof NotFoundError) {
+        return reply.code(404).send({ error: 'Deck not found' });
+      } else {
+        throw error;
+      }
+    }
   }
 
   async addDeckCard(
-    request: FastifyRequest<{ Params: DeckCardParams; Body: DeckCardInterface }>,
+    request: FastifyRequest<{
+      Params: DeckCardParams;
+      Body: DeckCardBody;
+    }>,
     reply: FastifyReply,
-  ): Promise<DeckCard | null> {
+  ): Promise<FastifyReply> {
     const { userId } = UserJwt.parse(request.user);
-    const { deck_id, card_id } = request.params;
-    const { quantity } = request.body;
-    const verify_owner = await facade.getDeck({
-      id: deck_id,
-      owner_id: userId,
-    });
-
-    if (!verify_owner?.id) return reply.code(404).send({ error: 'Deck not found' });
-
-    return await facade.addDeckCard({
-      deck_id: deck_id,
-      card_id: card_id,
-      quantity: quantity,
-    });
-  }
-
-  async delDeckCard(request: FastifyRequest<{ Params: DeckCardParams }>): Promise<void> {
-    const { userId } = UserJwt.parse(request.user);
-    const { deck_id, card_id } = request.params;
-
-    if (
-      (await facade.getDeck({
-        id: deck_id,
-        owner_id: userId,
-      })) !== null
-    ) {
-      await facade.delDeckCard({
-        deck_id: deck_id,
-        card_id: card_id,
-      });
+    try {
+      const { deck_id, card_id } = request.params;
+      const { quantity } = request.body;
+      return reply.code(201).send(
+        await facade.addDeckCard(owner_id: userId, deck_card: {
+          deck_id: deck_id,
+          card_id: card_id,
+          quantity: quantity,
+        }),
+      );
+    } catch (error) {
+      if (error instanceof NotFoundError) {
+        return reply.code(404).send({ error: 'Card not found' });
+      } else {
+        throw error;
+      }
     }
   }
 
   async updDeckCard(
-    request: FastifyRequest<{ Params: DeckCardParams; Body: { quantity: number } }>,
-  ): Promise<DeckCard | null> {
+    request: FastifyRequest<{
+      Params: DeckCardParams;
+      Body: DeckCardBody;
+    }>,
+    reply: FastifyReply,
+  ): Promise<FastifyReply> {
     const { userId } = UserJwt.parse(request.user);
-    const { deck_id, card_id } = request.params;
-    const { quantity } = request.body;
+    try {
+      const { deck_id, card_id } = request.params;
+      const { quantity } = request.body;
+      return reply.code(200).send(
+        await facade.updDeckCard(owner_id: userId, deck_card: {
+          deck_id: deck_id,
+          card_id: card_id,
+          quantity: quantity,
+        }),
+      );
+    } catch (error) {
+      if (error instanceof NotFoundError) {
+        return reply.code(404).send({ error: 'Card not found' });
+      } else {
+        throw error;
+      }
+    }
+  }
 
-    if (
-      (await facade.getDeck({
-        id: deck_id,
-        owner_id: userId,
-      })) !== null
-    ) {
-      return await facade.updDeckCard({
+  async delDeckCard(
+    request: FastifyRequest<{ Params: DeckCardParams }>,
+    reply: FastifyReply,
+  ): Promise<FastifyReply> {
+    const { userId } = UserJwt.parse(request.user);
+    try {
+      const { deck_id, card_id } = request.params;
+      await facade.delDeckCard(owner_id: userId, deck_card: {
         deck_id: deck_id,
         card_id: card_id,
-        quantity: quantity,
       });
-    } else {
-      return null;
+      return reply.code(204).send();
+    } catch (error) {
+      if (error instanceof NotFoundError) {
+        return reply.code(404).send({ error: 'Card not found' });
+      } else {
+        throw error;
+      }
     }
   }
 }

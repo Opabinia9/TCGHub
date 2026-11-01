@@ -1,7 +1,10 @@
 import Repository from '@/persistence/reposistory.js';
 import { prisma } from '@/utils/prisma.js';
 import type { PrismaClient, UserCard } from '@prisma/client';
-import { type UserCollection, userCardWithCards } from '@/types/userCardObject.js';
+import {
+  type UserCollection,
+  userCardWithCards,
+} from '@/types/userCardObject.js';
 
 export default class UserCardsRepository extends Repository<UserCard> {
   db: PrismaClient;
@@ -14,8 +17,11 @@ export default class UserCardsRepository extends Repository<UserCard> {
     return await this.db.userCard.create({ data: user_card });
   }
 
-  async getUserCard(user_id: string, card_id: string): Promise<UserCard | null> {
-    const result = await this.db.userCard.findUnique({
+  async getUserCard(
+    user_id: string,
+    card_id: string,
+  ): Promise<UserCard | null> {
+    return await this.db.userCard.findUnique({
       where: {
         user_id_card_id: {
           user_id: user_id,
@@ -23,10 +29,9 @@ export default class UserCardsRepository extends Repository<UserCard> {
         },
       },
     });
-    return result;
   }
 
-  async get(user_id: string): Promise<UserCollection | null> {
+  async get(user_id: string): Promise<UserCollection> {
     const [items, total] = await this.db.$transaction([
       this.db.userCard.findMany({
         where: {
@@ -40,7 +45,7 @@ export default class UserCardsRepository extends Repository<UserCard> {
   }
 
   async update(user_card: UserCard) {
-    await this.db.userCard.update({
+    return await this.db.userCard.update({
       where: {
         user_id_card_id: {
           user_id: user_card.user_id,

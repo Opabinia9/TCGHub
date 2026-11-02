@@ -17,35 +17,28 @@ export default async function authRoutes(fastify: Fastify.FastifyInstance, optio
     {
       schema: {
         ...authLoginSchema,
-        // response: {
-        // 200: z.object({
-        // accessToken: z.string(),
-        // }),
-        // {
-        // description: 'Successful login',
-        // type: 'object',
-        // properties: {
-        // accessToken: { type: 'string' },
-        // },
-        // },
-        //   401: {
-        //     description: 'Invalid Credentials',
-        //     type: 'object',
-        //     properties: {
-        //       error: { type: 'string' },
-        //     },
-        //   },
-        //   400: {
-        //     description: 'Bad Request',
-        //     type: 'object',
-        //     properties: {
-        //       statusCode: { type: 'number' },
-        //       code: { type: 'string' },
-        //       error: { type: 'string' },
-        //       message: { type: 'string' },
-        //     },
-        //   },
-        // },
+        response: {
+          200: z
+            .object({
+              accessToken: z.jwt(),
+            })
+            .describe('Successful login response'),
+          401: z
+            .object({
+              error: z.string(),
+            })
+            .describe('Invalid Credentials'),
+          400: z
+            .object({
+              statusCode: z.number(),
+              code: z.string(),
+              error: z.string(),
+              message: z.string(),
+            })
+            .meta({
+              description: 'Bad Request',
+            }),
+        },
       },
     },
     controller.loginPost,
@@ -56,32 +49,24 @@ export default async function authRoutes(fastify: Fastify.FastifyInstance, optio
     {
       schema: {
         ...authSignupSchema,
-        // response: {
-        //   201: {
-        //     description: 'Account Creation Successful',
-        //     type: 'object',
-        //     properties: {
-        //       success: { type: 'string' },
-        //     },
-        //   },
-        //   400: {
-        //     description: 'Bad Request',
-        //     type: 'object',
-        //     properties: {
-        //       statusCode: { type: 'number' },
-        //       code: { type: 'string' },
-        //       error: { type: 'string' },
-        //       message: { type: 'string' },
-        //     },
-        //   },
-        //   409: {
-        //     description: 'Conflict',
-        //     type: 'object',
-        //     properties: {
-        //       error: { type: 'string' },
-        //     },
-        //   },
-        // },
+        response: {
+          201: z
+            .object({ success: z.string() })
+            .meta({ description: 'Account Creation Successful' }),
+          400: z
+            .object({
+              statusCode: z.number(),
+              code: z.string(),
+              error: z.string(),
+              message: z.string(),
+            })
+            .meta({ description: 'Bad Request' }),
+          409: z
+            .object({
+              error: z.string(),
+            })
+            .meta({ description: 'Conflict' }),
+        },
       },
     },
     controller.signupPost,
@@ -92,25 +77,21 @@ export default async function authRoutes(fastify: Fastify.FastifyInstance, optio
     {
       preHandler: [fastify.jwt_verify],
       schema: {
-        // response: {
-        //   200: {
-        //     description: 'OK',
-        //     type: 'object',
-        //     properties: {
-        //       success: { type: 'string' },
-        //     },
-        //   },
-        //   401: {
-        //     description: 'Unauthorized',
-        //     type: 'object',
-        //     properties: {
-        //       statusCode: { type: 'number' },
-        //       code: { type: 'string' },
-        //       error: { type: 'string' },
-        //       message: { type: 'string' },
-        //     },
-        //   },
-        // },
+        response: {
+          200: z
+            .object({
+              success: z.string(),
+            })
+            .meta({ description: 'OK' }),
+          401: z
+            .object({
+              statusCode: z.number(),
+              code: z.string(),
+              error: z.string(),
+              message: z.string(),
+            })
+            .meta({ description: 'Unauthorized' }),
+        },
       },
     },
     controller.protectedGet,

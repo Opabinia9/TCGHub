@@ -21,7 +21,11 @@ import type {
   FastifyTypeProviderDefault,
   RawServerDefault,
 } from 'fastify';
-import { serializerCompiler, validatorCompiler } from 'fastify-type-provider-zod';
+import {
+  createJsonSchemaTransform,
+  serializerCompiler,
+  validatorCompiler,
+} from 'fastify-type-provider-zod';
 import type { PrismaClientKnownRequestError } from '@prisma/client/runtime/client';
 
 export default async function buildServer(
@@ -60,15 +64,24 @@ export default async function buildServer(
     },
   );
 
-  await server.register(fastifySwagger);
+  await server.register(fastifySwagger, {
+    openapi: {
+      info: {
+        title: 'TCGHub - Backend',
+        description: 'Backend API for TCGHub',
+        version: '0.1.0',
+      },
+    },
+    transform: createJsonSchemaTransform({}),
+  });
   await server.register(fastifySwaggerUi, {
     routePrefix: '/docs',
   });
 
-  // /* c8 ignore next */
-  // if (process.env.NODE_ENV === 'test') {
-  //   specCheckPlugin(server);
-  // }
+  /* c8 ignore next */
+  if (process.env.NODE_ENV === 'test') {
+    specCheckPlugin(server);
+  }
   registerJwtDecorator(server);
 
   await server.register(fastify_jwt, { secret: env.SERVER_SECRET });

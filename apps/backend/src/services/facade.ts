@@ -1,27 +1,35 @@
 import UserRepository from '@/persistence/userReposistory.js';
+import CardRepository from '@/persistence/cardRepository.js';
+import UserCardsRepository from '@/persistence/userCardsRepository.js';
+import DeckRepository from '@/persistence/deckRepository.js';
 import ChatRepository from '@/persistence/chatReposistory.js';
 import MessageRepository from '@/persistence/messageReposistory.js';
 import NotFoundError from '@/errortypes/NotFoundError.js';
-import type { UserCreationInterface, UserWithChats } from '@/types/userObject.js';
-import CardRepository, { type CardSummary } from '@/persistence/cardRepository.js';
-import type { CardSearchQuery } from '@/types/cardObject.js';
-import type { User } from '@prisma/client';
 import { hashPassword } from '@/utils/hashing.js';
-import type { AuthSignupBody } from '@/routes/api/v1/routeSchemas.js';
+import type { Deck, DeckCard, User, UserCard } from '@prisma/client';
+import type { AuthSignupBody, DeckCardParams } from '@/routes/api/v1/routeSchemas.js';
+import type { UserCreationInterface, UserWithChats } from '@/types/userObject.js';
 import type { ChatWithMembersCreationInterface, ChatWithMessages } from '@/types/chatObject.js';
 import type { MessageCreationInterface } from '@/types/MessageObject.js';
+import type { CardSearchQuery, CardSummary } from '@/types/cardObject.js';
+import type { DeckCreationInterface, DeckRef, UserDecks } from '@/types/deckObject.js';
+import type { UserCollection } from '@/types/userCardObject.js';
 
 export default class Facade {
   userRepo: UserRepository;
   chatRepo: ChatRepository;
   messageRepo: MessageRepository;
   cardRepo: CardRepository;
+  userCardsRepo: UserCardsRepository;
+  deckRepo: DeckRepository;
 
   constructor() {
     this.userRepo = new UserRepository();
     this.chatRepo = new ChatRepository();
     this.messageRepo = new MessageRepository();
     this.cardRepo = new CardRepository();
+    this.userCardsRepo = new UserCardsRepository();
+    this.deckRepo = new DeckRepository();
   }
 
   /** User functions  */
@@ -63,7 +71,7 @@ export default class Facade {
     const { password, ...include } = signupData;
     const hash = await hashPassword(signupData.password);
     const userData: UserCreationInterface = { ...include, hash: hash };
-    this.userRepo.add(userData);
+    await this.userRepo.add(userData);
   }
 
   async getUserWithChats(userId: string): Promise<UserWithChats> {
@@ -107,10 +115,100 @@ export default class Facade {
   }
 
   async searchCards(filters: CardSearchQuery) {
-    return this.cardRepo.search(filters);
+    const cards = this.cardRepo.search(filters);
+    if (cards === null) {
+      throw new NotFoundError('No Cards Found');
+    }
+    return cards;
   }
 
   async listSets() {
-    return this.cardRepo.listSets();
+    const sets = this.cardRepo.listSets();
+    if (sets === null) {
+      throw new NotFoundError('No Sets Found');
+    }
+    return sets;
+  }
+
+  /** User Cards Functions (Collections) */
+  async addCard(user_card: UserCard): Promise<UserCard> {
+    const card = await this.userCardsRepo.add(user_card);
+    if (card === null) {
+      throw new NotFoundError('Card Not Added');
+    }
+    return card;
+  }
+
+  async getCollection(user_id: string): Promise<UserCollection> {
+    return await this.userCardsRepo.getUserCollection(user_id);
+  }
+
+  async getUserCard(user_id: string, card_id: string): Promise<UserCard> {
+    const user_card = await this.userCardsRepo.get(user_id, card_id);
+    if (user_card === null) {
+      throw new NotFoundError('Card not found');
+    }
+    return user_card;
+  }
+
+  async updateCard(user_card: UserCard): Promise<UserCard> {
+    const updated_card = await this.userCardsRepo.update(user_card);
+    if (updated_card === null) {
+      throw new NotFoundError('Card not found');
+    }
+    return updated_card;
+  }
+
+  /** Decks Functions */
+  async createDeck(deck: DeckCreationInterface): Promise<Deck> {
+    return await this.deckRepo.add(deck);
+  }
+
+  async delDeck(deck: DeckRef): Promise<Deck | void> {
+    return await this.deckRepo.delDeck(deck);
+  }
+
+  async updDeck(deck: Deck): Promise<Deck> {
+    const updated_deck = await this.deckRepo.updDeck(deck);
+    if (updated_deck === null) {
+      throw new NotFoundError('Deck Not Updated');
+    }
+    return updated_deck;
+  }
+
+  async getUserDecks(user_id: string): Promise<UserDecks> {
+    const user_decks = await this.deckRepo.getUserDecks(user_id);
+    if (user_decks === null) {
+      throw new NotFoundError('No Decks Found');
+    }
+    return user_decks;
+  }
+
+  async getDeck(deck: DeckRef): Promise<Deck> {
+    const user_deck = await this.deckRepo.getDeck(deck);
+    if (user_deck === null) {
+      throw new NotFoundError('Deck Not Found');
+    }
+    return user_deck;
+  }
+
+  async addDeckCard(owner_id: string, deck_card: DeckCard): Promise<DeckCard> {
+    const new_deck_card = await this.deckRepo.addDeckCard(owner_id, deck_card);
+    if (new_deck_card === null) {
+      throw new NotFoundError('Card Not Added');
+    }
+    return new_deck_card;
+  }
+
+  async delDeckCard(owner_id: string, deck_card: DeckCardParams): Promise<DeckCard | void> {
+    await this.deckRepo.delDeckCard(owner_id, deck_card);
+  }
+
+  async updDeckCard(owner_id: string, deck_card: DeckCard): Promise<DeckCard> {
+    const updated_deck_card = await this.deckRepo.updDeckCard(owner_id, deck_card);
+    if (updated_deck_card === null) {
+      throw new NotFoundError('Deck Not Updated');
+    }
+    return updated_deck_card;
   }
 }

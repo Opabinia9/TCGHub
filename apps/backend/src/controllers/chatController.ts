@@ -48,7 +48,7 @@ export default class ChatController {
     return reply.code(201).send({ success: 'Chat created', chatID: chat.id });
   }
 
-  async deleteChat(request: FastifyRequest<{ Body: {} }>, reply: FastifyReply) {
+  async deleteChat(request: FastifyRequest, reply: FastifyReply) {
     return reply.code(503).send({ error: 'not implemented yet' });
   }
 

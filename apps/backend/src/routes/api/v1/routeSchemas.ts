@@ -1,125 +1,102 @@
 import type { ChatWithMembersCreationInterface } from '@/types/chatObject.js';
 import { ChatType } from '@prisma/client';
+import { CardSearchQuerySchema } from '@/types/cardObject.js';
+import { z } from 'zod';
 
-export interface AuthLoginBody {
-  email: string;
-  password: string;
-}
-export const authLoginSchema = {
-  body: {
-    type: 'object',
-    required: ['email', 'password'],
-    additionalProperties: false,
-    properties: {
-      email: {
-        type: 'string',
-        format: 'email',
-      },
-      password: { type: 'string' },
-    },
-  },
-};
+// TODO: maybe rename? is schema still right, note: this is my own thoughts ignore them, get out of my head
+/** Auth Types & Interfaces */
 
-export interface AuthSignupBody {
-  first_name: string;
-  last_name: string;
-  email: string;
-  password: string;
-  username: string;
-}
-export const authSignupSchema = {
-  body: {
-    type: 'object',
-    required: ['first_name', 'last_name', 'email', 'password', 'username'],
-    additionalProperties: false,
-    properties: {
-      first_name: { type: 'string' },
-      last_name: { type: 'string' },
-      email: {
-        type: 'string',
-        format: 'email',
-      },
-      password: { type: 'string' },
-      username: { type: 'string' },
-    },
-  },
-};
+export const AuthLoginBodySchema = z.object({
+  email: z.email(),
+  password: z.string(),
+});
+export type AuthLoginBody = z.infer<typeof AuthLoginBodySchema>;
+export const authLoginSchema = { body: AuthLoginBodySchema };
 
-export interface ChatParamsInterface {
-  chatId: string;
-}
-export const chatParamsSchema = {
-  type: 'object',
-  properties: {
-    chatId: { type: 'string' },
-  },
-};
+export const AuthSignupBodySchema = z.object({
+  first_name: z.string(),
+  last_name: z.string(),
+  email: z.email(),
+  password: z.string(),
+  username: z.string(),
+});
+export type AuthSignupBody = z.infer<typeof AuthSignupBodySchema>;
+export const authSignupSchema = { body: AuthSignupBodySchema };
 
-export interface ChatPostMessageBodyInterface {
-  body: string;
-}
+export const chatParamsSchema = z.object({
+  chatId: z.string(),
+});
+export type ChatParamsInterface = z.infer<typeof chatParamsSchema>;
 
-export const chatPostMessageBodySchema = {
-  type: 'object',
-  required: ['body'],
-  additionalProperties: false,
-  properties: {
-    body: { type: 'string' },
-  },
-};
+export const chatPostMessageBodySchema = z.object({
+  body: z.string(),
+});
+export type ChatPostMessageBodyInterface = z.infer<typeof chatPostMessageBodySchema>;
 
 export type ChatCreationBodyInterface = ChatWithMembersCreationInterface;
 
-export const chatCreationBodySchema = {
-  type: 'object',
-  required: ['title', 'type', 'members'],
-  additionalProperties: false,
-  properties: {
-    title: { type: 'string' },
-    type: { type: 'string', enum: Object.values(ChatType) },
+export const chatCreationBodySchema = z.object({
+  title: z.string(),
+  type: z.enum(Object.values(ChatType)),
+  members: z.array(z.string()),
+});
 
-    members: {
-      type: 'array',
-      items: {
-        type: 'string',
-      },
-    },
-  },
-};
+/** Card Types & Interfaces */
 
-export const cardIdParamsSchema = {
-  type: 'object',
-  required: ['id'],
-  properties: { id: { type: 'string', minLength: 1 } },
-};
+export const UserIdParamsSchema = z.object({
+  userId: z.string(),
+});
+export type UserIdParamsInterface = z.infer<typeof UserIdParamsSchema>;
 
-export const cardSearchQuerySchema = {
-  type: 'object',
-  properties: {
-    name: { type: 'string', minLength: 1 },
-    set: { type: 'string', minLength: 1 },
-    rarity: { type: 'string', minLength: 1 },
-    colors: { type: 'string', minLength: 1 },
-    oracleText: { type: 'string', minLength: 1 },
-    typeLine: { type: 'string', minLength: 1 },
-    manaCost: { type: 'string', minLength: 1 },
-    cmc: { type: 'number', minimum: 0 },
-    releasedAt: { type: 'string', minLength: 1 },
-    prices: { type: 'number', minimum: 0 },
-    legalities: { type: 'string', minLength: 1 },
-    colorIdentity: { type: 'string', minLength: 1 },
-    page: { type: 'integer', minimum: 1, default: 1 },
-    limit: { type: 'integer', minimum: 1, maximum: 100, default: 20 },
-  },
-};
+export const cardSearchQuerySchema = CardSearchQuerySchema;
 
-export interface UserIdParamsInterface {
-  userId: string;
-}
+export const cardIdParamsSchema = z.object({
+  id: z.uuid(),
+});
 
-export const UserIdParamsSchema = {
-  type: 'object',
-  properties: {
-    userId: { type: 'string' },
-  },
-};
+/** Collections Types & Interfaces */
+
+export const collectionBodyInterface = z
+  .object({
+    card_id: z.uuid(),
+    quantity: z.number().int().min(-999).max(999),
+    condition: z.string().trim().min(3).max(20).optional(),
+    for_trade: z.boolean(),
+    wishlist: z.boolean(),
+  })
+  .refine((body) => !(body.for_trade && body.wishlist), {
+    message: 'Card cannot be available for trade and on your wishlist',
+    path: ['wishlist', 'for_trade'],
+  });
+
+export type CollectionBody = z.infer<typeof collectionBodyInterface>;
+
+/** Deck Types & Interfaces */
+
+export type DeckIdParams = z.infer<typeof deckIdParamsSchema>;
+
+export const deckIdParamsSchema = z.object({
+  deck_id: z.uuid(),
+});
+
+export const DeckBodySchema = z.object({
+  deck_name: z.string().trim().min(1).max(100),
+});
+
+export type DeckBody = z.infer<typeof DeckBodySchema>;
+
+/** DeckCard Types & Interfaces */
+
+export const deckCardParamsSchema = z.object({
+  deck_id: z.uuid(),
+  card_id: z.uuid(),
+});
+
+export type DeckCardParams = z.infer<typeof deckCardParamsSchema>;
+
+export const DeckCardSchema = z.object({
+  quantity: z.number().int().min(-999).max(999),
+});
+
+export const DeckCardBody = DeckCardSchema;
+export type DeckCardBody = z.infer<typeof DeckCardBody>;

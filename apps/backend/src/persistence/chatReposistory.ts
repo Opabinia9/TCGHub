@@ -16,8 +16,8 @@ export default class ChatRepository extends Repository<Chat> {
   }
 
   // nothing currently uses this function, it is kept to match the abstract and for future use
-  async add(chat: any): Promise<void> {
-    await this.db.chat.create({
+  async add(chat: any): Promise<Chat> {
+    return await this.db.chat.create({
       data: chat,
     });
   }

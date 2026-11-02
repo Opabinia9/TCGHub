@@ -9,57 +9,55 @@ export default async function chatRoutes(fastify: Fastify.FastifyInstance, optio
     {
       schema: {
         params: UserIdParamsSchema,
-        response: {
-          503: {
-            description: 'Service Unavailable',
-            type: 'object',
-            properties: {
-              error: { type: 'string' },
-            },
-          },
-        },
+        // response: {
+        //   503: {
+        //     description: 'Service Unavailable',
+        //     type: 'object',
+        //     properties: {
+        //       error: { type: 'string' },
+        //     },
+        //   },
+        // },
       },
     },
     controller.getUserDetails,
   );
 
-  fastify.patch<{ Body: {}; Params: UserIdParamsInterface }>(
+  fastify.patch<{ Params: UserIdParamsInterface }>(
     '/:userId',
     {
       preHandler: [fastify.jwt_verify],
       schema: {
         params: UserIdParamsSchema,
-        body: {},
-        response: {
-          503: {
-            description: 'Service Unavailable',
-            type: 'object',
-            properties: {
-              error: { type: 'string' },
-            },
-          },
-        },
+        // response: {
+        //   503: {
+        //     description: 'Service Unavailable',
+        //     type: 'object',
+        //     properties: {
+        //       error: { type: 'string' },
+        //     },
+        //   },
+        // },
       },
     },
     controller.updateUserDetails,
   );
 
-  fastify.delete<{ Body: {}; Params: UserIdParamsInterface }>(
+  fastify.delete<{ Params: UserIdParamsInterface }>(
     '/:userId',
     {
       preHandler: [fastify.jwt_verify],
       schema: {
         params: UserIdParamsSchema,
-        body: {},
-        response: {
-          503: {
-            description: 'Service Unavailable',
-            type: 'object',
-            properties: {
-              error: { type: 'string' },
-            },
-          },
-        },
+        // response: {
+        //   503: {
+        //     description: 'Service Unavailable',
+        //     type: 'object',
+        //     properties: {
+        //       error: { type: 'string' },
+        //     },
+        //   },
+        // },
       },
     },
     controller.deleteUser,

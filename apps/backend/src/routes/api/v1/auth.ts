@@ -6,41 +6,46 @@ import {
   type AuthLoginBody,
   type AuthSignupBody,
 } from './routeSchemas.js';
+import z from 'zod';
+import type { ZodTypeProvider } from 'fastify-type-provider-zod';
 
 export default async function authRoutes(fastify: Fastify.FastifyInstance, options: object) {
   const controller = new AuthController();
 
-  fastify.post<{ Body: AuthLoginBody }>(
+  fastify.withTypeProvider<ZodTypeProvider>().post<{ Body: AuthLoginBody }>(
     '/login',
     {
       schema: {
         ...authLoginSchema,
-        response: {
-          200: {
-            description: 'Successful login',
-            type: 'object',
-            properties: {
-              accessToken: { type: 'string' },
-            },
-          },
-          401: {
-            description: 'Invalid Credentials',
-            type: 'object',
-            properties: {
-              error: { type: 'string' },
-            },
-          },
-          400: {
-            description: 'Bad Request',
-            type: 'object',
-            properties: {
-              statusCode: { type: 'number' },
-              code: { type: 'string' },
-              error: { type: 'string' },
-              message: { type: 'string' },
-            },
-          },
-        },
+        // response: {
+        // 200: z.object({
+        // accessToken: z.string(),
+        // }),
+        // {
+        // description: 'Successful login',
+        // type: 'object',
+        // properties: {
+        // accessToken: { type: 'string' },
+        // },
+        // },
+        //   401: {
+        //     description: 'Invalid Credentials',
+        //     type: 'object',
+        //     properties: {
+        //       error: { type: 'string' },
+        //     },
+        //   },
+        //   400: {
+        //     description: 'Bad Request',
+        //     type: 'object',
+        //     properties: {
+        //       statusCode: { type: 'number' },
+        //       code: { type: 'string' },
+        //       error: { type: 'string' },
+        //       message: { type: 'string' },
+        //     },
+        //   },
+        // },
       },
     },
     controller.loginPost,
@@ -51,32 +56,32 @@ export default async function authRoutes(fastify: Fastify.FastifyInstance, optio
     {
       schema: {
         ...authSignupSchema,
-        response: {
-          201: {
-            description: 'Account Creation Successful',
-            type: 'object',
-            properties: {
-              success: { type: 'string' },
-            },
-          },
-          400: {
-            description: 'Bad Request',
-            type: 'object',
-            properties: {
-              statusCode: { type: 'number' },
-              code: { type: 'string' },
-              error: { type: 'string' },
-              message: { type: 'string' },
-            },
-          },
-          409: {
-            description: 'Conflict',
-            type: 'object',
-            properties: {
-              error: { type: 'string' },
-            },
-          },
-        },
+        // response: {
+        //   201: {
+        //     description: 'Account Creation Successful',
+        //     type: 'object',
+        //     properties: {
+        //       success: { type: 'string' },
+        //     },
+        //   },
+        //   400: {
+        //     description: 'Bad Request',
+        //     type: 'object',
+        //     properties: {
+        //       statusCode: { type: 'number' },
+        //       code: { type: 'string' },
+        //       error: { type: 'string' },
+        //       message: { type: 'string' },
+        //     },
+        //   },
+        //   409: {
+        //     description: 'Conflict',
+        //     type: 'object',
+        //     properties: {
+        //       error: { type: 'string' },
+        //     },
+        //   },
+        // },
       },
     },
     controller.signupPost,
@@ -87,25 +92,25 @@ export default async function authRoutes(fastify: Fastify.FastifyInstance, optio
     {
       preHandler: [fastify.jwt_verify],
       schema: {
-        response: {
-          200: {
-            description: 'OK',
-            type: 'object',
-            properties: {
-              success: { type: 'string' },
-            },
-          },
-          401: {
-            description: 'Unauthorized',
-            type: 'object',
-            properties: {
-              statusCode: { type: 'number' },
-              code: { type: 'string' },
-              error: { type: 'string' },
-              message: { type: 'string' },
-            },
-          },
-        },
+        // response: {
+        //   200: {
+        //     description: 'OK',
+        //     type: 'object',
+        //     properties: {
+        //       success: { type: 'string' },
+        //     },
+        //   },
+        //   401: {
+        //     description: 'Unauthorized',
+        //     type: 'object',
+        //     properties: {
+        //       statusCode: { type: 'number' },
+        //       code: { type: 'string' },
+        //       error: { type: 'string' },
+        //       message: { type: 'string' },
+        //     },
+        //   },
+        // },
       },
     },
     controller.protectedGet,

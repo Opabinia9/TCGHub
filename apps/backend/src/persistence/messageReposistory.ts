@@ -10,8 +10,8 @@ export default class MessageRepository extends Repository<Message> {
     this.db = prisma;
   }
 
-  async add(message: MessageCreationInterface): Promise<void> {
-    await this.db.message.create({
+  async add(message: MessageCreationInterface): Promise<Message> {
+    return await this.db.message.create({
       data: message,
     });
   }

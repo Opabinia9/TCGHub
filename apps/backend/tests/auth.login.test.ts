@@ -28,6 +28,7 @@ describe('/api/v1/auth/login', () => {
     });
     const payload = await response.json();
 
+    console.log(response.body);
     expect(response.statusCode).toBe(200);
     expect(payload).toHaveProperty('access_token');
   });
@@ -66,7 +67,7 @@ describe('/api/v1/auth/login', () => {
       statusCode: 400,
       code: 'FST_ERR_VALIDATION',
       error: 'Bad Request',
-      message: "body must have required property 'email'",
+      message: 'body/email Invalid input: expected string, received undefined',
     });
   });
 
@@ -87,7 +88,7 @@ describe('/api/v1/auth/login', () => {
       statusCode: 400,
       code: 'FST_ERR_VALIDATION',
       error: 'Bad Request',
-      message: 'body/email must match format "email"',
+      message: 'body/email Invalid email address',
     });
   });
 
@@ -125,7 +126,7 @@ describe('/api/v1/auth/login', () => {
       statusCode: 400,
       code: 'FST_ERR_VALIDATION',
       error: 'Bad Request',
-      message: "body must have required property 'password'",
+      message: 'body/password Invalid input: expected string, received undefined',
     });
   });
 

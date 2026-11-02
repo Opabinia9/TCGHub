@@ -11,7 +11,7 @@ import type {
   ChatPostMessageBodyInterface,
 } from './routeSchemas.js';
 import { ChatType } from '@prisma/client';
-import { properties } from 'zod';
+import z from 'zod';
 
 export default async function chatRoutes(fastify: Fastify.FastifyInstance, options: object) {
   const controller = new ChatController();
@@ -22,32 +22,24 @@ export default async function chatRoutes(fastify: Fastify.FastifyInstance, optio
       preHandler: [fastify.jwt_verify],
       schema: {
         response: {
-          200: {
-            description: 'OK',
-            type: 'array',
-            items: {
-              type: 'object',
-              properties: {
-                id: { type: 'string', format: 'uuid' },
-                type: { type: 'string', enum: Object.values(ChatType) },
-                title: { type: 'string' },
-                created_at: { type: 'string', format: 'date-time' },
-                members: {
-                  type: 'array',
-                  items: { type: 'string', format: 'uuid' },
-                },
-                last_read_message_id: { type: ['string', 'null'], format: 'uuid' },
-                joined_at: { type: 'string', format: 'date-time' },
-              },
-            },
-          },
-          401: {
-            description: 'Unauthorized',
-            type: 'object',
-            properties: {
-              error: { type: 'string' },
-            },
-          },
+          200: z
+            .array(
+              z.object({
+                id: z.uuid(),
+                type: z.enum(Object.values(ChatType)),
+                title: z.string(),
+                created_at: z.date(),
+                members: z.array(z.uuid()),
+                last_read_message_id: z.uuid().nullable(),
+                joined_at: z.date(),
+              }),
+            )
+            .meta({ description: 'OK' }),
+          401: z
+            .object({
+              error: z.string(),
+            })
+            .meta({ description: 'Unauthorized' }),
         },
       },
     },
@@ -61,41 +53,34 @@ export default async function chatRoutes(fastify: Fastify.FastifyInstance, optio
       schema: {
         body: chatCreationBodySchema,
         response: {
-          201: {
-            description: 'Created',
-            type: 'object',
-            properties: {
-              success: { type: 'string' },
-              chatID: { type: 'string', format: 'uuid' },
-            },
-          },
-          401: {
-            description: 'Unauthorized',
-            type: 'object',
-            properties: {
-              error: { type: 'string' },
-            },
-          },
+          201: z
+            .object({
+              success: z.string(),
+              chatID: z.uuid(),
+            })
+            .meta({ description: 'Created' }),
+          401: z
+            .object({
+              error: z.string(),
+            })
+            .meta({ description: 'Unauthorized' }),
         },
       },
     },
     controller.createChat,
   );
 
-  fastify.delete<{ Body: {} }>(
+  fastify.delete(
     '/',
     {
       preHandler: [fastify.jwt_verify],
       schema: {
-        body: {},
         response: {
-          503: {
-            description: 'Service Unavailable',
-            type: 'object',
-            properties: {
-              error: { type: 'string' },
-            },
-          },
+          503: z
+            .object({
+              error: z.string(),
+            })
+            .meta({ description: 'Service Unavailable' }),
         },
       },
     },
@@ -109,57 +94,45 @@ export default async function chatRoutes(fastify: Fastify.FastifyInstance, optio
       schema: {
         params: chatParamsSchema,
         response: {
-          200: {
-            description: 'OK',
-            type: 'object',
-            properties: {
-              id: { type: 'string', format: 'uuid' },
-              type: { type: 'string', enum: Object.values(ChatType) },
-              title: { type: 'string' },
-              created_at: { type: 'string', format: 'date-time' },
-              members: {
-                type: 'array',
-                items: { type: 'string', format: 'uuid' },
-              },
-              last_read_message_id: { type: ['string', 'null'], format: 'uuid' },
-              joined_at: { type: 'string', format: 'date-time' },
-            },
-          },
-          401: {
-            description: 'Unauthorized',
-            type: 'object',
-            properties: {
-              error: { type: 'string' },
-            },
-          },
-          404: {
-            description: 'Not Found',
-            type: 'object',
-            properties: {
-              error: { type: 'string' },
-            },
-          },
+          200: z
+            .object({
+              id: z.uuid(),
+              type: z.enum(Object.values(ChatType)),
+              title: z.string(),
+              created_at: z.date(),
+              members: z.array(z.uuid()),
+              last_read_message_id: z.uuid().nullable(),
+              joined_at: z.date(),
+            })
+            .meta({ description: 'OK' }),
+          401: z
+            .object({
+              error: z.string(),
+            })
+            .meta({ description: 'Unauthorized' }),
+          404: z
+            .object({
+              error: z.string(),
+            })
+            .meta({ description: 'Not Found' }),
         },
       },
     },
     controller.getChatDetails,
   );
 
-  fastify.patch<{ Params: ChatParamsInterface; Body: {} }>(
+  fastify.patch<{ Params: ChatParamsInterface }>(
     '/:chatId',
     {
       preHandler: [fastify.jwt_verify],
       schema: {
         params: chatParamsSchema,
-        body: {},
         response: {
-          503: {
-            description: 'Service Unavailable',
-            type: 'object',
-            properties: {
-              error: { type: 'string' },
-            },
-          },
+          503: z
+            .object({
+              error: z.string(),
+            })
+            .meta({ description: 'Service Unavailable' }),
         },
       },
     },
@@ -173,37 +146,27 @@ export default async function chatRoutes(fastify: Fastify.FastifyInstance, optio
       schema: {
         params: chatParamsSchema,
         response: {
-          200: {
-            description: 'OK',
-            type: 'object',
-            properties: {
-              messages: {
-                type: 'array',
-                items: {
-                  type: 'object',
-                  properties: {
-                    body: { type: 'string' },
-                    chat_id: { type: 'string', format: 'uuid' },
-                    sender_id: { type: 'string', format: 'uuid' },
-                  },
-                },
-              },
-            },
-          },
-          401: {
-            description: 'Unauthorized',
-            type: 'object',
-            properties: {
-              error: { type: 'string' },
-            },
-          },
-          404: {
-            description: 'Not Found',
-            type: 'object',
-            properties: {
-              error: { type: 'string' },
-            },
-          },
+          200: z
+            .object({
+              messages: z.array(
+                z.object({
+                  body: z.string(),
+                  chat_id: z.uuid(),
+                  sender_id: z.uuid(),
+                }),
+              ),
+            })
+            .meta({ description: 'OK' }),
+          401: z
+            .object({
+              error: z.string(),
+            })
+            .meta({ description: 'Unauthorized' }),
+          404: z
+            .object({
+              error: z.string(),
+            })
+            .meta({ description: 'Not Found' }),
         },
       },
     },
@@ -218,27 +181,21 @@ export default async function chatRoutes(fastify: Fastify.FastifyInstance, optio
         params: chatParamsSchema,
         body: chatPostMessageBodySchema,
         response: {
-          201: {
-            description: 'Created',
-            type: 'object',
-            properties: {
-              success: { type: 'string' },
-            },
-          },
-          401: {
-            description: 'Unauthorized',
-            type: 'object',
-            properties: {
-              error: { type: 'string' },
-            },
-          },
-          404: {
-            description: 'Not Found',
-            type: 'object',
-            properties: {
-              error: { type: 'string' },
-            },
-          },
+          201: z
+            .object({
+              success: z.string(),
+            })
+            .meta({ description: 'Created' }),
+          401: z
+            .object({
+              error: z.string(),
+            })
+            .meta({ description: 'Unauthorized' }),
+          404: z
+            .object({
+              error: z.string(),
+            })
+            .meta({ description: 'Not Found' }),
         },
       },
     },

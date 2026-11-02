@@ -1,6 +1,7 @@
 import Fastify from 'fastify';
 import { UserIdParamsSchema, type UserIdParamsInterface } from './routeSchemas.js';
 import UserController from '@/controllers/userController.js';
+import z from 'zod';
 export default async function chatRoutes(fastify: Fastify.FastifyInstance, options: object) {
   const controller = new UserController();
 
@@ -10,55 +11,47 @@ export default async function chatRoutes(fastify: Fastify.FastifyInstance, optio
       schema: {
         params: UserIdParamsSchema,
         response: {
-          503: {
-            description: 'Service Unavailable',
-            type: 'object',
-            properties: {
-              error: { type: 'string' },
-            },
-          },
+          503: z
+            .object({
+              error: z.string(),
+            })
+            .meta({ description: 'Service Unavailable' }),
         },
       },
     },
     controller.getUserDetails,
   );
 
-  fastify.patch<{ Body: {}; Params: UserIdParamsInterface }>(
+  fastify.patch<{ Params: UserIdParamsInterface }>(
     '/:userId',
     {
       preHandler: [fastify.jwt_verify],
       schema: {
         params: UserIdParamsSchema,
-        body: {},
         response: {
-          503: {
-            description: 'Service Unavailable',
-            type: 'object',
-            properties: {
-              error: { type: 'string' },
-            },
-          },
+          503: z
+            .object({
+              error: z.string(),
+            })
+            .meta({ description: 'Service Unavailable' }),
         },
       },
     },
     controller.updateUserDetails,
   );
 
-  fastify.delete<{ Body: {}; Params: UserIdParamsInterface }>(
+  fastify.delete<{ Params: UserIdParamsInterface }>(
     '/:userId',
     {
       preHandler: [fastify.jwt_verify],
       schema: {
         params: UserIdParamsSchema,
-        body: {},
         response: {
-          503: {
-            description: 'Service Unavailable',
-            type: 'object',
-            properties: {
-              error: { type: 'string' },
-            },
-          },
+          503: z
+            .object({
+              error: z.string(),
+            })
+            .meta({ description: 'Service Unavailable' }),
         },
       },
     },

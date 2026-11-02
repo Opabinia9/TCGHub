@@ -4,7 +4,7 @@ import type { FastifyRequest, FastifyReply } from 'fastify';
 import type { AuthLoginBody, AuthSignupBody } from '@/routes/api/v1/routeSchemas.js';
 import type { User } from '@prisma/client';
 import { verifyPassword } from '@/utils/hashing.js';
-import type { UserJwt, UserJwtType } from '@/types/JWTObject.js';
+import type { UserJwtType } from '@/types/JWTObject.js';
 
 const facade = new Facade();
 
@@ -39,20 +39,18 @@ export default class AuthController {
    * post request handling for auth/signup
    */
   async signupPost(request: FastifyRequest<{ Body: AuthSignupBody }>, reply: FastifyReply) {
-    let existingUser = null;
     try {
-      existingUser = await facade.getUserByEmail(request.body['email']);
+      await facade.getUserByEmail(request.body['email']);
       return reply.code(409).send({ error: 'Email already registered' });
     } catch (error) {
       /* c8 ignore else */
       if (error instanceof NotFoundError) {
         try {
-          existingUser = await facade.getUserByUsername(request.body['username']);
+          await facade.getUserByUsername(request.body['username']);
           return reply.code(409).send({ error: 'Username already registered' });
         } catch (error) {
           /* c8 ignore else */
           if (error instanceof NotFoundError) {
-            existingUser = null;
           } else {
             throw error;
           }

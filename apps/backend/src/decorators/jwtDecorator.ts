@@ -21,9 +21,8 @@ export default function registerJwtDecorator(fastify: FastifyInstance) {
     }
 
     const jwt: UserJwtType = UserJwt.parse(request.user);
-    let user;
     try {
-      user = await facade.getUserWithChats(jwt.userId);
+      await facade.getUserWithChats(jwt.userId);
     } catch (error) {
       /* c8 ignore else */
       if (error instanceof NotFoundError) {

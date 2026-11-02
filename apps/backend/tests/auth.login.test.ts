@@ -75,7 +75,7 @@ describe('POST /api/v1/auth/login', () => {
       statusCode: 400,
       code: 'FST_ERR_VALIDATION',
       error: 'Bad Request',
-      message: "body must have required property 'email'",
+      message: 'body/email Invalid input: expected string, received undefined',
     });
   });
 
@@ -96,7 +96,7 @@ describe('POST /api/v1/auth/login', () => {
       statusCode: 400,
       code: 'FST_ERR_VALIDATION',
       error: 'Bad Request',
-      message: 'body/email must match format "email"',
+      message: 'body/email Invalid email address',
     });
   });
 
@@ -134,7 +134,7 @@ describe('POST /api/v1/auth/login', () => {
       statusCode: 400,
       code: 'FST_ERR_VALIDATION',
       error: 'Bad Request',
-      message: "body must have required property 'password'",
+      message: 'body/password Invalid input: expected string, received undefined',
     });
   });
 

@@ -1,10 +1,8 @@
-import NotFoundError from '@/errortypes/NotFoundError.js';
 import Repository from '@/persistence/reposistory.js';
 import { prisma } from '@/utils/prisma.js';
-import type { Card, Prisma, PrismaClient } from '@prisma/client';
+import type { Prisma, PrismaClient } from '@prisma/client';
 import type { CardSearchFilters } from '@/types/cardObject.js';
-
-export type CardSummary = Omit<Card, 'rawData'>;
+import type { CardSummary } from '@/types/cardObject.js';
 
 export default class CardRepository extends Repository<CardSummary> {
   db: PrismaClient;
@@ -13,8 +11,8 @@ export default class CardRepository extends Repository<CardSummary> {
     this.db = prisma;
   }
 
-  async add() {
-    throw NotFoundError;
+  async add(card: CardSummary): Promise<CardSummary> {
+    throw new Error(`${card}`);
   }
 
   async get(cardID: string): Promise<CardSummary | null> {

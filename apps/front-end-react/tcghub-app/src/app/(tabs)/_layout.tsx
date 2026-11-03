@@ -3,9 +3,11 @@ import { Tabs } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
 import MaterialIcons from '@expo/vector-icons/MaterialIcons';
 import { unreadCount } from '@/data/chats';
+import { WishlistProvider } from "@/context/WishlistContext";
 
 export default function TabsLayout() {
   return (
+    <WishlistProvider>
     <Tabs
       screenOptions={{
         headerShown: false,
@@ -75,5 +77,6 @@ export default function TabsLayout() {
         }}
       />
     </Tabs>
+    </WishlistProvider>
   );
 }

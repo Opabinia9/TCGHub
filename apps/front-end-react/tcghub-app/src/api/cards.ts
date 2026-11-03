@@ -39,6 +39,7 @@ export type MagicCard = {
 	name: string;
 	type: string;
 	category: CardCategory;
+	setName?: string | null;
 	imageUris?: ImageUris | null;
 };
 
@@ -46,6 +47,7 @@ type ApiCard = {
 	id: string;
 	name: string;
 	typeLine?: string;
+	setName?: string | null;
 	imageUris?: ImageUris | null;
 };
 
@@ -67,6 +69,7 @@ function toMagicCard(card: ApiCard): MagicCard {
 		name: card.name,
 		type,
 		category: toCategory(type),
+		setName: card.setName,
 		imageUris: card.imageUris,
 	};
 }

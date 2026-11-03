@@ -4,6 +4,8 @@ import { ScrollView, StyleSheet, View, Pressable } from 'react-native';
 import { Avatar, Text, Button, TextInput } from 'react-native-paper';
 import { Ionicons } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
+import { Image } from 'expo-image';
+import { useWishlist } from '@/context/WishlistContext';
 
 const MY_DECKS = [
   { id: '1', name: 'Green Stompy', format: 'Modern', cardCount: 60, color: '#3F6B3A' },
@@ -14,6 +16,7 @@ const MY_DECKS = [
 
 export default function Profile() {
   const router = useRouter();
+  const { wishlistCards, toggleWishlist } = useWishlist();
 
   const [bio, setBio] = useState(
     'Magic player. Always looking for my next trade!'
@@ -225,9 +228,48 @@ export default function Profile() {
             )}
           </>
         ) : (
-          <Text style={styles.emptyMessage}>
-            Your wishlist is empty.
-          </Text>
+          wishlistCards.length === 0 ? (
+            <Text style={styles.emptyMessage}>
+              Your wishlist is empty.
+            </Text>
+          ) : (
+            <>
+              <View style={styles.sectionHeader}>
+                <Text style={styles.sectionTitle}>MY WISHLIST</Text>
+                <Text style={styles.deckCount}>
+                  {wishlistCards.length} cards
+                </Text>
+              </View>
+
+              {wishlistCards.map((card) => (
+                <View key={card.id} style={styles.deckRow}>
+                  <Image
+                    source={{
+                      uri: card.imageUris?.grid ?? card.imageUris?.normal,
+                    }}
+                    style={styles.wishlistImage}
+                    contentFit="contain"
+                  />
+
+                  <View style={styles.deckInfo}>
+                    <Text style={styles.deckName}>{card.name}</Text>
+                    <Text style={styles.deckMeta}>
+                      {card.setName || 'Set information unavailable'}
+                    </Text>
+                  </View>
+
+                  <Pressable
+                    onPress={() => toggleWishlist(card)}
+                    hitSlop={8}
+                    accessibilityRole="button"
+                    accessibilityLabel={`Remove ${card.name} from wishlist`}
+                  >
+                    <Ionicons name="heart" size={24} color="#171717" />
+                  </Pressable>
+                </View>
+              ))}
+            </>
+          )
         )}
       </View>
 
@@ -376,6 +418,11 @@ const styles = StyleSheet.create({
     borderRadius: 10,
     alignItems: 'center',
     justifyContent: 'center',
+  },
+  wishlistImage: {
+    width: 55,
+    height: 75,
+    borderRadius: 6,
   },
   deckInfo: {
     flex: 1,

@@ -1,3 +1,4 @@
+
 import { useEffect, useState } from "react";
 import { Image } from "expo-image";
 import {
@@ -11,6 +12,7 @@ import {
 import { Text, TextInput } from "react-native-paper";
 import { Ionicons } from "@expo/vector-icons";
 import { fetchCards, type MagicCard, type Pagination } from "@/api/cards";
+import { useWishlist } from "@/context/WishlistContext";
 
 const FILTERS = [
 	"All",
@@ -33,47 +35,80 @@ export default function CardsScreen() {
 	const [error, setError] = useState<string | null>(null);
 	const [pagination, setPagination] = useState<Pagination | null>(null);
 	const [loadingMore, setLoadingMore] = useState(false);
+	const { wishlistCards, toggleWishlist } = useWishlist();
 
+
+	// Load cards from the API, or use temporary cards if it fails.
 	useEffect(() => {
 		let cancelled = false;
+		let timeoutId: ReturnType<typeof setTimeout> | undefined;
+
 		setLoading(true);
 		setError(null);
+
 		const timer = setTimeout(async () => {
 			try {
-				const result = await fetchCards(searchQuery.trim());
+				const result = await Promise.race([
+					fetchCards(searchQuery.trim()),
+					new Promise<never>((_, reject) => {
+						timeoutId = setTimeout(() => {
+							reject(new Error("Request timeout"));
+						}, 5000);
+					}),
+				]);
+
 				if (!cancelled) {
 					setCards(result.items);
 					setPagination(result.pagination);
 				}
-			} catch (error) {
-				if (!cancelled)
-					setError(
-						error instanceof Error
-							? error.message
-							: "Well, looks like somethings broken :/",
-					);
+			} catch {
+				if (!cancelled) {
+        			setCards([]);
+        			setPagination(null);
+        			setError("Unable to load cards. Please try again later.");
+    			}
 			} finally {
-				if (!cancelled) setLoading(false);
+				if (timeoutId) {
+					clearTimeout(timeoutId);
+				}
+
+				if (!cancelled) {
+					setLoading(false);
+				}
 			}
 		}, 300);
+
 		return () => {
 			cancelled = true;
 			clearTimeout(timer);
+
+			if (timeoutId) {
+				clearTimeout(timeoutId);
+			}
 		};
 	}, [searchQuery]);
 
+	// Load the next page of cards.
 	async function loadMore() {
-		if (loading) return;
-		if (!pagination) return;
+		if (loading || !pagination || loadingMore) return;
 		if (pagination.page >= pagination.totalPages) return;
-		if (loadingMore) return;
+
 		try {
 			setLoadingMore(true);
-			const result = await fetchCards(searchQuery.trim(), pagination.page + 1);
-			setCards((prev) => [...prev, ...result.items]);
+
+			const result = await fetchCards(
+				searchQuery.trim(),
+				pagination.page + 1,
+			);
+
+			setCards((previousCards) => [
+				...previousCards,
+				...result.items,
+			]);
+
 			setPagination(result.pagination);
 		} catch {
-			/* empty page handling needed */
+			// More cards could not be loaded.
 		} finally {
 			setLoadingMore(false);
 		}
@@ -113,16 +148,15 @@ export default function CardsScreen() {
 						contentStyle={styles.searchInputContent}
 						placeholderTextColor="#77705F"
 						textColor="#171717"
-						accessibilityLabel="Search cards by name"
 					/>
 
 					{searchQuery.length > 0 && (
-						<Pressable
-							onPress={() => setSearchQuery("")}
-							accessibilityRole="button"
-							accessibilityLabel="Clear search"
-						>
-							<Ionicons name="close-circle" size={20} color="#77705F" />
+						<Pressable onPress={() => setSearchQuery("")}>
+							<Ionicons
+								name="close-circle"
+								size={20}
+								color="#77705F"
+							/>
 						</Pressable>
 					)}
 				</View>
@@ -139,13 +173,15 @@ export default function CardsScreen() {
 								onPress={() => setActiveFilter(filter)}
 								style={[
 									styles.filterButton,
-									activeFilter === filter && styles.activeFilterButton,
+									activeFilter === filter &&
+										styles.activeFilterButton,
 								]}
 							>
 								<Text
 									style={[
 										styles.filterText,
-										activeFilter === filter && styles.activeFilterText,
+										activeFilter === filter &&
+											styles.activeFilterText,
 									]}
 								>
 									{filter}
@@ -156,77 +192,131 @@ export default function CardsScreen() {
 				</View>
 
 				<View style={styles.cardsGrid}>
-					{filteredCards.map((card) => (
-						<View key={card.id} style={styles.card}>
-							<Pressable
-								onPress={() => setSelectedCard(card)}
-								accessibilityRole="button"
-								accessibilityLabel={`Enlarge ${card.name}`}
-								style={styles.imageContainer}
-							>
-								<Image
-									source={
-										card.imageUris?.grid
-											? {
-													uri: card.imageUris?.grid,
-													headers: {
-														"User-Agent": "TCGHub/1.0",
-														Accept: "*/*",
-													},
+					{filteredCards.map((card) => {
+						const isInWishlist = wishlistCards.some(
+    						(item) => item.id === card.id
+						);
+
+						return (
+							<View key={card.id} style={styles.card}>
+								<Pressable
+									onPress={() => setSelectedCard(card)}
+									accessibilityRole="button"
+									accessibilityLabel={`View ${card.name}`}
+									style={styles.imageContainer}
+								>
+									<Image
+										source={{
+											uri:
+												card.imageUris?.grid ??
+												card.imageUris?.normal ??
+												undefined,
+										}}
+										style={styles.cardImage}
+										contentFit="cover"
+									/>
+
+									<View style={styles.expandIcon}>
+										<Ionicons
+											name="expand-outline"
+											size={18}
+											color="#FFFFFF"
+										/>
+									</View>
+								</Pressable>
+
+								<View style={styles.cardInfo}>
+									<View style={styles.cardNameRow}>
+										<Text
+											style={styles.cardName}
+											numberOfLines={2}
+										>
+											{card.name}
+										</Text>
+
+										<Pressable
+											style={styles.wishlistButton}
+											onPress={() => toggleWishlist(card)}
+											accessibilityRole="button"
+											accessibilityLabel={
+												isInWishlist
+													? "Remove from wishlist"
+													: "Add to wishlist"
+											}
+											hitSlop={8}
+										>
+											<Ionicons
+												name={
+													isInWishlist
+														? "heart"
+														: "heart-outline"
 												}
-											: null
-									}
-									style={styles.cardImage}
-									contentFit="cover"
-								/>
+												size={24}
+												color="#171717"
+											/>
+										</Pressable>
+									</View>
 
-								<View style={styles.cardTypeBadge}>
-									<Text style={styles.cardTypeText}>{card.type}</Text>
+									<Text
+										style={styles.cardSetName}
+										numberOfLines={2}
+									>
+										{card.setName ||
+											"Set information unavailable"}
+									</Text>
 								</View>
-
-								<View style={styles.expandIcon}>
-									<Ionicons name="expand-outline" size={18} color="#FFFFFF" />
-								</View>
-							</Pressable>
-
-							<View style={styles.cardInfo}>
-								<Text style={styles.cardName}>{card.name}</Text>
-								<Text style={styles.cardCategory}>{card.category}</Text>
 							</View>
-						</View>
-					))}
+						);
+					})}
 				</View>
+
 				{pagination &&
 					pagination.page < pagination.totalPages &&
 					!loading &&
 					!loadingMore && (
 						<Pressable
-							style={styles.filterButton}
-							onPress={() => loadMore()}
-							accessibilityRole="button"
-							accessibilityLabel="Load More"
+							style={styles.loadMoreButton}
+							onPress={loadMore}
 						>
-							<Text style={styles.filterText}>Load More</Text>
+							<Text style={styles.loadMoreText}>Load More</Text>
 						</Pressable>
 					)}
+
 				{loadingMore && (
-					<ActivityIndicator style={{ marginVertical: 32 }} color="#171717" />
+					<ActivityIndicator
+						style={{ marginVertical: 32 }}
+						color="#171717"
+					/>
 				)}
+
 				{loading && (
-					<ActivityIndicator style={{ marginVertical: 32 }} color="#171717" />
+					<ActivityIndicator
+						style={{ marginVertical: 32 }}
+						color="#171717"
+					/>
 				)}
 
 				{error && !loading && (
 					<View style={styles.emptyState}>
-						<Ionicons name="alert-circle-outline" size={36} color="#77705F" />
-						<Text style={styles.emptyTitle}>Something went wrong</Text>
+						<Ionicons
+							name="alert-circle-outline"
+							size={36}
+							color="#77705F"
+						/>
+						<Text style={styles.emptyTitle}>
+							Something went wrong
+						</Text>
 						<Text style={styles.emptyText}>{error}</Text>
 					</View>
 				)}
 
 				{!loading && !error && filteredCards.length === 0 && (
 					<View style={styles.emptyState}>
-						<Ionicons name="search-outline" size={36} color="#77705F" />
+						<Ionicons
+							name="search-outline"
+							size={36}
+							color="#77705F"
+						/>
 						<Text style={styles.emptyTitle}>No cards found</Text>
 						<Text style={styles.emptyText}>
 							Try another search or category.
@@ -252,26 +342,27 @@ export default function CardsScreen() {
 					<Pressable
 						style={styles.previewBackdrop}
 						onPress={() => setSelectedCard(null)}
-						accessibilityRole="button"
-						accessibilityLabel="Close enlarged card"
 					/>
 
 					{selectedCard && (
-						<Image
-							source={
-								selectedCard.imageUris?.large
-									? {
-											uri: selectedCard.imageUris.large,
-											headers: {
-												"User-Agent": "TCGHub/1.0",
-												Accept: "*/*",
-											},
-										}
-									: undefined
-							}
-							style={styles.previewImage}
-							resizeMode="contain"
-						/>
+						<View style={styles.previewContent}>
+							<Image
+								source={{
+									uri:
+										selectedCard.imageUris?.large ??
+										selectedCard.imageUris?.normal ??
+										selectedCard.imageUris?.grid ??
+										undefined,
+								}}
+								style={styles.previewImage}
+								contentFit="contain"
+							/>
+
+							<Text style={styles.previewSetName}>
+								{selectedCard.setName ||
+									"Set information unavailable"}
+							</Text>
+						</View>
 					)}
 
 					<Pressable
@@ -390,20 +481,6 @@ const styles = StyleSheet.create({
 		width: "100%",
 		height: "100%",
 	},
-	cardTypeBadge: {
-		position: "absolute",
-		top: 10,
-		left: 8,
-		paddingHorizontal: 9,
-		paddingVertical: 5,
-		borderRadius: 6,
-		backgroundColor: "rgba(23, 23, 23, 0.88)",
-	},
-	cardTypeText: {
-		fontSize: 10,
-		fontWeight: "700",
-		color: "#FFFFFF",
-	},
 	expandIcon: {
 		position: "absolute",
 		right: 8,
@@ -419,15 +496,41 @@ const styles = StyleSheet.create({
 		paddingHorizontal: 11,
 		paddingVertical: 12,
 	},
+	cardNameRow: {
+		flexDirection: "row",
+		alignItems: "center",
+		justifyContent: "space-between",
+		gap: 6,
+	},
 	cardName: {
+		flex: 1,
 		fontSize: 15,
 		fontWeight: "800",
 		color: "#171717",
 	},
-	cardCategory: {
-		fontSize: 12,
+	wishlistButton: {
+		width: 30,
+		height: 30,
+		alignItems: "center",
+		justifyContent: "center",
+	},
+	cardSetName: {
+		fontSize: 11,
 		color: "#77705F",
-		marginTop: 4,
+		marginTop: 5,
+	},
+	loadMoreButton: {
+		alignSelf: "center",
+		marginTop: 28,
+		paddingHorizontal: 24,
+		paddingVertical: 12,
+		borderRadius: 20,
+		backgroundColor: "#171717",
+	},
+	loadMoreText: {
+		color: "#E2D7BD",
+		fontSize: 13,
+		fontWeight: "700",
 	},
 	emptyState: {
 		alignItems: "center",
@@ -464,17 +567,29 @@ const styles = StyleSheet.create({
 	previewBackdrop: {
 		...StyleSheet.absoluteFill,
 	},
+	previewContent: {
+		width: "100%",
+		alignItems: "center",
+		justifyContent: "center",
+	},
 	previewImage: {
 		width: "100%",
-		height: "85%",
+		height: "72%",
+	},
+	previewSetName: {
+		marginTop: 14,
+		fontSize: 14,
+		fontWeight: "600",
+		color: "#E2D7BD",
+		textAlign: "center",
 	},
 	previewClose: {
 		position: "absolute",
-		top: 48,
-		right: 18,
-		width: 44,
-		height: 44,
-		borderRadius: 22,
+		top: 55,
+		right: 22,
+		width: 42,
+		height: 42,
+		borderRadius: 21,
 		backgroundColor: "rgba(255, 255, 255, 0.15)",
 		alignItems: "center",
 		justifyContent: "center",

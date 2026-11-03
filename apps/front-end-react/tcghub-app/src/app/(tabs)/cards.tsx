@@ -3,12 +3,9 @@ import { Image } from 'expo-image';
 import { Modal, Pressable, ScrollView, StyleSheet, View, ActivityIndicator } from 'react-native';
 import { Text, TextInput } from 'react-native-paper';
 import { Ionicons } from '@expo/vector-icons';
-import { fetchCards, type MagicCard, type Pagination } from '@/api/cards';
+import { fetchCards } from '@/api/cards';
 import { useWishlist } from '@/context/WishlistContext';
-
-const FILTERS = ['All', 'Creature', 'Sorcery', 'Enchantment', 'Instant', 'Artifact', 'Land'];
-
-type FilterOption = (typeof FILTERS)[number];
+import { FilterOption, FILTERS, MagicCard, Pagination } from '@/api/types';
 
 export default function CardsScreen() {
   const [activeFilter, setActiveFilter] = useState<FilterOption>('All');

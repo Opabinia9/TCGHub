@@ -1,31 +1,27 @@
-
-import { useState } from 'react';
-import { ScrollView, StyleSheet, View, Pressable } from 'react-native';
+import { useEffect, useState } from 'react';
+import { ScrollView, StyleSheet, View, Pressable, ActivityIndicator } from 'react-native';
 import { Avatar, Text, Button, TextInput } from 'react-native-paper';
 import { Ionicons } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
-import { Image } from 'expo-image';
-import { useWishlist } from '@/context/WishlistContext';
-
-const MY_DECKS = [
-  { id: '1', name: 'Green Stompy', format: 'Modern', cardCount: 60, color: '#3F6B3A' },
-  { id: '2', name: 'Blue Control', format: 'Commander', cardCount: 100, color: '#34506E' },
-  { id: '3', name: 'Boros Aggro', format: 'Standard', cardCount: 60, color: '#8A3B2E' },
-  { id: '4', name: 'Dimir Midrange', format: 'Pioneer', cardCount: 60, color: '#3B3550' },
-];
+import { fetchCollection } from '@/api/collection';
+import { FilterOption, FILTERS, MagicCard, Pagination } from '@/api/types';
 
 export default function Profile() {
   const router = useRouter();
-  const { wishlistCards, toggleWishlist } = useWishlist();
 
-  const [bio, setBio] = useState(
-    'Magic player. Always looking for my next trade!'
-  );
+  const [bio, setBio] = useState('Magic player. Always looking for my next trade!');
   const [editedBio, setEditedBio] = useState(bio);
   const [isEditing, setIsEditing] = useState(false);
 
   const [activeSection, setActiveSection] = useState<'collection' | 'wishlist'>('collection');
-  const [activeCollectionTab, setActiveCollectionTab] = useState<'cards' | 'decks'>('cards');
+
+  const [searchQuery, setSearchQuery] = useState('');
+  const [loading, setLoading] = useState(true);
+  const [loadingMore, setLoadingMore] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+  const [cards, setCards] = useState<MagicCard[]>([]);
+  const [pagination, setPagination] = useState<Pagination | null>(null);
+  const [activeFilter, setActiveFilter] = useState<FilterOption>('All');
 
   const handleSave = () => {
     setBio(editedBio);
@@ -41,6 +37,78 @@ export default function Profile() {
     router.replace('/(auth)/login');
   };
 
+  useEffect(() => {
+    let cancelled = false;
+    let timeoutId: ReturnType<typeof setTimeout> | undefined;
+
+    setLoading(true);
+    setError(null);
+
+    const timer = setTimeout(async () => {
+      try {
+        const result = await Promise.race([
+          fetchCollection(searchQuery.trim()),
+          new Promise<never>((_, reject) => {
+            timeoutId = setTimeout(() => {
+              reject(new Error('Request timeout'));
+            }, 5000);
+          }),
+        ]);
+
+        if (!cancelled) {
+          setCards(result.items);
+          setPagination(result.pagination);
+        }
+      } catch {
+        if (!cancelled) {
+          setCards([]);
+          setPagination(null);
+          setError('Unable to load cards. Please try again later.');
+        }
+      } finally {
+        if (timeoutId) {
+          clearTimeout(timeoutId);
+        }
+
+        if (!cancelled) {
+          setLoading(false);
+        }
+      }
+    }, 300);
+
+    return () => {
+      cancelled = true;
+      clearTimeout(timer);
+
+      if (timeoutId) {
+        clearTimeout(timeoutId);
+      }
+    };
+  }, [searchQuery]);
+
+  async function loadMore() {
+    if (loading || !pagination || loadingMore) return;
+    if (pagination.page >= pagination.totalPages) return;
+
+    try {
+      setLoadingMore(true);
+
+      const result = await fetchCollection(searchQuery.trim(), pagination.page + 1);
+
+      setCards((previousCards) => [...previousCards, ...result.items]);
+
+      setPagination(result.pagination);
+    } catch {
+      // More cards could not be loaded.
+    } finally {
+      setLoadingMore(false);
+    }
+  }
+
+  const filteredCards = cards.filter(
+    (card) => activeFilter === 'All' || card.category === activeFilter,
+  );
+
   return (
     <ScrollView
       style={styles.screen}
@@ -49,12 +117,7 @@ export default function Profile() {
     >
       {/* Profile header */}
       <View style={styles.profileHeader}>
-        <Avatar.Icon
-          size={76}
-          icon="account"
-          color="#E2D7BD"
-          style={styles.avatar}
-        />
+        <Avatar.Icon size={76} icon="account" color="#E2D7BD" style={styles.avatar} />
 
         <View style={styles.userInfo}>
           <Text style={styles.name}>Lucas Zales</Text>
@@ -78,7 +141,6 @@ export default function Profile() {
           {isEditing ? 'CANCEL' : 'EDIT'}
         </Button>
       </View>
-
       {/* Biography */}
       <View style={styles.bioContainer}>
         {isEditing ? (
@@ -96,7 +158,6 @@ export default function Profile() {
               outlineColor="#655D50"
               activeOutlineColor="#171717"
             />
-
             <Button
               mode="contained"
               onPress={handleSave}
@@ -111,18 +172,13 @@ export default function Profile() {
           <Text style={styles.bio}>{bio}</Text>
         )}
       </View>
-
       {/* Collection and Wishlist */}
       <View style={styles.decksSection}>
-
         {/* Main tabs */}
         <View style={styles.mainTabs}>
           <Pressable
             onPress={() => setActiveSection('collection')}
-            style={[
-              styles.mainTab,
-              activeSection === 'collection' && styles.activeMainTab,
-            ]}
+            style={[styles.mainTab, activeSection === 'collection' && styles.activeMainTab]}
           >
             <Text
               style={[
@@ -136,149 +192,63 @@ export default function Profile() {
 
           <Pressable
             onPress={() => setActiveSection('wishlist')}
-            style={[
-              styles.mainTab,
-              activeSection === 'wishlist' && styles.activeMainTab,
-            ]}
+            style={[styles.mainTab, activeSection === 'wishlist' && styles.activeMainTab]}
           >
             <Text
-              style={[
-                styles.mainTabText,
-                activeSection === 'wishlist' && styles.activeMainTabText,
-              ]}
+              style={[styles.mainTabText, activeSection === 'wishlist' && styles.activeMainTabText]}
             >
               MY WISHLIST
             </Text>
           </Pressable>
         </View>
+        <View style={styles.filterSection}>
+          <ScrollView
+            horizontal
+            showsHorizontalScrollIndicator={false}
+            contentContainerStyle={styles.filterList}
+          >
+            {FILTERS.map((filter) => (
+              <Pressable
+                key={filter}
+                onPress={() => setActiveFilter(filter)}
+                style={[styles.filterButton, activeFilter === filter && styles.activeFilterButton]}
+              >
+                <Text
+                  style={[styles.filterText, activeFilter === filter && styles.activeFilterText]}
+                >
+                  {filter}
+                </Text>
+              </Pressable>
+            ))}
+          </ScrollView>
+        </View>
 
         {/* Collection content */}
-        {activeSection === 'collection' ? (
-          <>
-            <View style={styles.collectionTabs}>
-              <Pressable
-                onPress={() => setActiveCollectionTab('cards')}
-                style={[
-                  styles.collectionTab,
-                  activeCollectionTab === 'cards' && styles.activeCollectionTab,
-                ]}
-              >
-                <Text
-                  style={[
-                    styles.collectionTabText,
-                    activeCollectionTab === 'cards' && styles.activeCollectionTabText,
-                  ]}
-                >
-                  CARDS
-                </Text>
-              </Pressable>
-
-              <Pressable
-                onPress={() => setActiveCollectionTab('decks')}
-                style={[
-                  styles.collectionTab,
-                  activeCollectionTab === 'decks' && styles.activeCollectionTab,
-                ]}
-              >
-                <Text
-                  style={[
-                    styles.collectionTabText,
-                    activeCollectionTab === 'decks' && styles.activeCollectionTabText,
-                  ]}
-                >
-                  DECKS
-                </Text>
-              </Pressable>
-            </View>
-
-            {activeCollectionTab === 'cards' ? (
-              <Text style={styles.emptyMessage}>
-                Your collection is empty.
-              </Text>
-            ) : (
-              <>
-                <View style={styles.sectionHeader}>
-                  <Text style={styles.sectionTitle}>MY DECKS</Text>
-                  <Text style={styles.deckCount}>{MY_DECKS.length} decks</Text>
-                </View>
-
-                {MY_DECKS.map((deck) => (
-                  <View key={deck.id} style={styles.deckRow}>
-                    <View
-                      style={[styles.deckArt, { backgroundColor: deck.color }]}
-                    >
-                      <Ionicons name="layers" size={24} color="#FFFFFF" />
-                    </View>
-
-                    <View style={styles.deckInfo}>
-                      <Text style={styles.deckName}>{deck.name}</Text>
-                      <Text style={styles.deckMeta}>
-                        {deck.format} · {deck.cardCount} cards
-                      </Text>
-                    </View>
-
-                    <Ionicons
-                      name="chevron-forward"
-                      size={20}
-                      color="#655D50"
-                    />
-                  </View>
-                ))}
-              </>
-            )}
-          </>
-        ) : (
-          wishlistCards.length === 0 ? (
-            <Text style={styles.emptyMessage}>
-              Your wishlist is empty.
-            </Text>
-          ) : (
-            <>
-              <View style={styles.sectionHeader}>
-                <Text style={styles.sectionTitle}>MY WISHLIST</Text>
-                <Text style={styles.deckCount}>
-                  {wishlistCards.length} cards
-                </Text>
-              </View>
-
-              {wishlistCards.map((card) => (
-                <View key={card.id} style={styles.deckRow}>
-                  <Image
-                    source={{
-                      uri: card.imageUris?.grid ?? card.imageUris?.normal,
-                    }}
-                    style={styles.wishlistImage}
-                    contentFit="contain"
-                  />
-
-                  <View style={styles.deckInfo}>
-                    <Text style={styles.deckName}>{card.name}</Text>
-                    <Text style={styles.deckMeta}>
-                      {card.setName || 'Set information unavailable'}
-                    </Text>
-                  </View>
-
-                  <Pressable
-                    onPress={() => toggleWishlist(card)}
-                    hitSlop={8}
-                    accessibilityRole="button"
-                    accessibilityLabel={`Remove ${card.name} from wishlist`}
-                  >
-                    <Ionicons name="heart" size={24} color="#171717" />
-                  </Pressable>
-                </View>
-              ))}
-            </>
-          )
-        )}
       </View>
-
+      {pagination && pagination.page < pagination.totalPages && !loading && !loadingMore && (
+        <Pressable style={styles.loadMoreButton} onPress={loadMore}>
+          <Text style={styles.loadMoreText}>Load More</Text>
+        </Pressable>
+      )}
+      {loadingMore && <ActivityIndicator style={{ marginVertical: 32 }} color="#171717" />}
+      {loading && <ActivityIndicator style={{ marginVertical: 32 }} color="#171717" />}
+      {error && !loading && (
+        <View style={styles.emptyState}>
+          <Ionicons name="alert-circle-outline" size={36} color="#77705F" />
+          <Text style={styles.emptyTitle}>Something went wrong</Text>
+          <Text style={styles.emptyText}>{error}</Text>
+        </View>
+      )}
+      {!loading && !error && filteredCards.length === 0 && (
+        <View style={styles.emptyState}>
+          <Ionicons name="search-outline" size={36} color="#77705F" />
+          <Text style={styles.emptyTitle}>No cards found</Text>
+          <Text style={styles.emptyText}>Try another search or category.</Text>
+        </View>
+      )}{' '}
       {/* Logout */}
       <View style={styles.logoutContainer}>
-        <Pressable
-          onPress={handleLogout}
-          style={styles.logoutButton}
-        >
+        <Pressable onPress={handleLogout} style={styles.logoutButton}>
           <Ionicons name="log-out-outline" size={20} color="#A12626" />
           <Text style={styles.logoutText}>LOG OUT</Text>
         </Pressable>
@@ -461,5 +431,58 @@ const styles = StyleSheet.create({
     color: '#A12626',
     fontWeight: 'bold',
     letterSpacing: 1,
+  },
+  loadMoreButton: {
+    alignSelf: 'center',
+    marginTop: 28,
+    paddingHorizontal: 24,
+    paddingVertical: 12,
+    borderRadius: 20,
+    backgroundColor: '#171717',
+  },
+  loadMoreText: {
+    color: '#E2D7BD',
+    fontSize: 13,
+    fontWeight: '700',
+  },
+  emptyState: {
+    alignItems: 'center',
+    paddingVertical: 48,
+    gap: 10,
+  },
+  emptyTitle: {
+    fontSize: 18,
+    fontWeight: '800',
+    color: '#171717',
+  },
+  emptyText: {
+    fontSize: 13,
+    color: '#77705F',
+  },
+  filterSection: {
+    marginBottom: 22,
+  },
+  filterList: {
+    gap: 10,
+  },
+  filterButton: {
+    paddingHorizontal: 18,
+    paddingVertical: 10,
+    borderRadius: 20,
+    backgroundColor: '#F4ECDD',
+    borderWidth: 1,
+    borderColor: '#C9BDA3',
+  },
+  activeFilterButton: {
+    backgroundColor: '#171717',
+    borderColor: '#171717',
+  },
+  filterText: {
+    fontSize: 13,
+    fontWeight: '600',
+    color: '#514B40',
+  },
+  activeFilterText: {
+    color: '#E2D7BD',
   },
 });

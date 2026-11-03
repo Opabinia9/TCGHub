@@ -33,7 +33,6 @@ export default function Login() {
           password,
         }),
       });
-      setError(`${response.body}`);
       if (!response.ok) {
         setError('Login failed. Please check your details.');
         return;

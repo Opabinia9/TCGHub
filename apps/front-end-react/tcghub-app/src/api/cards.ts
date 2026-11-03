@@ -1,11 +1,6 @@
 import { ENV } from '@/api/env';
-
-export type Pagination = {
-  page: number;
-  limit: number;
-  total: number;
-  totalPages: number;
-};
+import type { ApiCard, Pagination, MagicCard } from './types';
+import { toMagicCard } from './types';
 
 export type CardsPage = {
   items: Array<MagicCard>;
@@ -16,57 +11,6 @@ type CardsApiResponse = {
   items: Array<ApiCard>;
   pagination: Pagination;
 };
-
-export type CardCategory =
-  'Creature' | 'Sorcery' | 'Enchantment' | 'Instant' | 'Artifact' | 'Land' | null;
-
-type ImageUris = {
-  art?: string | null;
-  small?: string | null;
-  normal?: string | null;
-  large?: string | null;
-  grid?: string | null;
-};
-
-export type MagicCard = {
-  id: string;
-  name: string;
-  type: string;
-  category: CardCategory;
-  setName?: string | null;
-  imageUris?: ImageUris | null;
-};
-
-type ApiCard = {
-  id: string;
-  name: string;
-  typeLine?: string;
-  setName?: string | null;
-  imageUris?: ImageUris | null;
-};
-
-function toCategory(typeLine: string): CardCategory {
-  const type = typeLine.toLowerCase();
-  if (type.includes('creature')) return 'Creature';
-  if (type.includes('artifact')) return 'Artifact';
-  if (type.includes('sorcery')) return 'Sorcery';
-  if (type.includes('enchantment')) return 'Enchantment';
-  if (type.includes('instant')) return 'Instant';
-  if (type.includes('land')) return 'Land';
-  return null;
-}
-
-function toMagicCard(card: ApiCard): MagicCard {
-  const type = card.typeLine ?? 'Unknown';
-  return {
-    id: card.id,
-    name: card.name,
-    type,
-    category: toCategory(type),
-    setName: card.setName,
-    imageUris: card.imageUris,
-  };
-}
 
 export async function fetchCards(search: string, page = 1, limit = 20): Promise<CardsPage> {
   const params = new URLSearchParams({

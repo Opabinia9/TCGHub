@@ -41,7 +41,7 @@ export default function Login() {
         return;
       }
 
-      router.replace('/(tabs)/home');
+      router.replace('/(tabs)/cards');
     } catch {
       setError('Unable to connect to the server. Please try again.');
     } finally {
@@ -121,7 +121,7 @@ export default function Login() {
 
           <Button
             mode="outlined"
-            onPress={() => router.replace('/(tabs)/home')}
+            onPress={() => router.replace('/(tabs)/cards')}
             textColor="#171717"
             style={styles.previewButton}
             contentStyle={styles.buttonContent}

@@ -1,14 +1,8 @@
-
 import { useState } from 'react';
-import {
-  StyleSheet,
-  View,
-  KeyboardAvoidingView,
-  Platform,
-  ScrollView,
-} from 'react-native';
+import { StyleSheet, View, KeyboardAvoidingView, Platform, ScrollView } from 'react-native';
 import { Button, Text, TextInput } from 'react-native-paper';
 import { Link, useRouter } from 'expo-router';
+import { ENV } from '@/api/env';
 
 export default function Signup() {
   const router = useRouter();
@@ -24,13 +18,7 @@ export default function Signup() {
   const [loading, setLoading] = useState(false);
 
   const handleSignup = async () => {
-    if (
-      !firstName.trim() ||
-      !lastName.trim() ||
-      !username.trim() ||
-      !email.trim() ||
-      !password
-    ) {
+    if (!firstName.trim() || !lastName.trim() || !username.trim() || !email.trim() || !password) {
       setError('Please fill in all fields.');
       return;
     }
@@ -40,27 +28,22 @@ export default function Signup() {
     setLoading(true);
 
     try {
-      const response = await fetch(
-        'http://100.65.32.184:8080/api/v1/auth/signup',
-        {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-          },
-          body: JSON.stringify({
-            first_name: firstName.trim(),
-            last_name: lastName.trim(),
-            username: username.trim(),
-            email: email.trim(),
-            password,
-          }),
+      const response = await fetch(`http://${ENV.EXPO_PUBLIC_API_URL}/api/v1/auth/signup`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
         },
-      );
+        body: JSON.stringify({
+          first_name: firstName.trim(),
+          last_name: lastName.trim(),
+          username: username.trim(),
+          email: email.trim(),
+          password,
+        }),
+      });
 
       if (!response.ok) {
-        setError(
-          'Account creation failed. Check your details or try another username or email.',
-        );
+        setError('Account creation failed. Check your details or try another username or email.');
         return;
       }
 
@@ -77,10 +60,7 @@ export default function Signup() {
       style={styles.container}
       behavior={Platform.OS === 'ios' ? 'padding' : undefined}
     >
-      <ScrollView
-        contentContainerStyle={styles.content}
-        keyboardShouldPersistTaps="handled"
-      >
+      <ScrollView contentContainerStyle={styles.content} keyboardShouldPersistTaps="handled">
         <View style={styles.logoContainer}>
           <Text style={styles.logo}>TCG HUB</Text>
           <Text style={styles.subtitle}>YOUR NEXT TRADE STARTS HERE</Text>
@@ -91,9 +71,7 @@ export default function Signup() {
             Create your account
           </Text>
 
-          <Text style={styles.description}>
-            Join other Planeswalkers and find your next trade.
-          </Text>
+          <Text style={styles.description}>Join other Planeswalkers and find your next trade.</Text>
 
           <TextInput
             label="First Name"
@@ -168,9 +146,7 @@ export default function Signup() {
           {error ? <Text style={styles.error}>{error}</Text> : null}
 
           {success ? (
-            <Text style={styles.success}>
-              Account created successfully! You can now sign in.
-            </Text>
+            <Text style={styles.success}>Account created successfully! You can now sign in.</Text>
           ) : null}
 
           {success ? (

@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { StyleSheet, View, KeyboardAvoidingView, Platform, ScrollView } from 'react-native';
 import { Button, Text, TextInput } from 'react-native-paper';
 import { Link, useRouter } from 'expo-router';
+import { ENV } from '@/api/env';
 
 export default function Login() {
   const router = useRouter();
@@ -22,20 +23,17 @@ export default function Login() {
     setLoading(true);
 
     try {
-      const response = await fetch(
-        'http://100.65.32.184:8080/api/v1/auth/login',
-        {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-          },
-          body: JSON.stringify({
-            email: email.trim(),
-            password,
-          }),
+      const response = await fetch(`http://${ENV.EXPO_PUBLIC_API_URL}/api/v1/auth/login`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
         },
-      );
-
+        body: JSON.stringify({
+          email: email.trim(),
+          password,
+        }),
+      });
+      setError(`${response.body}`);
       if (!response.ok) {
         setError('Login failed. Please check your details.');
         return;
@@ -54,10 +52,7 @@ export default function Login() {
       style={styles.container}
       behavior={Platform.OS === 'ios' ? 'padding' : undefined}
     >
-      <ScrollView
-        contentContainerStyle={styles.content}
-        keyboardShouldPersistTaps="handled"
-      >
+      <ScrollView contentContainerStyle={styles.content} keyboardShouldPersistTaps="handled">
         <View style={styles.logoContainer}>
           <Text style={styles.logo}>TCG HUB</Text>
           <Text style={styles.subtitle}>YOUR NEXT TRADE STARTS HERE</Text>
@@ -68,9 +63,7 @@ export default function Login() {
             Welcome back
           </Text>
 
-          <Text style={styles.description}>
-            Sign in to connect with other Planeswalkers.
-          </Text>
+          <Text style={styles.description}>Sign in to connect with other Planeswalkers.</Text>
 
           <TextInput
             label="Email"
@@ -200,9 +193,9 @@ const styles = StyleSheet.create({
     marginTop: 8,
   },
   previewButton: {
-  borderColor: '#171717',
-  borderRadius: 10,
-  marginTop: 12,
+    borderColor: '#171717',
+    borderRadius: 10,
+    marginTop: 12,
   },
   buttonContent: {
     height: 48,

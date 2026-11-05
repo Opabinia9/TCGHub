@@ -5,7 +5,6 @@ import DeckRepository from '@/persistence/deckRepository.js';
 import ChatRepository from '@/persistence/chatReposistory.js';
 import MessageRepository from '@/persistence/messageReposistory.js';
 import NotFoundError from '@/errortypes/NotFoundError.js';
-import { hashPassword } from '@/utils/hashing.js';
 import type { Deck, DeckCard, User, UserCard } from '@prisma/client';
 import type { AuthSignupBody, DeckCardParams } from '@/routes/api/v1/routeSchemas.js';
 import type { UserCreationInterface, UserWithChats } from '@/types/userObject.js';
@@ -68,9 +67,7 @@ export default class Facade {
    *
    */
   async createUser(signupData: AuthSignupBody): Promise<void> {
-    const { password, ...include } = signupData;
-    const hash = await hashPassword(signupData.password);
-    const userData: UserCreationInterface = { ...include, hash: hash };
+    const userData: UserCreationInterface = signupData;
     await this.userRepo.add(userData);
   }
 

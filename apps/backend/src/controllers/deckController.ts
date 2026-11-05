@@ -7,7 +7,6 @@ import type {
 } from '@/routes/api/v1/routeSchemas.js';
 import Facade from '@/services/facade.js';
 import type { DeckCards } from '@/types/deckObject.js';
-import { UserJwt } from '@/types/JWTObject.js';
 import type { FastifyReply, FastifyRequest } from 'fastify';
 
 const facade = new Facade();
@@ -19,7 +18,7 @@ export default class DecksController {
     request: FastifyRequest<{ Body: DeckBody }>,
     reply: FastifyReply,
   ): Promise<FastifyReply> {
-    const { userId } = UserJwt.parse(request.user);
+    const { userId } = request.retriveSession(request).session;
     try {
       const deck = await facade.createDeck({
         owner_id: userId,
@@ -40,7 +39,7 @@ export default class DecksController {
     request: FastifyRequest<{ Params: DeckIdParams }>,
     reply: FastifyReply,
   ): Promise<FastifyReply> {
-    const { userId } = UserJwt.parse(request.user);
+    const { userId } = request.retriveSession(request).session;
     try {
       await facade.delDeck({
         id: request.params.deck_id,
@@ -60,7 +59,7 @@ export default class DecksController {
     request: FastifyRequest<{ Params: DeckIdParams; Body: DeckBody }>,
     reply: FastifyReply,
   ): Promise<FastifyReply> {
-    const { userId } = UserJwt.parse(request.user);
+    const { userId } = request.retriveSession(request).session;
     try {
       const { deck_id } = request.params;
       const { deck_name } = request.body;
@@ -81,7 +80,7 @@ export default class DecksController {
   }
 
   async getUserDecks(request: FastifyRequest, reply: FastifyReply): Promise<FastifyReply> {
-    const { userId } = UserJwt.parse(request.user);
+    const { userId } = request.retriveSession(request).session;
     return reply.code(200).send(await facade.getUserDecks(userId));
   }
 
@@ -89,7 +88,7 @@ export default class DecksController {
     request: FastifyRequest<{ Params: DeckIdParams }>,
     reply: FastifyReply,
   ): Promise<FastifyReply> {
-    const { userId } = UserJwt.parse(request.user);
+    const { userId } = request.retriveSession(request).session;
     try {
       return reply.code(200).send(
         await facade.getDeck({
@@ -113,7 +112,7 @@ export default class DecksController {
     }>,
     reply: FastifyReply,
   ): Promise<FastifyReply> {
-    const { userId } = UserJwt.parse(request.user);
+    const { userId } = request.retriveSession(request).session;
     try {
       const { deck_id, card_id } = request.params;
       const { quantity } = request.body;
@@ -140,7 +139,7 @@ export default class DecksController {
     }>,
     reply: FastifyReply,
   ): Promise<FastifyReply> {
-    const { userId } = UserJwt.parse(request.user);
+    const { userId } = request.retriveSession(request).session;
     try {
       const { deck_id, card_id } = request.params;
       const { quantity } = request.body;
@@ -164,7 +163,7 @@ export default class DecksController {
     request: FastifyRequest<{ Params: DeckCardParams }>,
     reply: FastifyReply,
   ): Promise<FastifyReply> {
-    const { userId } = UserJwt.parse(request.user);
+    const { userId } = request.retriveSession(request).session;
     try {
       const { deck_id, card_id } = request.params;
       await facade.delDeckCard(userId, {
@@ -185,7 +184,7 @@ export default class DecksController {
     request: FastifyRequest<{ Params: DeckIdParams }>,
     reply: FastifyReply,
   ): Promise<DeckCards | null> {
-    const { userId } = UserJwt.parse(request.user);
+    const { userId } = request.retriveSession(request).session;
     try {
       const { deck_id } = request.params;
       const deck_cards = await facade.getDeckCards({

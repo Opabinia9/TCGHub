@@ -1,6 +1,5 @@
 import Facade from '@/services/facade.js';
 import type { FastifyRequest, FastifyReply } from 'fastify';
-import { UserJwt, type UserJwtType } from '@/types/JWTObject.js';
 import type { CardSearchQuery } from '@/types/cardObject.js';
 import type { UserCollection } from '@/types/userCardObject.js';
 import type { UserCard } from '@prisma/client';
@@ -10,10 +9,8 @@ import NotFoundError from '@/errortypes/NotFoundError.js';
 const facade = new Facade();
 
 export default class UserCardsController {
-  async updateUserCards(
-    request: FastifyRequest<{ Body: CollectionBody }>,
-  ): Promise<UserCard> {
-    const { userId } = UserJwt.parse(request.user);
+  async updateUserCards(request: FastifyRequest<{ Body: CollectionBody }>): Promise<UserCard> {
+    const { userId } = request.retriveSession(request).session;
     let quantity: number = request.body.quantity;
 
     let record: UserCard | null = null;
@@ -43,9 +40,7 @@ export default class UserCardsController {
         for_trade: request.body.for_trade,
         wishlist: request.body.wishlist,
       };
-      return await facade.updateCard(
-        user_card,
-      ); /* Primary Key Exists! -> Update */
+      return await facade.updateCard(user_card); /* Primary Key Exists! -> Update */
     } else {
       const user_card = {
         user_id: userId,
@@ -63,9 +58,9 @@ export default class UserCardsController {
     request: FastifyRequest<{ Querystring: CardSearchQuery }>,
     reply: FastifyReply,
   ): Promise<UserCollection | null> {
-    const jwt: UserJwtType = UserJwt.parse(request.user);
+    const { userId } = request.retriveSession(request).session;
     const filters = request.query;
-    const user_collection = await facade.getCollection(jwt.userId);
+    const user_collection = await facade.getCollection(userId);
 
     if (user_collection !== null) {
       return reply.code(200).send({

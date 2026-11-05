@@ -1,15 +1,13 @@
 import Fastify from 'fastify';
-import fastify_jwt from '@fastify/jwt';
 import { fastifySwagger } from '@fastify/swagger';
 import { fastifySwaggerUi } from '@fastify/swagger-ui';
 import authRoutes from '@/routes/api/v1/auth.js';
 import userRoutes from '@/routes/api/v1/user.js';
 import cardRoutes from '@/routes/api/v1/cards.js';
-import collectionRoutes from './routes/api/v1/userCards.js';
-import deckRoutes from './routes/api/v1/deck.js';
+import collectionRoutes from '@/routes/api/v1/userCards.js';
+import deckRoutes from '@/routes/api/v1/deck.js';
 import chatRoutes from '@/routes/api/v1/chats.js';
-import specCheckPlugin from './decorators/specCheck.js';
-import registerJwtDecorator from '@/decorators/jwtDecorator.js';
+import specCheckPlugin from '@/decorators/specCheck.js';
 import { validateDatabaseConnection } from '@/utils/validateDatabaseConnection.js';
 import type { Env } from '@/utils/env.js';
 import type { IncomingMessage, ServerResponse } from 'http';
@@ -27,6 +25,8 @@ import {
   validatorCompiler,
 } from 'fastify-type-provider-zod';
 import type { PrismaClientKnownRequestError } from '@prisma/client/runtime/client';
+import testRoutes from './routes/api/v1/test.js';
+import registerAuthDecorator from './decorators/authDecorator.js';
 
 export default async function buildServer(
   opts = {},
@@ -82,10 +82,9 @@ export default async function buildServer(
   if (process.env.NODE_ENV === 'test') {
     specCheckPlugin(server);
   }
-  registerJwtDecorator(server);
+  registerAuthDecorator(server);
 
-  await server.register(fastify_jwt, { secret: env.SERVER_SECRET });
-  await server.register(authRoutes, { prefix: '/api/v1/auth' });
+  await server.register(authRoutes, { prefix: '/api/auth' });
   await server.register(userRoutes, { prefix: '/api/v1/user' });
   await server.register(chatRoutes, { prefix: '/api/v1/chats' });
   await server.register(cardRoutes, { prefix: '/api/v1/cards' });

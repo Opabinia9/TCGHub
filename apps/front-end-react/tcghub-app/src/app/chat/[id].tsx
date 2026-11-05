@@ -49,7 +49,8 @@ export default function ChatScreen() {
   return (
     <KeyboardAvoidingView
       style={styles.screen}
-      behavior={Platform.OS === 'ios' ? 'padding' : undefined}
+      behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
+      keyboardVerticalOffset={Platform.OS === 'ios' ? insets.top - insets.bottom : 0}
     >
       {/* Header */}
       <View style={styles.header}>
@@ -130,6 +131,8 @@ export default function ChatScreen() {
             onSubmitEditing={send}
             placeholder="Message…"
             placeholderTextColor="#7A705F"
+            selectionColor="#171717"
+						cursorColor="#171717"
             returnKeyType="send"
             accessibilityLabel={`Message ${chat.name}`}
             style={styles.input}

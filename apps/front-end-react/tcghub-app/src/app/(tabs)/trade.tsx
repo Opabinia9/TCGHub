@@ -1,6 +1,8 @@
+import { useState } from 'react';
 import { Pressable, ScrollView, StyleSheet, View } from 'react-native';
 import { Text } from 'react-native-paper';
 import { Ionicons } from '@expo/vector-icons';
+import { router } from 'expo-router';
 
 // ─── Data ────────────────────────────────────────────────────────────────────
 // Placeholder listings until the backend has a listings endpoint.
@@ -31,6 +33,15 @@ const LISTINGS: Listing[] = [
 
 export default function TradeScreen() {
   const listings = LISTINGS;
+  // IDs of the listings the user has hearted (only kept on this screen for now).
+  const [wishlistIds, setWishlistIds] = useState<string[]>([]);
+
+  // Add the id if it's not there, remove it if it is.
+  const toggleWishlist = (id: string) => {
+    setWishlistIds((current) =>
+      current.includes(id) ? current.filter((x) => x !== id) : [...current, id]
+    );
+  };
 
   return (
     <View style={styles.screen}>
@@ -42,7 +53,7 @@ export default function TradeScreen() {
           </Text>
 
           <Pressable
-            onPress={() => console.log('List a card pressed')}
+            onPress={() => router.navigate({ pathname: '/(tabs)/decks', params: { tab: 'collection' } })}
             accessibilityRole="button"
             accessibilityLabel="List a card"
             style={styles.listButton}
@@ -56,7 +67,12 @@ export default function TradeScreen() {
         {/* Listings */}
         <View style={styles.grid}>
           {listings.map((listing) => (
-            <ListingCard key={listing.id} listing={listing} />
+            <ListingCard
+              key={listing.id}
+              listing={listing}
+              wishlisted={wishlistIds.includes(listing.id)}
+              onToggleWishlist={() => toggleWishlist(listing.id)}
+            />
           ))}
         </View>
 
@@ -70,7 +86,13 @@ export default function TradeScreen() {
 
 // ─── Pieces ──────────────────────────────────────────────────────────────────
 
-function ListingCard({ listing }: { listing: Listing }) {
+type ListingCardProps = {
+  listing: Listing;
+  wishlisted: boolean;
+  onToggleWishlist: () => void;
+};
+
+function ListingCard({ listing, wishlisted, onToggleWishlist }: ListingCardProps) {
   return (
     <View style={styles.card}>
       {/* Card picture (placeholder colour until real card images are used) */}
@@ -97,15 +119,35 @@ function ListingCard({ listing }: { listing: Listing }) {
         </View>
       </View>
 
-      <Pressable
-        onPress={() => console.log('Message', listing.seller, 'about', listing.cardName)}
-        accessibilityRole="button"
-        accessibilityLabel={`Message ${listing.seller} about ${listing.cardName}`}
-        style={styles.messageButton}
-      >
-        <Ionicons name="chatbubble-outline" size={17} color="#171717" />
-        <Text style={styles.messageButtonText}>MESSAGE</Text>
-      </Pressable>
+      <View style={styles.actionRow}>
+        <Pressable
+          onPress={() => console.log('Message', listing.seller, 'about', listing.cardName)}
+          accessibilityRole="button"
+          accessibilityLabel={`Message ${listing.seller} about ${listing.cardName}`}
+          style={styles.messageButton}
+        >
+          <Ionicons name="chatbubble-outline" size={17} color="#171717" />
+          <Text style={styles.messageButtonText}>MESSAGE</Text>
+        </Pressable>
+
+        <Pressable
+          onPress={onToggleWishlist}
+          accessibilityRole="button"
+          accessibilityState={{ selected: wishlisted }}
+          accessibilityLabel={
+            wishlisted
+              ? `Remove ${listing.cardName} from wishlist`
+              : `Add ${listing.cardName} to wishlist`
+          }
+          style={[styles.wishlistButton, wishlisted && styles.wishlistButtonActive]}
+        >
+          <Ionicons
+            name={wishlisted ? 'heart' : 'heart-outline'}
+            size={20}
+            color={wishlisted ? '#FFFFFF' : '#171717'}
+          />
+        </Pressable>
+      </View>
     </View>
   );
 }
@@ -222,7 +264,12 @@ const styles = StyleSheet.create({
     fontSize: 13,
     color: '#3A342B',
   },
+  actionRow: {
+    flexDirection: 'row',
+    gap: 8,
+  },
   messageButton: {
+    flex: 1,
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
@@ -237,6 +284,19 @@ const styles = StyleSheet.create({
     fontSize: 14,
     letterSpacing: 1.4,
     color: '#171717',
+  },
+  wishlistButton: {
+    width: 44,
+    height: 44,
+    borderRadius: 10,
+    borderWidth: 1.5,
+    borderColor: '#171717',
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  wishlistButtonActive: {
+    backgroundColor: '#2e7d32',
+    borderColor: '#2e7d32',
   },
 
   emptyMessage: {

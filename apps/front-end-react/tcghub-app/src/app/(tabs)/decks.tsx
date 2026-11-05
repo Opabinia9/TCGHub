@@ -1,7 +1,8 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { Pressable, ScrollView, StyleSheet, View } from 'react-native';
 import { Searchbar, Text } from 'react-native-paper';
 import { Ionicons } from '@expo/vector-icons';
+import { router, useLocalSearchParams } from 'expo-router';
 
 const MANA = {
   G: { color: '#2e7d32', name: 'green' },
@@ -22,7 +23,7 @@ type Deck = {
   colors: ManaColor[];
 };
 
-type Tab = 'mine' | 'community';
+type Tab = 'mine' | 'collection';
 
 const MY_DECKS: Deck[] = [
   { id: '1', name: 'Green Stompy', format: 'Modern', cardCount: 60, artColor: '#3F6B3A', colors: ['G'] },
@@ -31,9 +32,18 @@ const MY_DECKS: Deck[] = [
   { id: '4', name: 'Dimir Midrange', format: 'Pioneer', cardCount: 60, artColor: '#3B3550', colors: ['U', 'B'] },
 ];
 
-const COMMUNITY_DECKS: Deck[] = [
-  { id: '5', name: 'Mono Red Burn', format: 'Modern', cardCount: 60, artColor: '#9A4A22', colors: ['R'] },
-  { id: '6', name: 'Selesnya Tokens', format: 'Standard', cardCount: 60, artColor: '#6B7A3A', colors: ['G', 'W'] },
+type CollectionCard = {
+  id: string;
+  name: string;
+  artColor: string;
+  quantity: number;
+};
+
+// Placeholder until the collection comes from the backend.
+const MY_COLLECTION: CollectionCard[] = [
+  { id: '1', name: 'The One Ring', artColor: '#6E5A2E', quantity: 1 },
+  { id: '2', name: 'Orcish Bowmasters', artColor: '#3B3550', quantity: 2 },
+  { id: '3', name: 'Lightning Bolt', artColor: '#9A4A22', quantity: 4 },
 ];
 
 const FILTERS = ['GAME', 'FORMAT', 'COLOUR'];
@@ -41,14 +51,24 @@ const FILTERS = ['GAME', 'FORMAT', 'COLOUR'];
 // ─── Screen ──────────────────────────────────────────────────────────────────
 
 export default function Decks() {
+  const params = useLocalSearchParams<{ tab?: string }>();
   const [tab, setTab] = useState<Tab>('mine');
   const [searchQuery, setSearchQuery] = useState('');
 
-  // Pick the list for the selected tab, then keep only decks whose name
-  // contains what's typed in the search bar.
-  const allDecks = tab === 'mine' ? MY_DECKS : COMMUNITY_DECKS;
+  // When another screen sends us here with tab=collection (e.g. LIST A CARD on Trades),
+  // switch to My Collection, then clear the param so it works again next time.
+  useEffect(() => {
+    if (params.tab === 'collection') {
+      setTab('collection');
+      router.setParams({ tab: undefined });
+    }
+  }, [params.tab]);
+
+  const isCollection = tab === 'collection';
   const query = searchQuery.trim().toLowerCase();
-  const decks = allDecks.filter((deck) => deck.name.toLowerCase().includes(query));
+  const decks = MY_DECKS.filter((deck) => deck.name.toLowerCase().includes(query));
+  const cards = MY_COLLECTION.filter((card) => card.name.toLowerCase().includes(query));
+  const shownCount = isCollection ? cards.length : decks.length;
 
   return (
     <ScrollView
@@ -63,26 +83,28 @@ export default function Decks() {
           <Text style={styles.subtitle}>Discover, build and share decks.</Text>
         </View>
 
-        <Pressable
-          onPress={() => console.log('New deck pressed')}
-          accessibilityRole="button"
-          accessibilityLabel="Create a new deck"
-          style={styles.newButton}
-        >
-          <Ionicons name="add" size={18} color="#FFFFFF" />
-          <Text style={styles.newButtonText}>NEW</Text>
-        </Pressable>
+        {!isCollection && (
+          <Pressable
+            onPress={() => console.log('New deck pressed')}
+            accessibilityRole="button"
+            accessibilityLabel="Create a new deck"
+            style={styles.newButton}
+          >
+            <Ionicons name="add" size={18} color="#FFFFFF" />
+            <Text style={styles.newButtonText}>NEW</Text>
+          </Pressable>
+        )}
       </View>
 
-      {/* My decks / Community toggle */}
+      {/* My decks / My collection toggle */}
       <View style={styles.toggle} accessibilityRole="tablist">
         <ToggleButton label="MY DECKS" active={tab === 'mine'} onPress={() => setTab('mine')} />
-        <ToggleButton label="COMMUNITY" active={tab === 'community'} onPress={() => setTab('community')} />
+        <ToggleButton label="MY COLLECTION" active={isCollection} onPress={() => setTab('collection')} />
       </View>
 
       {/* Search */}
       <Searchbar
-        placeholder="Search for a deck…"
+        placeholder={isCollection ? 'Search your collection…' : 'Search for a deck…'}
         value={searchQuery}
         onChangeText={setSearchQuery}
         style={styles.searchbar}
@@ -90,7 +112,7 @@ export default function Decks() {
         iconColor="#245f28"
         placeholderTextColor="#7A705F"
         selectionColor="#171717"
-				cursorColor="#171717"
+        cursorColor="#171717"
         elevation={0}
       />
 
@@ -111,16 +133,20 @@ export default function Decks() {
         ))}
       </View>
 
-      {/* Deck list */}
+      {/* List: collection cards or decks, depending on the toggle */}
       <View style={styles.deckList}>
-        {decks.map((deck) => (
-          <DeckRow key={deck.id} deck={deck} />
-        ))}
+        {isCollection
+          ? cards.map((card) => <CollectionRow key={card.id} card={card} />)
+          : decks.map((deck) => <DeckRow key={deck.id} deck={deck} />)}
       </View>
 
-      {decks.length === 0 && (
+      {shownCount === 0 && (
         <Text style={styles.emptyMessage}>
-          {query ? `No decks match "${searchQuery}".` : 'No decks yet.'}
+          {query
+            ? `Nothing matches "${searchQuery}".`
+            : isCollection
+              ? 'No cards in your collection yet.'
+              : 'No decks yet.'}
         </Text>
       )}
     </ScrollView>
@@ -182,6 +208,20 @@ function DeckRow({ deck }: { deck: Deck }) {
       >
         <Text style={styles.viewButtonText}>VIEW</Text>
       </Pressable>
+    </View>
+  );
+}
+
+function CollectionRow({ card }: { card: CollectionCard }) {
+  return (
+    <View style={styles.deckRow}>
+      <View style={[styles.cardThumb, { backgroundColor: card.artColor }]} />
+      <View style={styles.deckInfo}>
+        <Text style={styles.deckName} numberOfLines={1}>
+          {card.name}
+        </Text>
+        <Text style={styles.deckMeta}>Owned ×{card.quantity}</Text>
+      </View>
     </View>
   );
 }
@@ -311,10 +351,15 @@ const styles = StyleSheet.create({
     borderBottomWidth: 1,
     borderBottomColor: '#C9BB98',
   },
-  deckArt: {
+    deckArt: {
     width: 56,
     height: 56,
     borderRadius: 12,
+  },
+  cardThumb: {
+    width: 40,
+    height: 56,
+    borderRadius: 6,
   },
   pipRow: {
     position: 'absolute',

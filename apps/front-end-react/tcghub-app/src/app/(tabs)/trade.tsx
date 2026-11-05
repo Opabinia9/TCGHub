@@ -31,9 +31,6 @@ const LISTINGS: Listing[] = [
 
 const DISTANCES_KM = [5, 10, 25, 50];
 
-// Placeholder until messages come from the backend.
-const UNREAD_MESSAGES = 3;
-
 // ─── Screen ──────────────────────────────────────────────────────────────────
 
 export default function TradeScreen() {
@@ -112,21 +109,6 @@ export default function TradeScreen() {
           <Text style={styles.emptyMessage}>No cards listed within {radiusKm} km.</Text>
         )}
       </ScrollView>
-
-      {/* Floating messages button — outside the ScrollView so it stays put */}
-      <Pressable
-        onPress={() => console.log('Messages pressed')}
-        accessibilityRole="button"
-        accessibilityLabel={`Messages, ${UNREAD_MESSAGES} unread`}
-        style={styles.messagesButton}
-      >
-        <Ionicons name="chatbubble-outline" size={26} color="#E2D7BD" />
-        {UNREAD_MESSAGES > 0 && (
-          <View style={styles.badge}>
-            <Text style={styles.badgeText}>{UNREAD_MESSAGES}</Text>
-          </View>
-        )}
-      </Pressable>
     </View>
   );
 }
@@ -184,7 +166,6 @@ const styles = StyleSheet.create({
   },
   content: {
     padding: 20,
-    paddingBottom: 96, // room so the floating button never covers the last card
   },
 
   // Header
@@ -365,38 +346,5 @@ const styles = StyleSheet.create({
     marginTop: 24,
     textAlign: 'center',
     color: '#5A5246',
-  },
-
-  // Floating messages button
-  messagesButton: {
-    position: 'absolute',
-    right: 20,
-    bottom: 20,
-    width: 60,
-    height: 60,
-    borderRadius: 30,
-    alignItems: 'center',
-    justifyContent: 'center',
-    backgroundColor: '#171717',
-    boxShadow: '0 6px 16px rgba(23, 23, 23, 0.28)',
-  },
-  badge: {
-    position: 'absolute',
-    top: -4,
-    right: -4,
-    minWidth: 22,
-    height: 22,
-    paddingHorizontal: 6,
-    borderRadius: 11,
-    borderWidth: 2,
-    borderColor: '#E2D7BD',
-    backgroundColor: '#2e7d32',
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  badgeText: {
-    fontSize: 12,
-    fontWeight: '600',
-    color: '#FFFFFF',
   },
 });

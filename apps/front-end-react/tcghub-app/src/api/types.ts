@@ -13,7 +13,7 @@ export const FILTERS = ['All', 'Creature', 'Sorcery', 'Enchantment', 'Instant', 
 
 export type FilterOption = (typeof FILTERS)[number];
 
-export type ApiCard = {
+export type SearchCard = {
   id: string;
   name: string;
   typeLine: string;
@@ -30,11 +30,20 @@ export type UserCard = {
   condition: string;
   for_trade: boolean;
   wishlist: boolean;
-  quantity: boolean;
-  Card: ApiCard;
+  quantity: number;
+  Card: SearchCard;
 };
 
 export type CollectionCard = Omit<UserCard, 'Card' | 'card_id'> & MagicCard;
+
+export type DeckCard = {
+  deck_id: string;
+  card_id: string;
+  quantity: number;
+  Card: SearchCard;
+};
+
+export type DeckList = Pick<DeckCard, 'quantity'> & MagicCard;
 
 export type Pagination = {
   page: number;
@@ -77,7 +86,7 @@ export function toCategory(typeLine: string): CardCategory {
   return null;
 }
 
-export function toMagicCard(card: ApiCard): MagicCard {
+export function toMagicCard(card: SearchCard): MagicCard {
   const type = card.typeLine ?? 'Unknown';
   return {
     id: card.id,
@@ -109,6 +118,17 @@ export function toCollectionCard(card: UserCard): CollectionCard {
   };
 }
 
-export function toDeckCard(card: ): DeckCard {
+export function toDeckCard(card: DeckCard): DeckList {
+  const type = card.Card.typeLine ?? 'unknown';
+  return {
+    quantity: card.quantity,
 
+    id: card.Card.id,
+    name: card.Card.name,
+    type: type,
+    category: toCategory(type),
+    setName: card.Card.setName,
+    imageUris: card.Card.imageUris,
+    prices: card.Card.prices,
+  };
 }

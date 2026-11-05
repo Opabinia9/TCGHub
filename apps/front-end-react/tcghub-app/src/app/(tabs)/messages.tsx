@@ -31,6 +31,8 @@ export default function MessagesScreen() {
         inputStyle={styles.searchInput}
         iconColor="#245f28"
         placeholderTextColor="#7A705F"
+        selectionColor="#171717"
+				cursorColor="#171717"
         elevation={0}
       />
 

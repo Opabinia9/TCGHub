@@ -1,3 +1,4 @@
+import type { Prisma } from '@prisma/client';
 import { z } from 'zod';
 
 export const UuidSchema = z.uuid();
@@ -33,3 +34,14 @@ export type DeckCardInterface = z.infer<typeof DeckCardInterfaceSchema>;
 export type DeckCreationInterface = z.infer<typeof DeckCreationInterfaceSchema>;
 export type DeckRef = z.infer<typeof DeckRefSchema>;
 export type UserDecks = z.infer<typeof UserDecksSchema>;
+
+export const deckWithDeckCards = {
+  include: {
+    Card: true,
+  },
+} satisfies Prisma.DeckCardDefaultArgs;
+
+export type DeckCards = {
+  items: Array<Prisma.DeckCardGetPayload<typeof deckWithDeckCards>>;
+  total: number;
+};

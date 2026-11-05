@@ -12,7 +12,7 @@ import type { UserCreationInterface, UserWithChats } from '@/types/userObject.js
 import type { ChatWithMembersCreationInterface, ChatWithMessages } from '@/types/chatObject.js';
 import type { MessageCreationInterface } from '@/types/MessageObject.js';
 import type { CardSearchQuery, CardSummary } from '@/types/cardObject.js';
-import type { DeckCreationInterface, DeckRef, UserDecks } from '@/types/deckObject.js';
+import type { DeckCards, DeckCreationInterface, DeckRef, UserDecks } from '@/types/deckObject.js';
 import type { UserCollection } from '@/types/userCardObject.js';
 
 export default class Facade {
@@ -190,6 +190,14 @@ export default class Facade {
       throw new NotFoundError('Deck Not Found');
     }
     return user_deck;
+  }
+
+  async getDeckCards(deck: DeckRef): Promise<DeckCards> {
+    const deck_cards = await this.deckRepo.getDeckCards(deck);
+    if (deck_cards === null) {
+      throw new NotFoundError('Deck Contents Not Found');
+    }
+    return deck_cards;
   }
 
   async addDeckCard(owner_id: string, deck_card: DeckCard): Promise<DeckCard> {

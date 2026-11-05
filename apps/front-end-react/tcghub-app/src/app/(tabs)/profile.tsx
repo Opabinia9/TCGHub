@@ -5,6 +5,8 @@ import { Ionicons } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
 import { fetchCollection } from '@/api/collection';
 import { FilterOption, FILTERS, MagicCard, Pagination } from '@/api/types';
+import CardList from '@/components/card-list';
+import { fetchCards } from '@/api/cards';
 
 export default function Profile() {
   const router = useRouter();
@@ -16,11 +18,6 @@ export default function Profile() {
   const [activeSection, setActiveSection] = useState<'collection' | 'wishlist'>('collection');
 
   const [searchQuery, setSearchQuery] = useState('');
-  const [loading, setLoading] = useState(true);
-  const [loadingMore, setLoadingMore] = useState(false);
-  const [error, setError] = useState<string | null>(null);
-  const [cards, setCards] = useState<MagicCard[]>([]);
-  const [pagination, setPagination] = useState<Pagination | null>(null);
   const [activeFilter, setActiveFilter] = useState<FilterOption>('All');
 
   const handleSave = () => {
@@ -36,78 +33,6 @@ export default function Profile() {
   const handleLogout = () => {
     router.replace('/(auth)/login');
   };
-
-  useEffect(() => {
-    let cancelled = false;
-    let timeoutId: ReturnType<typeof setTimeout> | undefined;
-
-    setLoading(true);
-    setError(null);
-
-    const timer = setTimeout(async () => {
-      try {
-        const result = await Promise.race([
-          fetchCollection(searchQuery.trim()),
-          new Promise<never>((_, reject) => {
-            timeoutId = setTimeout(() => {
-              reject(new Error('Request timeout'));
-            }, 5000);
-          }),
-        ]);
-
-        if (!cancelled) {
-          setCards(result.items);
-          setPagination(result.pagination);
-        }
-      } catch {
-        if (!cancelled) {
-          setCards([]);
-          setPagination(null);
-          setError('Unable to load cards. Please try again later.');
-        }
-      } finally {
-        if (timeoutId) {
-          clearTimeout(timeoutId);
-        }
-
-        if (!cancelled) {
-          setLoading(false);
-        }
-      }
-    }, 300);
-
-    return () => {
-      cancelled = true;
-      clearTimeout(timer);
-
-      if (timeoutId) {
-        clearTimeout(timeoutId);
-      }
-    };
-  }, [searchQuery]);
-
-  async function loadMore() {
-    if (loading || !pagination || loadingMore) return;
-    if (pagination.page >= pagination.totalPages) return;
-
-    try {
-      setLoadingMore(true);
-
-      const result = await fetchCollection(searchQuery.trim(), pagination.page + 1);
-
-      setCards((previousCards) => [...previousCards, ...result.items]);
-
-      setPagination(result.pagination);
-    } catch {
-      // More cards could not be loaded.
-    } finally {
-      setLoadingMore(false);
-    }
-  }
-
-  const filteredCards = cards.filter(
-    (card) => activeFilter === 'All' || card.category === activeFilter,
-  );
 
   return (
     <ScrollView
@@ -222,30 +147,13 @@ export default function Profile() {
             ))}
           </ScrollView>
         </View>
-
-        {/* Collection content */}
       </View>
-      {pagination && pagination.page < pagination.totalPages && !loading && !loadingMore && (
-        <Pressable style={styles.loadMoreButton} onPress={loadMore}>
-          <Text style={styles.loadMoreText}>Load More</Text>
-        </Pressable>
-      )}
-      {loadingMore && <ActivityIndicator style={{ marginVertical: 32 }} color="#171717" />}
-      {loading && <ActivityIndicator style={{ marginVertical: 32 }} color="#171717" />}
-      {error && !loading && (
-        <View style={styles.emptyState}>
-          <Ionicons name="alert-circle-outline" size={36} color="#77705F" />
-          <Text style={styles.emptyTitle}>Something went wrong</Text>
-          <Text style={styles.emptyText}>{error}</Text>
-        </View>
-      )}
-      {!loading && !error && filteredCards.length === 0 && (
-        <View style={styles.emptyState}>
-          <Ionicons name="search-outline" size={36} color="#77705F" />
-          <Text style={styles.emptyTitle}>No cards found</Text>
-          <Text style={styles.emptyText}>Try another search or category.</Text>
-        </View>
-      )}{' '}
+      <CardList
+        fetchlist={fetchCollection}
+        query={searchQuery}
+        activeFilter={activeFilter}
+        emptyMessage="Unable to load collection"
+      />
       {/* Logout */}
       <View style={styles.logoutContainer}>
         <Pressable onPress={handleLogout} style={styles.logoutButton}>

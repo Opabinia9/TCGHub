@@ -1,6 +1,12 @@
 import Repository from '@/persistence/reposistory.js';
 import type { DeckCardParams } from '@/routes/api/v1/routeSchemas.js';
-import type { DeckCreationInterface, DeckRef, UserDecks } from '@/types/deckObject.js';
+import {
+  deckWithDeckCards,
+  type DeckCards,
+  type DeckCreationInterface,
+  type DeckRef,
+  type UserDecks,
+} from '@/types/deckObject.js';
 import { prisma } from '@/utils/prisma.js';
 import type { PrismaClient, Deck, DeckCard } from '@prisma/client';
 
@@ -56,6 +62,19 @@ export default class DeckRepository extends Repository<Deck> {
         id: deckId,
       },
     });
+  }
+
+  async getDeckCards(deck: DeckRef): Promise<DeckCards> {
+    const [items, total] = await this.db.$transaction([
+      this.db.deckCard.findMany({
+        where: {
+          deck_id: deck.id,
+        },
+        ...deckWithDeckCards,
+      }),
+      this.db.deckCard.count({ where: { deck_id: deck.id } }),
+    ]);
+    return { items, total };
   }
 
   async getDeck(deck: DeckRef): Promise<Deck | null> {

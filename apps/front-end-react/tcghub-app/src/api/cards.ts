@@ -1,6 +1,6 @@
 import { ENV } from '@/api/env';
-import type { ApiCard, Pagination, MagicCard } from './types';
-import { toMagicCard } from './types';
+import type { ApiCard, Pagination, MagicCard } from '@/api/types';
+import { toMagicCard } from '@/api/types';
 
 export type CardsPage = {
   items: Array<MagicCard>;

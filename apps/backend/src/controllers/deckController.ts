@@ -6,6 +6,7 @@ import type {
   DeckIdParams,
 } from '@/routes/api/v1/routeSchemas.js';
 import Facade from '@/services/facade.js';
+import type { DeckCards } from '@/types/deckObject.js';
 import { UserJwt } from '@/types/JWTObject.js';
 import type { FastifyReply, FastifyRequest } from 'fastify';
 
@@ -79,10 +80,7 @@ export default class DecksController {
     }
   }
 
-  async getUserDecks(
-    request: FastifyRequest,
-    reply: FastifyReply,
-  ): Promise<FastifyReply> {
+  async getUserDecks(request: FastifyRequest, reply: FastifyReply): Promise<FastifyReply> {
     const { userId } = UserJwt.parse(request.user);
     return reply.code(200).send(await facade.getUserDecks(userId));
   }
@@ -176,10 +174,33 @@ export default class DecksController {
       return reply.code(204).send();
     } catch (error) {
       if (error instanceof NotFoundError) {
-        return reply.code(404).send({ error: 'Card not found' });
+        return reply.code(404).send({ error: 'Card Not Found' });
       } else {
         throw error;
       }
+    }
+  }
+
+  async getDeckCards(
+    request: FastifyRequest<{ Params: DeckIdParams }>,
+    reply: FastifyReply,
+  ): Promise<DeckCards | null> {
+    const { userId } = UserJwt.parse(request.user);
+    try {
+      const { deck_id } = request.params;
+      const deck_cards = await facade.getDeckCards({
+        id: deck_id,
+        owner_id: userId,
+      });
+      if (deck_cards !== null) {
+        return reply.code(200).send(deck_cards);
+      }
+      return null;
+    } catch (error) {
+      if (error instanceof NotFoundError) {
+        return reply.code(404).send({ error: 'Deck Contents Not Found' });
+      }
+      throw error;
     }
   }
 }

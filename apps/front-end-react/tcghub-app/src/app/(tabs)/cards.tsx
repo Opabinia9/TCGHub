@@ -52,8 +52,18 @@ export default function CardsScreen() {
 	// The listing / collection panel that's open (null = none).
 	const [sheet, setSheet] = useState<{ type: SheetType; card: MagicCard } | null>(null);
 
+	// Is the + menu in the fullscreen view open?
+	const [previewMenuOpen, setPreviewMenuOpen] = useState(false);
+
+	// Closes the fullscreen view (and its menu, so it's closed next time too).
+	function closePreview() {
+		setSelectedCard(null);
+		setPreviewMenuOpen(false);
+	}
+
 	function openSheet(type: SheetType, card: MagicCard) {
 		closeMenu();
+		setPreviewMenuOpen(false);
 		setSheet({ type, card });
 	}
 
@@ -153,6 +163,21 @@ export default function CardsScreen() {
 			setLoadingMore(false);
 		}
 	}
+
+	// Is the card open in the fullscreen view on the wishlist?
+	const selectedInWishlist =
+		selectedCard !== null &&
+		wishlistCards.some((item) => item.id === selectedCard.id);
+
+	// The listing / collection panel, built once so we can show it in two places.
+	const sheetPanel = sheet && (
+		<AddToSheet
+			type={sheet.type}
+			card={sheet.card}
+			onClose={() => setSheet(null)}
+			onConfirm={handleConfirm}
+		/>
+	);
 
 	const filteredCards = cards.filter(
 		(card) => activeFilter === "All" || card.category === activeFilter,
@@ -276,7 +301,7 @@ export default function CardsScreen() {
 											{card.name}
 										</Text>
 
-																				<Menu
+										<Menu
 											visible={menuCardId === card.id}
 											onDismiss={closeMenu}
 											anchorPosition="bottom"
@@ -410,12 +435,13 @@ export default function CardsScreen() {
 				transparent
 				animationType="fade"
 				statusBarTranslucent
-				onRequestClose={() => setSelectedCard(null)}
+				navigationBarTranslucent
+				onRequestClose={closePreview}
 			>
 				<View style={styles.previewOverlay}>
 					<Pressable
 						style={styles.previewBackdrop}
-						onPress={() => setSelectedCard(null)}
+						onPress={() => (previewMenuOpen ? setPreviewMenuOpen(false) : closePreview())}
 					/>
 
 					{selectedCard && (
@@ -432,32 +458,83 @@ export default function CardsScreen() {
 								contentFit="contain"
 							/>
 
-							<Text style={styles.previewSetName}>
-								{selectedCard.setName ||
-									"Set information unavailable"}
-							</Text>
+														{/* Bottom bar: name + set on the left, + button on the right */}
+							<View style={styles.previewBar}>
+								<View style={styles.previewBarText}>
+									<Text style={styles.previewName} numberOfLines={1}>
+										{selectedCard.name}
+									</Text>
+									<Text style={styles.previewSetName} numberOfLines={1}>
+										{selectedCard.setName || "Set information unavailable"}
+									</Text>
+								</View>
+
+								<Pressable
+									onPress={() => setPreviewMenuOpen((open) => !open)}
+									accessibilityRole="button"
+									accessibilityLabel={`Add ${selectedCard.name} to…`}
+									accessibilityState={{ expanded: previewMenuOpen }}
+									style={[
+										styles.previewAddButton,
+										previewMenuOpen && styles.previewAddButtonActive,
+									]}
+								>
+									<Ionicons name="add" size={28} color="#FFFFFF" />
+								</Pressable>
+
+								{/* Same items as the grid menu, drawn ourselves because Paper's <Menu> can't show inside a Modal */}
+								{previewMenuOpen && (
+									<View style={[styles.menu, styles.previewMenu]}>
+										<Menu.Item
+											leadingIcon={menuIcon(selectedInWishlist ? "heart" : "heart-outline")}
+											title={selectedInWishlist ? "Remove from wishlist" : "Add to wishlist"}
+											titleStyle={styles.menuItemText}
+											onPress={() => {
+												toggleWishlist(selectedCard);
+												setPreviewMenuOpen(false);
+											}}
+										/>
+										<Menu.Item
+											leadingIcon={menuIcon("pricetag-outline")}
+											title="Add to my listings"
+											titleStyle={styles.menuItemText}
+											onPress={() => openSheet("listing", selectedCard)}
+										/>
+										<Menu.Item
+											leadingIcon={menuIcon("albums-outline")}
+											title="Add to collection"
+											titleStyle={styles.menuItemText}
+											onPress={() => openSheet("collection", selectedCard)}
+										/>
+										<View style={styles.menuDivider} />
+										<Menu.Item
+											leadingIcon={menuIcon("layers-outline")}
+											title="Add to deck"
+											titleStyle={styles.menuItemText}
+											onPress={() => setPreviewMenuOpen(false)}
+										/>
+									</View>
+								)}
+							</View>
 						</View>
 					)}
 
 					<Pressable
 						style={styles.previewClose}
-						onPress={() => setSelectedCard(null)}
+						onPress={closePreview}
 						accessibilityRole="button"
 						accessibilityLabel="Close preview"
 					>
 						<Ionicons name="close" size={30} color="#FFFFFF" />
 					</Pressable>
-				</View>
-						</Modal>
 
-			{sheet && (
-				<AddToSheet
-					type={sheet.type}
-					card={sheet.card}
-					onClose={() => setSheet(null)}
-					onConfirm={handleConfirm}
-				/>
-			)}
+					{/* From the fullscreen view: the panel has to be inside this Modal on iOS */}
+					{sheetPanel}
+				</View>
+			</Modal>
+
+			{/* From the grid: show the panel normally */}
+			{!selectedCard && sheetPanel}
 		</>
 	);
 }
@@ -591,7 +668,7 @@ const styles = StyleSheet.create({
 		fontWeight: "800",
 		color: "#171717",
 	},
-		addButton: {
+	addButton: {
 		width: 36,
 		height: 36,
 		borderRadius: 10,
@@ -678,12 +755,52 @@ const styles = StyleSheet.create({
 		width: "100%",
 		height: "72%",
 	},
+		previewBar: {
+		width: "100%",
+		flexDirection: "row",
+		alignItems: "center",
+		gap: 12,
+		marginTop: 16,
+		paddingVertical: 12,
+		paddingLeft: 18,
+		paddingRight: 12,
+		borderRadius: 18,
+		backgroundColor: "#E2D7BD",
+	},
+	previewBarText: {
+		flex: 1,
+		minWidth: 0,
+	},
+	previewName: {
+		fontFamily: "BarlowCondensed_700Bold",
+		fontSize: 22,
+		letterSpacing: 0.8,
+		textTransform: "uppercase",
+		color: "#171717",
+	},
 	previewSetName: {
-		marginTop: 14,
-		fontSize: 14,
-		fontWeight: "600",
-		color: "#E2D7BD",
-		textAlign: "center",
+		fontSize: 13,
+		color: "#5A5246",
+	},
+	previewAddButton: {
+		width: 52,
+		height: 52,
+		borderRadius: 14,
+		backgroundColor: "#2e7d32",
+		alignItems: "center",
+		justifyContent: "center",
+	},
+	previewAddButtonActive: {
+		backgroundColor: "#171717",
+	},
+	previewMenu: {
+		position: "absolute",
+		right: 0,
+		bottom: "100%",
+		marginBottom: 10,
+		width: 250,
+		paddingVertical: 6,
+		boxShadow: "0 12px 30px rgba(0, 0, 0, 0.4)",
 	},
 	previewClose: {
 		position: "absolute",

@@ -1,5 +1,6 @@
 import { APIError, betterAuth } from 'better-auth';
 import { bearer, openAPI } from 'better-auth/plugins';
+import { expo } from '@better-auth/expo';
 import { prismaAdapter } from 'better-auth/adapters/prisma';
 import { prisma } from '@/utils/prisma.js';
 
@@ -7,7 +8,7 @@ export const auth = betterAuth({
   database: prismaAdapter(prisma, {
     provider: 'postgresql',
   }),
-  plugins: [bearer(), openAPI()],
+  plugins: [bearer(), openAPI(), expo()],
   user: {
     modelName: 'user',
     fields: {
@@ -44,7 +45,7 @@ export const auth = betterAuth({
     },
   },
   emailAndPassword: { enabled: true },
-  trustedOrigins: ['http://localhost:8080'],
+  trustedOrigins: ['http://localhost:8080', 'tcghub//:'],
   advanced: {
     disableOriginCheck: true,
     database: {

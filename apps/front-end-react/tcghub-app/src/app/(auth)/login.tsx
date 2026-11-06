@@ -3,6 +3,7 @@ import { StyleSheet, View, KeyboardAvoidingView, Platform, ScrollView } from 're
 import { Button, Text, TextInput } from 'react-native-paper';
 import { Link, useRouter } from 'expo-router';
 import { ENV } from '@/api/env';
+import { authClient } from '@/utils/auth-client';
 
 export default function Login() {
   const router = useRouter();
@@ -14,7 +15,7 @@ export default function Login() {
   const [loading, setLoading] = useState(false);
 
   const handleLogin = async () => {
-    if (!email.trim() || !password) {
+    if (!email.trim() || !password.trim()) {
       setError('Please enter your email and password.');
       return;
     }
@@ -23,17 +24,12 @@ export default function Login() {
     setLoading(true);
 
     try {
-      const response = await fetch(`http://${ENV.EXPO_PUBLIC_API_URL}/api/v1/auth/login`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          email: email.trim(),
-          password,
-        }),
-      });
-      if (!response.ok) {
+      // TODO: swap this out for auto removing at the Text input level
+      const result = await authClient.signIn.email({
+        email: email.trimEnd(),
+        password: password.trimEnd(),
+      })
+      if (result.error) {
         setError('Login failed. Please check your details.');
         return;
       }
@@ -84,6 +80,7 @@ export default function Login() {
             onChangeText={setPassword}
             mode="outlined"
             secureTextEntry={!passwordVisible}
+            autoCapitalize="none"
             outlineColor="#C7B99E"
             activeOutlineColor="#171717"
             textColor="#171717"

@@ -2,13 +2,12 @@ import { useState } from 'react';
 import { StyleSheet, View, KeyboardAvoidingView, Platform, ScrollView } from 'react-native';
 import { Button, Text, TextInput } from 'react-native-paper';
 import { Link, useRouter } from 'expo-router';
-import { ENV } from '@/api/env';
+import { authClient } from '@/utils/auth-client';
 
 export default function Signup() {
   const router = useRouter();
 
-  const [firstName, setFirstName] = useState('');
-  const [lastName, setLastName] = useState('');
+  const [name, setName] = useState('');
   const [username, setUsername] = useState('');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
@@ -18,7 +17,7 @@ export default function Signup() {
   const [loading, setLoading] = useState(false);
 
   const handleSignup = async () => {
-    if (!firstName.trim() || !lastName.trim() || !username.trim() || !email.trim() || !password) {
+    if (!name.trim() || !username.trim() || !email.trim() || !password.trim()) {
       setError('Please fill in all fields.');
       return;
     }
@@ -28,26 +27,20 @@ export default function Signup() {
     setLoading(true);
 
     try {
-      const response = await fetch(`http://${ENV.EXPO_PUBLIC_API_URL}/api/v1/auth/signup`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          first_name: firstName.trim(),
-          last_name: lastName.trim(),
-          username: username.trim(),
-          email: email.trim(),
-          password,
-        }),
-      });
+      // TODO: swap this out for auto removing at the Text input level
+      const result = await authClient.signUp.email({
+        username: username.trimEnd(),
+        email: email.trimEnd(),
+        name: name.trimEnd(),
+        password: password.trimEnd(),
+      })
 
-      if (!response.ok) {
+      if (result.error) {
         setError('Account creation failed. Check your details or try another username or email.');
         return;
       }
-
       setSuccess(true);
+      router.replace('/(tabs)/cards');
     } catch {
       setError('Unable to connect to the server. Please try again.');
     } finally {
@@ -74,21 +67,9 @@ export default function Signup() {
           <Text style={styles.description}>Join other Planeswalkers and find your next trade.</Text>
 
           <TextInput
-            label="First Name"
-            value={firstName}
-            onChangeText={setFirstName}
-            mode="outlined"
-            autoCapitalize="words"
-            outlineColor="#C7B99E"
-            activeOutlineColor="#171717"
-            textColor="#171717"
-            style={styles.input}
-          />
-
-          <TextInput
-            label="Last Name"
-            value={lastName}
-            onChangeText={setLastName}
+            label="Name"
+            value={name}
+            onChangeText={setName}
             mode="outlined"
             autoCapitalize="words"
             outlineColor="#C7B99E"
@@ -149,18 +130,7 @@ export default function Signup() {
             <Text style={styles.success}>Account created successfully! You can now sign in.</Text>
           ) : null}
 
-          {success ? (
-            <Button
-              mode="contained"
-              onPress={() => router.replace('/(auth)/login')}
-              buttonColor="#171717"
-              textColor="#E2D7BD"
-              style={styles.button}
-              contentStyle={styles.buttonContent}
-            >
-              Go to Sign In
-            </Button>
-          ) : (
+          {(
             <Button
               mode="contained"
               onPress={handleSignup}

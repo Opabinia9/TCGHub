@@ -295,13 +295,24 @@ export default function CardsScreen() {
 								</Pressable>
 
 								<View style={styles.cardInfo}>
-									<View style={styles.cardNameRow}>
-										<Text
-											style={styles.cardName}
-											numberOfLines={2}
-										>
-											{card.name}
-										</Text>
+									<Text
+										style={styles.cardName}
+										numberOfLines={2}
+									>
+										{card.name}
+									</Text>
+
+									<Text style={styles.cardSetName} numberOfLines={2}>
+										{card.setName || "Set information unavailable"}
+									</Text>
+
+									{/* Price on the left, + on the right */}
+									<View style={styles.cardPriceRow}>
+										<View>
+											<Text style={styles.cardPriceLabel}>PRICE</Text>
+											{/* TODO: show the real AUD price once cards have one */}
+											<Text style={styles.cardPrice}>—</Text>
+										</View>
 
 										<Menu
 											visible={menuCardId === card.id}
@@ -357,14 +368,6 @@ export default function CardsScreen() {
 											/>
 										</Menu>
 									</View>
-
-									<Text
-										style={styles.cardSetName}
-										numberOfLines={2}
-									>
-										{card.setName ||
-											"Set information unavailable"}
-									</Text>
 								</View>
 							</View>
 						);
@@ -679,19 +682,34 @@ const styles = StyleSheet.create({
 		justifyContent: "center",
 	},
 	cardInfo: {
+		flex: 1,
 		paddingHorizontal: 11,
 		paddingVertical: 12,
 	},
-	cardNameRow: {
+	cardName: {
+		fontSize: 15,
+		fontWeight: "800",
+		color: "#171717",
+	},
+	cardPriceRow: {
 		flexDirection: "row",
 		alignItems: "center",
 		justifyContent: "space-between",
 		gap: 6,
+		marginTop: "auto",
+		paddingTop: 10,
+		borderTopWidth: 1,
+		borderTopColor: "#DCCFB3",
 	},
-	cardName: {
-		flex: 1,
-		fontSize: 15,
-		fontWeight: "800",
+	cardPriceLabel: {
+		fontSize: 10,
+		fontWeight: "700",
+		letterSpacing: 1,
+		color: "#77705F",
+	},
+	cardPrice: {
+		fontFamily: "BarlowCondensed_700Bold",
+		fontSize: 19,
 		color: "#171717",
 	},
 	addButton: {

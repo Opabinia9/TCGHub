@@ -13,6 +13,7 @@ import { Menu, Text, TextInput } from "react-native-paper";
 import { Ionicons } from "@expo/vector-icons";
 import { fetchCards, type MagicCard, type Pagination } from "@/api/cards";
 import { useWishlist } from "@/context/WishlistContext";
+import AddToSheet, { type Condition, type SheetType } from "@/components/add-to-sheet";
 
 const FILTERS = [
 	"All",
@@ -48,6 +49,34 @@ export default function CardsScreen() {
 	const [menuCardId, setMenuCardId] = useState<string | null>(null);
 	const closeMenu = () => setMenuCardId(null);
 
+	// The listing / collection panel that's open (null = none).
+	const [sheet, setSheet] = useState<{ type: SheetType; card: MagicCard } | null>(null);
+
+	function openSheet(type: SheetType, card: MagicCard) {
+		closeMenu();
+		setSheet({ type, card });
+	}
+
+	function handleConfirm(quantity: number, condition: Condition) {
+		if (!sheet) return;
+		const { type, card } = sheet;
+
+		// Backend rule: a card you own or list can't also be on your wishlist.
+		if (wishlistCards.some((item) => item.id === card.id)) {
+			toggleWishlist(card);
+		}
+
+		// What we'll send to POST /api/v1/collection once it's connected.
+		console.log("POST /api/v1/collection", {
+			card_id: card.id,
+			quantity,
+			condition: type === "listing" ? condition : undefined,
+			for_trade: type === "listing",
+			wishlist: false,
+		});
+
+		setSheet(null);
+	}
 
 	// Load cards from the API, or use temporary cards if it fails.
 	useEffect(() => {
@@ -284,19 +313,13 @@ export default function CardsScreen() {
 												leadingIcon={menuIcon("pricetag-outline")}
 												title="Add to my listings"
 												titleStyle={styles.menuItemText}
-												onPress={() => {
-													console.log("Add to my listings:", card.name);
-													closeMenu();
-												}}
+												onPress={() => openSheet("listing", card)}
 											/>
 											<Menu.Item
 												leadingIcon={menuIcon("albums-outline")}
 												title="Add to collection"
 												titleStyle={styles.menuItemText}
-												onPress={() => {
-													console.log("Add to collection:", card.name);
-													closeMenu();
-												}}
+												onPress={() => openSheet("collection", card)}
 											/>
 											<View style={styles.menuDivider} />
 											<Menu.Item
@@ -425,7 +448,16 @@ export default function CardsScreen() {
 						<Ionicons name="close" size={30} color="#FFFFFF" />
 					</Pressable>
 				</View>
-			</Modal>
+						</Modal>
+
+			{sheet && (
+				<AddToSheet
+					type={sheet.type}
+					card={sheet.card}
+					onClose={() => setSheet(null)}
+					onConfirm={handleConfirm}
+				/>
+			)}
 		</>
 	);
 }

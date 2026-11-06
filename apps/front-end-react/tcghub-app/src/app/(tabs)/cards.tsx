@@ -9,7 +9,7 @@ import {
 	View,
 	ActivityIndicator,
 } from "react-native";
-import { Text, TextInput } from "react-native-paper";
+import { Menu, Text, TextInput } from "react-native-paper";
 import { Ionicons } from "@expo/vector-icons";
 import { fetchCards, type MagicCard, type Pagination } from "@/api/cards";
 import { useWishlist } from "@/context/WishlistContext";
@@ -26,6 +26,13 @@ const FILTERS = [
 
 type FilterOption = (typeof FILTERS)[number];
 
+// The add to button
+function menuIcon(name: keyof typeof Ionicons.glyphMap) {
+	return ({ size }: { size: number }) => (
+		<Ionicons name={name} size={size} color="#245f28" />
+	);
+}
+
 export default function CardsScreen() {
 	const [activeFilter, setActiveFilter] = useState<FilterOption>("All");
 	const [searchQuery, setSearchQuery] = useState("");
@@ -36,6 +43,10 @@ export default function CardsScreen() {
 	const [pagination, setPagination] = useState<Pagination | null>(null);
 	const [loadingMore, setLoadingMore] = useState(false);
 	const { wishlistCards, toggleWishlist } = useWishlist();
+
+	// Which card's + menu is open (null = none). Only one can be open at a time.
+	const [menuCardId, setMenuCardId] = useState<string | null>(null);
+	const closeMenu = () => setMenuCardId(null);
 
 
 	// Load cards from the API, or use temporary cards if it fails.
@@ -63,10 +74,10 @@ export default function CardsScreen() {
 				}
 			} catch {
 				if (!cancelled) {
-        			setCards([]);
-        			setPagination(null);
-        			setError("Unable to load cards. Please try again later.");
-    			}
+					setCards([]);
+					setPagination(null);
+					setError("Unable to load cards. Please try again later.");
+				}
 			} finally {
 				if (timeoutId) {
 					clearTimeout(timeoutId);
@@ -176,14 +187,14 @@ export default function CardsScreen() {
 								style={[
 									styles.filterButton,
 									activeFilter === filter &&
-										styles.activeFilterButton,
+									styles.activeFilterButton,
 								]}
 							>
 								<Text
 									style={[
 										styles.filterText,
 										activeFilter === filter &&
-											styles.activeFilterText,
+										styles.activeFilterText,
 									]}
 								>
 									{filter}
@@ -196,7 +207,7 @@ export default function CardsScreen() {
 				<View style={styles.cardsGrid}>
 					{filteredCards.map((card) => {
 						const isInWishlist = wishlistCards.some(
-    						(item) => item.id === card.id
+							(item) => item.id === card.id
 						);
 
 						return (
@@ -236,27 +247,65 @@ export default function CardsScreen() {
 											{card.name}
 										</Text>
 
-										<Pressable
-											style={styles.wishlistButton}
-											onPress={() => toggleWishlist(card)}
-											accessibilityRole="button"
-											accessibilityLabel={
-												isInWishlist
-													? "Remove from wishlist"
-													: "Add to wishlist"
+																				<Menu
+											visible={menuCardId === card.id}
+											onDismiss={closeMenu}
+											anchorPosition="bottom"
+											contentStyle={styles.menu}
+											anchor={
+												<Pressable
+													onPress={() => setMenuCardId(card.id)}
+													accessibilityRole="button"
+													accessibilityLabel={`Add ${card.name} to…`}
+													hitSlop={4}
+													style={[
+														styles.addButton,
+														menuCardId === card.id && styles.addButtonActive,
+													]}
+												>
+													<Ionicons
+														name="add"
+														size={22}
+														color={menuCardId === card.id ? "#E2D7BD" : "#171717"}
+													/>
+												</Pressable>
 											}
-											hitSlop={8}
 										>
-											<Ionicons
-												name={
-													isInWishlist
-														? "heart"
-														: "heart-outline"
-												}
-												size={24}
-												color="#171717"
+											<Menu.Item
+												leadingIcon={menuIcon(isInWishlist ? "heart" : "heart-outline")}
+												title={isInWishlist ? "Remove from wishlist" : "Add to wishlist"}
+												titleStyle={styles.menuItemText}
+												onPress={() => {
+													toggleWishlist(card);
+													closeMenu();
+												}}
 											/>
-										</Pressable>
+											<Menu.Item
+												leadingIcon={menuIcon("pricetag-outline")}
+												title="Add to my listings"
+												titleStyle={styles.menuItemText}
+												onPress={() => {
+													console.log("Add to my listings:", card.name);
+													closeMenu();
+												}}
+											/>
+											<Menu.Item
+												leadingIcon={menuIcon("albums-outline")}
+												title="Add to collection"
+												titleStyle={styles.menuItemText}
+												onPress={() => {
+													console.log("Add to collection:", card.name);
+													closeMenu();
+												}}
+											/>
+											<View style={styles.menuDivider} />
+											<Menu.Item
+												leadingIcon={menuIcon("layers-outline")}
+												title="Add to deck"
+												titleStyle={styles.menuItemText}
+												onPress={closeMenu}
+											/>
+										</Menu>
 									</View>
 
 									<Text
@@ -510,11 +559,30 @@ const styles = StyleSheet.create({
 		fontWeight: "800",
 		color: "#171717",
 	},
-	wishlistButton: {
-		width: 30,
-		height: 30,
+		addButton: {
+		width: 36,
+		height: 36,
+		borderRadius: 10,
+		backgroundColor: "#E2D7BD",
 		alignItems: "center",
 		justifyContent: "center",
+	},
+	addButtonActive: {
+		backgroundColor: "#171717",
+	},
+	menu: {
+		backgroundColor: "#FBF7EE",
+		borderRadius: 14,
+	},
+	menuItemText: {
+		fontSize: 15,
+		color: "#171717",
+	},
+	menuDivider: {
+		height: 1,
+		marginHorizontal: 12,
+		marginVertical: 4,
+		backgroundColor: "#DCCFB3",
 	},
 	cardSetName: {
 		fontSize: 11,

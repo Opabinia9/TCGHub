@@ -2,7 +2,11 @@ import type { Prisma, Chat } from '@prisma/client';
 
 export type ChatCreationInterface = Pick<Chat, 'title' | 'type'>;
 
-export type ChatWithMembersCreationInterface = ChatCreationInterface & { members: Array<string> };
+export type ChatWithMembersCreationInterface = ChatCreationInterface & {
+  members: Array<string>;
+  seller_id?: string;
+  card_id?: string;
+};
 
 export const chatWithMessages = {
   include: { messages: true },

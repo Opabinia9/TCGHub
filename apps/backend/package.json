@@ -13,16 +13,19 @@
     "prod": "tsx watch src/server.ts"
   },
   "dependencies": {
-    "@fastify/jwt": "^10.2.6",
+    "@better-auth/expo": "^1.7.17",
+    "@fastify/cors": "^11.4.0",
+    "@fastify/jwt": "^10.2.7",
     "@fastify/swagger": "^9.9.3",
     "@fastify/swagger-ui": "^6.1.2",
     "@prisma/adapter-pg": "^7.10.1",
     "@prisma/client": "^7.10.1",
     "@types/node": "^26.6.6",
     "@types/pg": "^8.23.1",
-    "argon2": "^0.45.1",
+    "argon2": "^0.45.2",
+    "better-auth": "^1.7.15",
     "dotenv": "^18.0.9",
-    "fastify": "^5.12.7",
+    "fastify": "^5.12.8",
     "fastify-type-provider-zod": "^7.0.0",
     "pg": "^8.23.1",
     "pino-pretty": "^13.2.0",
@@ -30,15 +33,15 @@
     "zod": "^4.6.7"
   },
   "devDependencies": {
-    "@vitest/coverage-v8": "^5.0.5",
-    "@vitest/ui": "^5.0.5",
+    "@vitest/coverage-v8": "^5.1.0",
+    "@vitest/ui": "^5.1.0",
     "nodemon": "^3.1.14",
     "prisma": "^7.10.1",
     "tsc-alias": "^1.9.9",
     "tsx": "^4.23.15",
     "typescript": "^7.0.2",
     "vite-tsconfig-paths": "^6.1.1",
-    "vitest": "^5.0.5"
+    "vitest": "^5.1.0"
   },
   "allowScripts": {
     "esbuild@0.28.2": true,

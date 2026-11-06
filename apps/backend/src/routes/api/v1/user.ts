@@ -25,7 +25,7 @@ export default async function chatRoutes(fastify: Fastify.FastifyInstance, optio
   fastify.patch<{ Params: UserIdParamsInterface }>(
     '/:userId',
     {
-      preHandler: [fastify.jwt_verify],
+      preHandler: [fastify.authenticate],
       schema: {
         params: UserIdParamsSchema,
         response: {
@@ -43,7 +43,7 @@ export default async function chatRoutes(fastify: Fastify.FastifyInstance, optio
   fastify.delete<{ Params: UserIdParamsInterface }>(
     '/:userId',
     {
-      preHandler: [fastify.jwt_verify],
+      preHandler: [fastify.authenticate],
       schema: {
         params: UserIdParamsSchema,
         response: {

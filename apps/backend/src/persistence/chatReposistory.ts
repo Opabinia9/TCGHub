@@ -27,6 +27,8 @@ export default class ChatRepository extends Repository<Chat> {
       data: {
         title: chat.title,
         type: chat.type,
+        seller_id: chat.seller_id ?? null,
+        card_id: chat.card_id ?? null,
         members: {
           create: chat.members.map((memberId) => {
             return {

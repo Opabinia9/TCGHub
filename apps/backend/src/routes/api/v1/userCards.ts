@@ -14,7 +14,7 @@ export default async function collectionRoutes(fastify: Fastify.FastifyInstance)
   fastify.get<{ Querystring: CardSearchQuery }>(
     '/',
     {
-      onRequest: [fastify.jwt_verify],
+      onRequest: [fastify.authenticate],
       schema: { querystring: cardSearchQuerySchema },
     },
     controller.getUserCards,
@@ -23,7 +23,7 @@ export default async function collectionRoutes(fastify: Fastify.FastifyInstance)
   fastify.withTypeProvider<ZodTypeProvider>().post<{ Body: CollectionBody }>(
     '/',
     {
-      onRequest: [fastify.jwt_verify],
+      onRequest: [fastify.authenticate],
       schema: { body: collectionBodyInterface },
     },
     controller.updateUserCards,

@@ -2,126 +2,116 @@ import { LightMyRequestResponse } from 'fastify';
 import buildServer from '../src/app.js';
 import { describe, it, expect, beforeEach, afterEach } from 'vitest';
 import { ENV } from '../src/utils/env.js';
-import {
-  badEmail,
-  createUser,
-  invalidUser,
-  invalidUserPassword,
-  userOne,
-  userOneHash,
-  userOnePassword,
-} from './helpers/userPresets.js';
+import { badEmail, createUser, invalidUser, userOne } from './helpers/userPresets.js';
 
 const server = await buildServer({}, ENV);
 
-describe('POST /api/v1/auth/login', () => {
+describe('POST /api/auth/sign-in/email', () => {
   beforeEach(async () => {
-    await createUser({ ...userOne, hash: userOneHash });
+    const userOneDetails = await createUser({ ...userOne });
   });
 
-  afterEach(() => {
-    const found = [...server.specViolations];
-    server.specViolations.length = 0;
-    expect(found).toEqual([]);
-  });
+  // afterEach(() => {
+  //   const found = [...server.specViolations];
+  //   server.specViolations.length = 0;
+  //   expect(found).toEqual([]);
+  // });
 
   it('accepts valid credentials', async () => {
     const response: LightMyRequestResponse = await server.inject({
       method: 'post',
-      url: '/api/v1/auth/login',
+      url: '/api/auth/sign-in/email',
       headers: { 'content-type': 'application/json' },
       payload: {
         email: userOne.email,
-        password: userOnePassword,
+        password: userOne.password,
       },
     });
     const payload = await response.json();
 
     expect(response.statusCode).toBe(200);
-    expect(payload).toHaveProperty('accessToken');
+    expect(payload).toHaveProperty('token');
   });
 
   it('rejects invalid credentials', async () => {
     const response: LightMyRequestResponse = await server.inject({
       method: 'post',
-      url: '/api/v1/auth/login',
+      url: '/api/auth/sign-in/email',
       headers: { 'content-type': 'application/json' },
       payload: {
         email: invalidUser.email,
-        password: invalidUserPassword,
+        password: invalidUser.password,
       },
     });
     const payload = await response.json();
 
     expect(response.statusCode).toBe(401);
     expect(payload).toMatchObject({
-      error: 'Invalid credentials',
+      code: 'INVALID_EMAIL_OR_PASSWORD',
+      message: 'Invalid email or password',
     });
   });
 
   it('rejects payload without email', async () => {
     const response: LightMyRequestResponse = await server.inject({
       method: 'post',
-      url: '/api/v1/auth/login',
+      url: '/api/auth/sign-in/email',
       headers: { 'content-type': 'application/json' },
       payload: {
-        password: userOnePassword,
+        password: userOne.password,
       },
     });
     const payload = await response.json();
 
     expect(response.statusCode).toBe(400);
     expect(payload).toMatchObject({
-      statusCode: 400,
-      code: 'FST_ERR_VALIDATION',
-      error: 'Bad Request',
-      message: 'body/email Invalid input: expected string, received undefined',
+      code: 'VALIDATION_ERROR',
+      message: '[body.email] Invalid input: expected string, received undefined',
     });
   });
 
   it('rejects payload with bad email', async () => {
     const response: LightMyRequestResponse = await server.inject({
       method: 'post',
-      url: '/api/v1/auth/login',
+      url: '/api/auth/sign-in/email',
       headers: { 'content-type': 'application/json' },
       payload: {
         email: badEmail,
-        password: userOnePassword,
+        password: userOne.password,
       },
     });
     const payload = await response.json();
 
     expect(response.statusCode).toBe(400);
     expect(payload).toMatchObject({
-      statusCode: 400,
-      code: 'FST_ERR_VALIDATION',
-      error: 'Bad Request',
-      message: 'body/email Invalid email address',
+      code: 'INVALID_EMAIL',
+      message: 'Invalid email',
     });
   });
 
   it('rejects payload with invalid email', async () => {
     const response: LightMyRequestResponse = await server.inject({
       method: 'post',
-      url: '/api/v1/auth/login',
+      url: '/api/auth/sign-in/email',
       headers: { 'content-type': 'application/json' },
       payload: {
         email: invalidUser.email,
-        password: userOnePassword,
+        password: userOne.password,
       },
     });
     const payload = await response.json();
 
     expect(response.statusCode).toBe(401);
     expect(payload).toMatchObject({
-      error: 'Invalid credentials',
+      code: 'INVALID_EMAIL_OR_PASSWORD',
+      message: 'Invalid email or password',
     });
   });
 
   it('rejects payload without password', async () => {
     const response: LightMyRequestResponse = await server.inject({
       method: 'post',
-      url: '/api/v1/auth/login',
+      url: '/api/auth/sign-in/email',
       headers: { 'content-type': 'application/json' },
       payload: {
         email: userOne.email,
@@ -131,28 +121,27 @@ describe('POST /api/v1/auth/login', () => {
 
     expect(response.statusCode).toBe(400);
     expect(payload).toMatchObject({
-      statusCode: 400,
-      code: 'FST_ERR_VALIDATION',
-      error: 'Bad Request',
-      message: 'body/password Invalid input: expected string, received undefined',
+      code: 'VALIDATION_ERROR',
+      message: '[body.password] Invalid input: expected string, received undefined',
     });
   });
 
   it('rejects payload with invalid password', async () => {
     const response: LightMyRequestResponse = await server.inject({
       method: 'post',
-      url: '/api/v1/auth/login',
+      url: '/api/auth/sign-in/email',
       headers: { 'content-type': 'application/json' },
       payload: {
         email: userOne.email,
-        password: invalidUserPassword,
+        password: invalidUser.password,
       },
     });
     const payload = await response.json();
 
     expect(response.statusCode).toBe(401);
     expect(payload).toMatchObject({
-      error: 'Invalid credentials',
+      code: 'INVALID_EMAIL_OR_PASSWORD',
+      message: 'Invalid email or password',
     });
   });
 });

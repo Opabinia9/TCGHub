@@ -25,15 +25,57 @@ type Deck = {
 type Tab = 'mine' | 'community';
 
 const MY_DECKS: Deck[] = [
-  { id: '1', name: 'Green Stompy', format: 'Modern', cardCount: 60, artColor: '#3F6B3A', colors: ['G'] },
-  { id: '2', name: 'Blue Control', format: 'Commander', cardCount: 100, artColor: '#34506E', colors: ['U'] },
-  { id: '3', name: 'Boros Aggro', format: 'Standard', cardCount: 60, artColor: '#8A3B2E', colors: ['R', 'W'] },
-  { id: '4', name: 'Dimir Midrange', format: 'Pioneer', cardCount: 60, artColor: '#3B3550', colors: ['U', 'B'] },
+  {
+    id: '1',
+    name: 'Green Stompy',
+    format: 'Modern',
+    cardCount: 60,
+    artColor: '#3F6B3A',
+    colors: ['G'],
+  },
+  {
+    id: '2',
+    name: 'Blue Control',
+    format: 'Commander',
+    cardCount: 100,
+    artColor: '#34506E',
+    colors: ['U'],
+  },
+  {
+    id: '3',
+    name: 'Boros Aggro',
+    format: 'Standard',
+    cardCount: 60,
+    artColor: '#8A3B2E',
+    colors: ['R', 'W'],
+  },
+  {
+    id: '4',
+    name: 'Dimir Midrange',
+    format: 'Pioneer',
+    cardCount: 60,
+    artColor: '#3B3550',
+    colors: ['U', 'B'],
+  },
 ];
 
 const COMMUNITY_DECKS: Deck[] = [
-  { id: '5', name: 'Mono Red Burn', format: 'Modern', cardCount: 60, artColor: '#9A4A22', colors: ['R'] },
-  { id: '6', name: 'Selesnya Tokens', format: 'Standard', cardCount: 60, artColor: '#6B7A3A', colors: ['G', 'W'] },
+  {
+    id: '5',
+    name: 'Mono Red Burn',
+    format: 'Modern',
+    cardCount: 60,
+    artColor: '#9A4A22',
+    colors: ['R'],
+  },
+  {
+    id: '6',
+    name: 'Selesnya Tokens',
+    format: 'Standard',
+    cardCount: 60,
+    artColor: '#6B7A3A',
+    colors: ['G', 'W'],
+  },
 ];
 
 const FILTERS = ['GAME', 'FORMAT', 'COLOUR'];
@@ -77,7 +119,11 @@ export default function Decks() {
       {/* My decks / Community toggle */}
       <View style={styles.toggle} accessibilityRole="tablist">
         <ToggleButton label="MY DECKS" active={tab === 'mine'} onPress={() => setTab('mine')} />
-        <ToggleButton label="COMMUNITY" active={tab === 'community'} onPress={() => setTab('community')} />
+        <ToggleButton
+          label="COMMUNITY"
+          active={tab === 'community'}
+          onPress={() => setTab('community')}
+        />
       </View>
 
       {/* Search */}
@@ -152,11 +198,7 @@ function DeckRow({ deck }: { deck: Deck }) {
   return (
     <View style={styles.deckRow}>
       <View style={[styles.deckArt, { backgroundColor: deck.artColor }]}>
-        <View
-          style={styles.pipRow}
-          accessible
-          accessibilityLabel={`Colours: ${colourNames}`}
-        >
+        <View style={styles.pipRow} accessible accessibilityLabel={`Colours: ${colourNames}`}>
           {deck.colors.map((c) => (
             <View key={c} style={[styles.pip, { backgroundColor: MANA[c].color }]} />
           ))}

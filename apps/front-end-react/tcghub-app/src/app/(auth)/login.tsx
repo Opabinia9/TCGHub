@@ -2,6 +2,8 @@ import { useState } from 'react';
 import { StyleSheet, View, KeyboardAvoidingView, Platform, ScrollView } from 'react-native';
 import { Button, Text, TextInput } from 'react-native-paper';
 import { Link, useRouter } from 'expo-router';
+import { ENV } from '@/api/env';
+import { authClient } from '@/utils/auth-client';
 
 export default function Login() {
   const router = useRouter();
@@ -13,7 +15,7 @@ export default function Login() {
   const [loading, setLoading] = useState(false);
 
   const handleLogin = async () => {
-    if (!email.trim() || !password) {
+    if (!email.trim() || !password.trim()) {
       setError('Please enter your email and password.');
       return;
     }
@@ -22,21 +24,12 @@ export default function Login() {
     setLoading(true);
 
     try {
-      const response = await fetch(
-        'http://100.65.32.184:8080/api/v1/auth/login',
-        {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-          },
-          body: JSON.stringify({
-            email: email.trim(),
-            password,
-          }),
-        },
-      );
-
-      if (!response.ok) {
+      // TODO: swap this out for auto removing at the Text input level
+      const result = await authClient.signIn.email({
+        email: email.trimEnd(),
+        password: password.trimEnd(),
+      })
+      if (result.error) {
         setError('Login failed. Please check your details.');
         return;
       }
@@ -54,10 +47,7 @@ export default function Login() {
       style={styles.container}
       behavior={Platform.OS === 'ios' ? 'padding' : undefined}
     >
-      <ScrollView
-        contentContainerStyle={styles.content}
-        keyboardShouldPersistTaps="handled"
-      >
+      <ScrollView contentContainerStyle={styles.content} keyboardShouldPersistTaps="handled">
         <View style={styles.logoContainer}>
           <Text style={styles.logo}>TCG HUB</Text>
           <Text style={styles.subtitle}>YOUR NEXT TRADE STARTS HERE</Text>
@@ -68,9 +58,7 @@ export default function Login() {
             Welcome back
           </Text>
 
-          <Text style={styles.description}>
-            Sign in to connect with other Planeswalkers.
-          </Text>
+          <Text style={styles.description}>Sign in to connect with other Planeswalkers.</Text>
 
           <TextInput
             label="Email"
@@ -92,6 +80,7 @@ export default function Login() {
             onChangeText={setPassword}
             mode="outlined"
             secureTextEntry={!passwordVisible}
+            autoCapitalize="none"
             outlineColor="#C7B99E"
             activeOutlineColor="#171717"
             textColor="#171717"
@@ -200,9 +189,9 @@ const styles = StyleSheet.create({
     marginTop: 8,
   },
   previewButton: {
-  borderColor: '#171717',
-  borderRadius: 10,
-  marginTop: 12,
+    borderColor: '#171717',
+    borderRadius: 10,
+    marginTop: 12,
   },
   buttonContent: {
     height: 48,

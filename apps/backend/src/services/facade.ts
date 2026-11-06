@@ -5,14 +5,13 @@ import DeckRepository from '@/persistence/deckRepository.js';
 import ChatRepository from '@/persistence/chatReposistory.js';
 import MessageRepository from '@/persistence/messageReposistory.js';
 import NotFoundError from '@/errortypes/NotFoundError.js';
-import { hashPassword } from '@/utils/hashing.js';
 import type { Deck, DeckCard, User, UserCard } from '@prisma/client';
 import type { AuthSignupBody, DeckCardParams } from '@/routes/api/v1/routeSchemas.js';
 import type { UserCreationInterface, UserWithChats } from '@/types/userObject.js';
 import type { ChatWithMembersCreationInterface, ChatWithMessages } from '@/types/chatObject.js';
 import type { MessageCreationInterface } from '@/types/MessageObject.js';
 import type { CardSearchQuery, CardSummary } from '@/types/cardObject.js';
-import type { DeckCreationInterface, DeckRef, UserDecks } from '@/types/deckObject.js';
+import type { DeckCards, DeckCreationInterface, DeckRef, UserDecks } from '@/types/deckObject.js';
 import type { UserCollection } from '@/types/userCardObject.js';
 
 export default class Facade {
@@ -68,9 +67,7 @@ export default class Facade {
    *
    */
   async createUser(signupData: AuthSignupBody): Promise<void> {
-    const { password, ...include } = signupData;
-    const hash = await hashPassword(signupData.password);
-    const userData: UserCreationInterface = { ...include, hash: hash };
+    const userData: UserCreationInterface = signupData;
     await this.userRepo.add(userData);
   }
 
@@ -190,6 +187,14 @@ export default class Facade {
       throw new NotFoundError('Deck Not Found');
     }
     return user_deck;
+  }
+
+  async getDeckCards(deck: DeckRef): Promise<DeckCards> {
+    const deck_cards = await this.deckRepo.getDeckCards(deck);
+    if (deck_cards === null) {
+      throw new NotFoundError('Deck Contents Not Found');
+    }
+    return deck_cards;
   }
 
   async addDeckCard(owner_id: string, deck_card: DeckCard): Promise<DeckCard> {

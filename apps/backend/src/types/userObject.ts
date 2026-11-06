@@ -1,9 +1,6 @@
 import type { Prisma, User } from '@prisma/client';
 
-export type UserCreationInterface = Pick<
-  User,
-  'username' | 'email' | 'hash' | 'first_name' | 'last_name'
->;
+export type UserCreationInterface = Pick<User, 'username' | 'email' | 'name'>;
 
 export const userWithChats = {
   include: {

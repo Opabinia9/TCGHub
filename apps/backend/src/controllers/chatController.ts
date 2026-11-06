@@ -5,7 +5,6 @@ import type {
 } from '@/routes/api/v1/routeSchemas.js';
 import Facade from '@/services/facade.js';
 import type { ChatWithMembers, ChatWithMembersCreationInterface } from '@/types/chatObject.js';
-import { type UserJwtType, UserJwt } from '@/types/JWTObject.js';
 import { find } from '@/utils/find.js';
 import type { UserWithChats } from '@/types/userObject.js';
 import type { ChatMember } from '@prisma/client';
@@ -15,11 +14,12 @@ const facade = new Facade();
 
 export default class ChatController {
   async getChats(request: FastifyRequest, reply: FastifyReply) {
-    const jwt: UserJwtType = UserJwt.parse(request.user);
-    const user = await facade.getUserWithChats(jwt.userId);
+    const { userId } = request.retriveSession(request).session;
+    const user = await facade.getUserWithChats(userId);
     const userWithChats = await facade.getUserWithChats(user.id);
-    return reply.code(200).send(
-      userWithChats.chats.map((x) => {
+    return reply.code(200).send({
+      success: 'Chats successfully retrieved',
+      chats: userWithChats.chats.map((x) => {
         const members = x.Chat.members.map((y) => {
           return y.user_id;
         });
@@ -33,7 +33,7 @@ export default class ChatController {
           joined_at: x.joined_at,
         };
       }),
-    );
+    });
   }
 
   async createChat(
@@ -41,9 +41,9 @@ export default class ChatController {
     reply: FastifyReply,
   ) {
     // TODO: handle invalid userId in members
-    const jwt: UserJwtType = UserJwt.parse(request.user);
+    const { userId } = request.retriveSession(request).session;
     const chatDetails: ChatWithMembersCreationInterface = request.body;
-    chatDetails.members.push(jwt.userId);
+    chatDetails.members.push(userId);
     const chat = await facade.createChatWithMembers(chatDetails);
     return reply.code(201).send({ success: 'Chat created', chatID: chat.id });
   }
@@ -56,8 +56,8 @@ export default class ChatController {
     request: FastifyRequest<{ Params: ChatParamsInterface }>,
     reply: FastifyReply,
   ) {
-    const jwt: UserJwtType = UserJwt.parse(request.user);
-    const user = await facade.getUserWithChats(jwt.userId);
+    const { userId } = request.retriveSession(request).session;
+    const user = await facade.getUserWithChats(userId);
     const userWithChats: UserWithChats = await facade.getUserWithChats(user.id);
     const chat = await find<
       ChatWithMembers & { joined_at: Date; last_read_message_id: string | null }
@@ -96,8 +96,8 @@ export default class ChatController {
     request: FastifyRequest<{ Params: ChatParamsInterface }>,
     reply: FastifyReply,
   ) {
-    const jwt: UserJwtType = UserJwt.parse(request.user);
-    const user = await facade.getUserWithChats(jwt.userId);
+    const { userId } = request.retriveSession(request).session;
+    const user = await facade.getUserWithChats(userId);
     const chatFromUser = await find<ChatMember>('chat_id', user.chats, request.params.chatId);
     if (chatFromUser === null) {
       return reply.code(404).send({ error: 'Chat not found' });
@@ -115,9 +115,8 @@ export default class ChatController {
     request: FastifyRequest<{ Params: ChatParamsInterface; Body: ChatPostMessageBodyInterface }>,
     reply: FastifyReply,
   ) {
-    const jwt: UserJwtType = UserJwt.parse(request.user);
+    const { userId } = request.retriveSession(request).session;
     const message = request.body.body;
-    const userId = jwt.userId;
     const user = await facade.getUserWithChats(userId);
     const chatFromUser = await find<ChatMember>('chat_id', user.chats, request.params.chatId);
     if (chatFromUser === null) {

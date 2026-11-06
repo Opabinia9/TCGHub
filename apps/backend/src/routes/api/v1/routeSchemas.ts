@@ -14,14 +14,15 @@ export type AuthLoginBody = z.infer<typeof AuthLoginBodySchema>;
 export const authLoginSchema = { body: AuthLoginBodySchema };
 
 export const AuthSignupBodySchema = z.object({
-  first_name: z.string(),
-  last_name: z.string(),
+  name: z.string(),
   email: z.email(),
   password: z.string(),
   username: z.string(),
 });
 export type AuthSignupBody = z.infer<typeof AuthSignupBodySchema>;
 export const authSignupSchema = { body: AuthSignupBodySchema };
+
+/** Chat Types & Interfaces */
 
 export const chatParamsSchema = z.object({
   chatId: z.string(),
@@ -33,13 +34,22 @@ export const chatPostMessageBodySchema = z.object({
 });
 export type ChatPostMessageBodyInterface = z.infer<typeof chatPostMessageBodySchema>;
 
-export type ChatCreationBodyInterface = ChatWithMembersCreationInterface;
+export const chatCreationBodySchema = z.discriminatedUnion('type', [
+  z.object({
+    title: z.string(),
+    type: z.enum([ChatType.TRADE]),
+    seller_id: z.uuid(),
+    card_id: z.uuid(),
+    members: z.array(z.uuid()).min(1),
+  }),
+  z.object({
+    title: z.string(),
+    type: z.enum([ChatType.DIRECT, ChatType.GROUP]),
+    members: z.array(z.uuid()).min(1),
+  }),
+]);
 
-export const chatCreationBodySchema = z.object({
-  title: z.string(),
-  type: z.enum(Object.values(ChatType)),
-  members: z.array(z.string()),
-});
+export type ChatCreationBodyInterface = z.infer<typeof chatCreationBodySchema>;
 
 /** Card Types & Interfaces */
 

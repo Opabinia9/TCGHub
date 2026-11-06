@@ -19,21 +19,24 @@ export default async function chatRoutes(fastify: Fastify.FastifyInstance, optio
   fastify.get(
     '/',
     {
-      preHandler: [fastify.jwt_verify],
+      preHandler: [fastify.authenticate],
       schema: {
         response: {
           200: z
-            .array(
-              z.object({
-                id: z.uuid(),
-                type: z.enum(Object.values(ChatType)),
-                title: z.string(),
-                created_at: z.date(),
-                members: z.array(z.uuid()),
-                last_read_message_id: z.uuid().nullable(),
-                joined_at: z.date(),
-              }),
-            )
+            .object({
+              success: z.string(),
+              chats: z.array(
+                z.object({
+                  id: z.uuid(),
+                  type: z.enum(Object.values(ChatType)),
+                  title: z.string(),
+                  created_at: z.date(),
+                  members: z.array(z.uuid()),
+                  last_read_message_id: z.uuid().nullable(),
+                  joined_at: z.date(),
+                }),
+              ),
+            })
             .meta({ description: 'OK' }),
           401: z
             .object({
@@ -49,7 +52,7 @@ export default async function chatRoutes(fastify: Fastify.FastifyInstance, optio
   fastify.post<{ Body: ChatCreationBodyInterface }>(
     '/',
     {
-      preHandler: [fastify.jwt_verify],
+      preHandler: [fastify.authenticate],
       schema: {
         body: chatCreationBodySchema,
         response: {
@@ -73,7 +76,7 @@ export default async function chatRoutes(fastify: Fastify.FastifyInstance, optio
   fastify.delete(
     '/',
     {
-      preHandler: [fastify.jwt_verify],
+      preHandler: [fastify.authenticate],
       schema: {
         response: {
           503: z
@@ -90,7 +93,7 @@ export default async function chatRoutes(fastify: Fastify.FastifyInstance, optio
   fastify.get<{ Params: ChatParamsInterface }>(
     '/:chatId',
     {
-      preHandler: [fastify.jwt_verify],
+      preHandler: [fastify.authenticate],
       schema: {
         params: chatParamsSchema,
         response: {
@@ -124,7 +127,7 @@ export default async function chatRoutes(fastify: Fastify.FastifyInstance, optio
   fastify.patch<{ Params: ChatParamsInterface }>(
     '/:chatId',
     {
-      preHandler: [fastify.jwt_verify],
+      preHandler: [fastify.authenticate],
       schema: {
         params: chatParamsSchema,
         response: {
@@ -142,7 +145,7 @@ export default async function chatRoutes(fastify: Fastify.FastifyInstance, optio
   fastify.get<{ Params: ChatParamsInterface }>(
     '/:chatId/messages',
     {
-      preHandler: [fastify.jwt_verify],
+      preHandler: [fastify.authenticate],
       schema: {
         params: chatParamsSchema,
         response: {
@@ -176,7 +179,7 @@ export default async function chatRoutes(fastify: Fastify.FastifyInstance, optio
   fastify.post<{ Params: ChatParamsInterface; Body: ChatPostMessageBodyInterface }>(
     '/:chatId/messages',
     {
-      preHandler: [fastify.jwt_verify],
+      preHandler: [fastify.authenticate],
       schema: {
         params: chatParamsSchema,
         body: chatPostMessageBodySchema,

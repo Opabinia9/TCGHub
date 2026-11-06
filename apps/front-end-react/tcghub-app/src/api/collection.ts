@@ -1,6 +1,7 @@
 import { ENV } from '@/api/env';
 import { MagicCard, toCollectionCard, UserCard } from './types';
 import { Pagination } from './types';
+import { authClient } from '@/utils/auth-client';
 
 type CollectionPage = {
   items: Array<MagicCard>;
@@ -24,12 +25,9 @@ export async function fetchCollection(
   if (search) {
     params.set('name', search);
   }
-  const res = await fetch(`http://${ENV.EXPO_PUBLIC_API_URL}/api/v1/collection`, {
-    headers: {
-      Authorization:
-        'Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOiJiNzEyNTljNi0zZDM3LTQ4MjItYjM0ZS0xZjY2YzFiMTRmZWYiLCJpYXQiOjE3OTM3MDM2NTV9.uP2W6YnJq32UdAPuhPR7V_l1zkxu4IkLoFiQyEdWOh4',
-    },
-  });
+  const cookies = await authClient.getCookie();
+  const headers = { Cookie: cookies };
+  const res = await fetch(`http://${ENV.EXPO_PUBLIC_API_URL}/api/v1/collection`, { headers });
   if (!res.ok) {
     throw new Error(`Failed to load collection (${res.status})`);
   }

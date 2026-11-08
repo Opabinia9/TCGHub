@@ -4,7 +4,7 @@ import { Text } from 'react-native-paper';
 import { Image } from 'expo-image';
 import { Ionicons } from '@expo/vector-icons';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
-import type { MagicCard } from '@/api/cards';
+import type { MagicCard } from '@/api/types';
 
 export const CONDITIONS = [
   'Near mint',
@@ -108,7 +108,7 @@ export default function AddToSheet({ type, card, onClose, onConfirm }: AddToShee
             <View>
               <Text style={styles.label}>QUANTITY</Text>
               <Text style={styles.hint}>
-                {isListing ? 'How many copies to list' : 'How many copies you own'}
+                How many copies to add
               </Text>
             </View>
 

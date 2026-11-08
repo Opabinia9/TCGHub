@@ -9,7 +9,9 @@ import NotFoundError from '@/errortypes/NotFoundError.js';
 const facade = new Facade();
 
 export default class UserCardsController {
-  async updateUserCards(request: FastifyRequest<{ Body: CollectionBody }>): Promise<UserCard> {
+  async updateUserCards(
+    request: FastifyRequest<{ Body: CollectionBody }>,
+  ): Promise<UserCard> {
     const { userId } = request.retriveSession(request).session;
     let quantity: number = request.body.quantity;
 
@@ -40,15 +42,17 @@ export default class UserCardsController {
         for_trade: request.body.for_trade,
         wishlist: request.body.wishlist,
       };
-      return await facade.updateCard(user_card); /* Primary Key Exists! -> Update */
+      return await facade.updateCard(
+        user_card,
+      ); /* Primary Key Exists! -> Update */
     } else {
       const user_card = {
         user_id: userId,
         card_id: request.body.card_id,
-        quantity: 1,
-        condition: 'unmarked',
-        for_trade: false,
-        wishlist: false,
+        quantity: request.body.quantity ?? 1,
+        condition: request.body.condition ?? 'unmarked',
+        for_trade: request.body.for_trade ?? false,
+        wishlist: request.body.wishlist ?? false,
       };
       return await facade.addCard(user_card);
     }
@@ -70,6 +74,72 @@ export default class UserCardsController {
           limit: filters.limit,
           total: user_collection.total,
           totalPages: Math.ceil(user_collection.total / filters.limit),
+        },
+      });
+    }
+    return null;
+  }
+
+  async getTrades(
+    request: FastifyRequest<{ Querystring: CardSearchQuery }>,
+    reply: FastifyReply,
+  ): Promise<UserCollection | null> {
+    const { userId } = request.retriveSession(request).session;
+    const filters = request.query;
+    const trades = await facade.getTrades(userId);
+
+    if (trades !== null) {
+      return reply.code(200).send({
+        items: trades.items,
+        pagination: {
+          page: filters.page,
+          limit: filters.limit,
+          total: trades.total,
+          totalPages: Math.ceil(trades.total / filters.limit),
+        },
+      });
+    }
+    return null;
+  }
+
+  async getUserTrades(
+    request: FastifyRequest<{ Querystring: CardSearchQuery }>,
+    reply: FastifyReply,
+  ): Promise<UserCollection | null> {
+    const { userId } = request.retriveSession(request).session;
+    const filters = request.query;
+    const user_trades = await facade.getUserTrades(userId);
+
+    if (user_trades !== null) {
+      return reply.code(200).send({
+        items: user_trades.items,
+        pagination: {
+          page: filters.page,
+          limit: filters.limit,
+          total: user_trades.total,
+          totalPages: Math.ceil(user_trades.total / filters.limit),
+        },
+      });
+    }
+    return null;
+  }
+
+  async getWishlist(
+    request: FastifyRequest<{ Querystring: CardSearchQuery }>,
+    reply: FastifyReply,
+  ): Promise<UserCollection | null> {
+    const { userId } = request.retriveSession(request).session;
+    const filters = request.query;
+    const wishlist = await facade.getWishlist(userId);
+
+    if (wishlist !== null) {
+      return reply.code(200).send({
+        items: wishlist.items,
+        pagination: {
+          page: filters.page,
+          limit: filters.limit,
+          total: wishlist.total,
+          totalPages: Math.ceil(wishlist.total / filters.limit),
         },
       });
     }

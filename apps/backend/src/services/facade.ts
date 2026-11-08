@@ -6,12 +6,26 @@ import ChatRepository from '@/persistence/chatReposistory.js';
 import MessageRepository from '@/persistence/messageReposistory.js';
 import NotFoundError from '@/errortypes/NotFoundError.js';
 import type { Deck, DeckCard, User, UserCard } from '@prisma/client';
-import type { AuthSignupBody, DeckCardParams } from '@/routes/api/v1/routeSchemas.js';
-import type { UserCreationInterface, UserWithChats } from '@/types/userObject.js';
-import type { ChatWithMembersCreationInterface, ChatWithMessages } from '@/types/chatObject.js';
+import type {
+  AuthSignupBody,
+  DeckCardParams,
+} from '@/routes/api/v1/routeSchemas.js';
+import type {
+  UserCreationInterface,
+  UserWithChats,
+} from '@/types/userObject.js';
+import type {
+  ChatWithMembersCreationInterface,
+  ChatWithMessages,
+} from '@/types/chatObject.js';
 import type { MessageCreationInterface } from '@/types/MessageObject.js';
 import type { CardSearchQuery, CardSummary } from '@/types/cardObject.js';
-import type { DeckCards, DeckCreationInterface, DeckRef, UserDecks } from '@/types/deckObject.js';
+import type {
+  DeckCards,
+  DeckCreationInterface,
+  DeckRef,
+  UserDecks,
+} from '@/types/deckObject.js';
 import type { UserCollection } from '@/types/userCardObject.js';
 
 export default class Facade {
@@ -140,6 +154,18 @@ export default class Facade {
     return await this.userCardsRepo.getUserCollection(user_id);
   }
 
+  async getTrades(user_id: string): Promise<UserCollection> {
+    return await this.userCardsRepo.getTrades(user_id);
+  }
+
+  async getUserTrades(user_id: string): Promise<UserCollection> {
+    return await this.userCardsRepo.getUserTrades(user_id);
+  }
+
+  async getWishlist(user_id: string): Promise<UserCollection> {
+    return await this.userCardsRepo.getWishlist(user_id);
+  }
+
   async getUserCard(user_id: string, card_id: string): Promise<UserCard> {
     const user_card = await this.userCardsRepo.get(user_id, card_id);
     if (user_card === null) {
@@ -205,12 +231,18 @@ export default class Facade {
     return new_deck_card;
   }
 
-  async delDeckCard(owner_id: string, deck_card: DeckCardParams): Promise<DeckCard | void> {
+  async delDeckCard(
+    owner_id: string,
+    deck_card: DeckCardParams,
+  ): Promise<DeckCard | void> {
     await this.deckRepo.delDeckCard(owner_id, deck_card);
   }
 
   async updDeckCard(owner_id: string, deck_card: DeckCard): Promise<DeckCard> {
-    const updated_deck_card = await this.deckRepo.updDeckCard(owner_id, deck_card);
+    const updated_deck_card = await this.deckRepo.updDeckCard(
+      owner_id,
+      deck_card,
+    );
     if (updated_deck_card === null) {
       throw new NotFoundError('Deck Not Updated');
     }

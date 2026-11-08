@@ -24,7 +24,7 @@ export default function Login() {
     setLoading(true);
 
     try {
-      // TODO: swap this out for auto removing at the Text input level
+     
       const result = await authClient.signIn.email({
         email: email.trimEnd(),
         password: password.trimEnd(),

@@ -5,10 +5,10 @@ import * as SecureStore from 'expo-secure-store';
 import { ENV } from '@/api/env';
 
 export const authClient = createAuthClient({
-  baseURL: `http://${ENV.EXPO_PUBLIC_API_URL}`, // Base URL of your Better Auth backend.
+  baseURL: `http://${ENV.EXPO_PUBLIC_API_URL}`,
   plugins: [
     expoClient({
-      // scheme: 'tcghub',
+     
       storagePrefix: 'tcghub',
       storage: SecureStore,
       cookiePrefix: 'better-auth',

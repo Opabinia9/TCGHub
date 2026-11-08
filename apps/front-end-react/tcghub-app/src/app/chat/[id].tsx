@@ -17,7 +17,7 @@ import { CHATS, ChatMessage } from '@/data/chats';
 const QUICK_REPLIES = ['Propose a trade', 'Suggest a meetup', 'Still available?'];
 
 export default function ChatScreen() {
-  // The [id] in the file name becomes this value, e.g. /chat/1 → id = '1'.
+ 
   const { id } = useLocalSearchParams<{ id: string }>();
   const chat = CHATS.find((c) => c.id === id);
 
@@ -35,7 +35,7 @@ export default function ChatScreen() {
     );
   }
 
-  // Add the typed message to the bottom of the chat (only on this device for now).
+ 
   const send = () => {
     const text = draft.trim();
     if (!text) return;
@@ -49,7 +49,8 @@ export default function ChatScreen() {
   return (
     <KeyboardAvoidingView
       style={styles.screen}
-      behavior={Platform.OS === 'ios' ? 'padding' : undefined}
+      behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
+      keyboardVerticalOffset={Platform.OS === 'ios' ? insets.top - insets.bottom : 0}
     >
       {/* Header */}
       <View style={styles.header}>
@@ -130,6 +131,8 @@ export default function ChatScreen() {
             onSubmitEditing={send}
             placeholder="Message…"
             placeholderTextColor="#7A705F"
+            selectionColor="#171717"
+						cursorColor="#171717"
             returnKeyType="send"
             accessibilityLabel={`Message ${chat.name}`}
             style={styles.input}
@@ -171,7 +174,7 @@ const styles = StyleSheet.create({
     color: '#5A5246',
   },
 
-  // Header
+ 
   header: {
     flexDirection: 'row',
     alignItems: 'center',
@@ -214,7 +217,7 @@ const styles = StyleSheet.create({
     color: '#5A5246',
   },
 
-  // Pinned listing
+ 
   listing: {
     flexDirection: 'row',
     alignItems: 'center',
@@ -259,7 +262,7 @@ const styles = StyleSheet.create({
     color: '#245f28',
   },
 
-  // Messages
+ 
   messageScroll: {
     flex: 1,
   },
@@ -315,7 +318,7 @@ const styles = StyleSheet.create({
     color: '#5A5246',
   },
 
-  // Quick replies + typing box
+ 
   composer: {
     gap: 8,
     paddingTop: 8,

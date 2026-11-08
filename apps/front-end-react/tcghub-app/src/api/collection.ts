@@ -27,11 +27,16 @@ export async function fetchCollection(
   }
   const cookies = await authClient.getCookie();
   const headers = { Cookie: cookies };
-  const res = await fetch(`http://${ENV.EXPO_PUBLIC_API_URL}/api/v1/collection`, { headers });
+  const res = await fetch(
+    `http://${ENV.EXPO_PUBLIC_API_URL}/api/v1/collection`,
+    { headers },
+  );
   if (!res.ok) {
     throw new Error(`Failed to load collection (${res.status})`);
   }
   const data: CollectionApiResponse = await res.json();
-  console.log(data.items);
-  return { items: data.items.map(toCollectionCard), pagination: data.pagination };
+  return {
+    items: data.items.map(toCollectionCard),
+    pagination: data.pagination,
+  };
 }

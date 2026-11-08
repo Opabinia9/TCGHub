@@ -1,7 +1,8 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { Pressable, ScrollView, StyleSheet, View } from 'react-native';
 import { Searchbar, Text } from 'react-native-paper';
 import { Ionicons } from '@expo/vector-icons';
+import { router, useLocalSearchParams } from 'expo-router';
 
 const MANA = {
   G: { color: '#2e7d32', name: 'green' },
@@ -22,7 +23,7 @@ type Deck = {
   colors: ManaColor[];
 };
 
-type Tab = 'mine' | 'community';
+type Tab = 'mine' | 'collection';
 
 const MY_DECKS: Deck[] = [
   {
@@ -59,23 +60,18 @@ const MY_DECKS: Deck[] = [
   },
 ];
 
-const COMMUNITY_DECKS: Deck[] = [
-  {
-    id: '5',
-    name: 'Mono Red Burn',
-    format: 'Modern',
-    cardCount: 60,
-    artColor: '#9A4A22',
-    colors: ['R'],
-  },
-  {
-    id: '6',
-    name: 'Selesnya Tokens',
-    format: 'Standard',
-    cardCount: 60,
-    artColor: '#6B7A3A',
-    colors: ['G', 'W'],
-  },
+type CollectionCard = {
+  id: string;
+  name: string;
+  artColor: string;
+  quantity: number;
+};
+
+// Placeholder until the collection comes from the backend.
+const MY_COLLECTION: CollectionCard[] = [
+  { id: '1', name: 'The One Ring', artColor: '#6E5A2E', quantity: 1 },
+  { id: '2', name: 'Orcish Bowmasters', artColor: '#3B3550', quantity: 2 },
+  { id: '3', name: 'Lightning Bolt', artColor: '#9A4A22', quantity: 4 },
 ];
 
 const FILTERS = ['GAME', 'FORMAT', 'COLOUR'];
@@ -83,14 +79,28 @@ const FILTERS = ['GAME', 'FORMAT', 'COLOUR'];
 // ─── Screen ──────────────────────────────────────────────────────────────────
 
 export default function Decks() {
+  const params = useLocalSearchParams<{ tab?: string }>();
   const [tab, setTab] = useState<Tab>('mine');
   const [searchQuery, setSearchQuery] = useState('');
 
-  // Pick the list for the selected tab, then keep only decks whose name
-  // contains what's typed in the search bar.
-  const allDecks = tab === 'mine' ? MY_DECKS : COMMUNITY_DECKS;
+ 
+ 
+  useEffect(() => {
+    if (params.tab === 'collection') {
+      setTab('collection');
+      router.setParams({ tab: undefined });
+    }
+  }, [params.tab]);
+
+  const isCollection = tab === 'collection';
   const query = searchQuery.trim().toLowerCase();
-  const decks = allDecks.filter((deck) => deck.name.toLowerCase().includes(query));
+  const decks = MY_DECKS.filter((deck) =>
+    deck.name.toLowerCase().includes(query),
+  );
+  const cards = MY_COLLECTION.filter((card) =>
+    card.name.toLowerCase().includes(query),
+  );
+  const shownCount = isCollection ? cards.length : decks.length;
 
   return (
     <ScrollView
@@ -105,36 +115,46 @@ export default function Decks() {
           <Text style={styles.subtitle}>Discover, build and share decks.</Text>
         </View>
 
-        <Pressable
-          onPress={() => console.log('New deck pressed')}
-          accessibilityRole="button"
-          accessibilityLabel="Create a new deck"
-          style={styles.newButton}
-        >
-          <Ionicons name="add" size={18} color="#FFFFFF" />
-          <Text style={styles.newButtonText}>NEW</Text>
-        </Pressable>
+        {!isCollection && (
+          <Pressable
+            onPress={() => console.log('New deck pressed')}
+            accessibilityRole='button'
+            accessibilityLabel='Create a new deck'
+            style={styles.newButton}
+          >
+            <Ionicons name='add' size={18} color='#FFFFFF' />
+            <Text style={styles.newButtonText}>NEW</Text>
+          </Pressable>
+        )}
       </View>
 
-      {/* My decks / Community toggle */}
-      <View style={styles.toggle} accessibilityRole="tablist">
-        <ToggleButton label="MY DECKS" active={tab === 'mine'} onPress={() => setTab('mine')} />
+      {/* My decks / My collection toggle */}
+      <View style={styles.toggle} accessibilityRole='tablist'>
         <ToggleButton
-          label="COMMUNITY"
-          active={tab === 'community'}
-          onPress={() => setTab('community')}
+          label='MY DECKS'
+          active={tab === 'mine'}
+          onPress={() => setTab('mine')}
+        />
+        <ToggleButton
+          label='MY COLLECTION'
+          active={isCollection}
+          onPress={() => setTab('collection')}
         />
       </View>
 
       {/* Search */}
       <Searchbar
-        placeholder="Search for a deck…"
+        placeholder={
+          isCollection ? 'Search your collection…' : 'Search for a deck…'
+        }
         value={searchQuery}
         onChangeText={setSearchQuery}
         style={styles.searchbar}
         inputStyle={styles.searchInput}
-        iconColor="#245f28"
-        placeholderTextColor="#7A705F"
+        iconColor='#245f28'
+        placeholderTextColor='#7A705F'
+        selectionColor='#171717'
+        cursorColor='#171717'
         elevation={0}
       />
 
@@ -145,26 +165,30 @@ export default function Decks() {
             key={label}
             onPress={() => console.log(label + ' filter pressed')}
             hitSlop={4}
-            accessibilityRole="button"
+            accessibilityRole='button'
             accessibilityLabel={`Filter by ${label.toLowerCase()}`}
             style={styles.filterChip}
           >
             <Text style={styles.filterText}>{label}</Text>
-            <Ionicons name="chevron-down" size={16} color="#171717" />
+            <Ionicons name='chevron-down' size={16} color='#171717' />
           </Pressable>
         ))}
       </View>
 
-      {/* Deck list */}
+      {/* List: collection cards or decks, depending on the toggle */}
       <View style={styles.deckList}>
-        {decks.map((deck) => (
-          <DeckRow key={deck.id} deck={deck} />
-        ))}
+        {isCollection
+          ? cards.map((card) => <CollectionRow key={card.id} card={card} />)
+          : decks.map((deck) => <DeckRow key={deck.id} deck={deck} />)}
       </View>
 
-      {decks.length === 0 && (
+      {shownCount === 0 && (
         <Text style={styles.emptyMessage}>
-          {query ? `No decks match "${searchQuery}".` : 'No decks yet.'}
+          {query
+            ? `Nothing matches "${searchQuery}".`
+            : isCollection
+              ? 'No cards in your collection yet.'
+              : 'No decks yet.'}
         </Text>
       )}
     </ScrollView>
@@ -183,11 +207,13 @@ function ToggleButton({ label, active, onPress }: ToggleButtonProps) {
   return (
     <Pressable
       onPress={onPress}
-      accessibilityRole="tab"
+      accessibilityRole='tab'
       accessibilityState={{ selected: active }}
       style={[styles.toggleButton, active && styles.toggleButtonActive]}
     >
-      <Text style={[styles.toggleText, active && styles.toggleTextActive]}>{label}</Text>
+      <Text style={[styles.toggleText, active && styles.toggleTextActive]}>
+        {label}
+      </Text>
     </Pressable>
   );
 }
@@ -198,9 +224,16 @@ function DeckRow({ deck }: { deck: Deck }) {
   return (
     <View style={styles.deckRow}>
       <View style={[styles.deckArt, { backgroundColor: deck.artColor }]}>
-        <View style={styles.pipRow} accessible accessibilityLabel={`Colours: ${colourNames}`}>
+        <View
+          style={styles.pipRow}
+          accessible
+          accessibilityLabel={`Colours: ${colourNames}`}
+        >
           {deck.colors.map((c) => (
-            <View key={c} style={[styles.pip, { backgroundColor: MANA[c].color }]} />
+            <View
+              key={c}
+              style={[styles.pip, { backgroundColor: MANA[c].color }]}
+            />
           ))}
         </View>
       </View>
@@ -216,12 +249,26 @@ function DeckRow({ deck }: { deck: Deck }) {
 
       <Pressable
         onPress={() => console.log('View deck', deck.name)}
-        accessibilityRole="button"
+        accessibilityRole='button'
         accessibilityLabel={`View ${deck.name} deck`}
         style={styles.viewButton}
       >
         <Text style={styles.viewButtonText}>VIEW</Text>
       </Pressable>
+    </View>
+  );
+}
+
+function CollectionRow({ card }: { card: CollectionCard }) {
+  return (
+    <View style={styles.deckRow}>
+      <View style={[styles.cardThumb, { backgroundColor: card.artColor }]} />
+      <View style={styles.deckInfo}>
+        <Text style={styles.deckName} numberOfLines={1}>
+          {card.name}
+        </Text>
+        <Text style={styles.deckMeta}>Owned ×{card.quantity}</Text>
+      </View>
     </View>
   );
 }
@@ -238,7 +285,7 @@ const styles = StyleSheet.create({
     paddingBottom: 32,
   },
 
-  // Header
+ 
   header: {
     flexDirection: 'row',
     justifyContent: 'space-between',
@@ -271,7 +318,7 @@ const styles = StyleSheet.create({
     color: '#FFFFFF',
   },
 
-  // Toggle
+ 
   toggle: {
     flexDirection: 'row',
     padding: 4,
@@ -298,7 +345,7 @@ const styles = StyleSheet.create({
     color: '#E2D7BD',
   },
 
-  // Search
+ 
   searchbar: {
     marginTop: 14,
     height: 46,
@@ -313,7 +360,7 @@ const styles = StyleSheet.create({
     color: '#171717',
   },
 
-  // Filters
+ 
   filterRow: {
     flexDirection: 'row',
     gap: 8,
@@ -337,7 +384,7 @@ const styles = StyleSheet.create({
     color: '#171717',
   },
 
-  // Deck list
+ 
   deckList: {
     marginTop: 16,
     borderTopWidth: 1,
@@ -355,6 +402,11 @@ const styles = StyleSheet.create({
     width: 56,
     height: 56,
     borderRadius: 12,
+  },
+  cardThumb: {
+    width: 40,
+    height: 56,
+    borderRadius: 6,
   },
   pipRow: {
     position: 'absolute',

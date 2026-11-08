@@ -5,9 +5,10 @@ import { Pressable, Text, View, StyleSheet, Modal } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { Image } from 'expo-image';
 import { FlatList } from 'react-native-gesture-handler';
-import { Menu, Snackbar } from 'react-native-paper';
+import { Menu, Portal, Snackbar } from 'react-native-paper';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import AddToSheet, { type Condition, type SheetType } from '@/components/add-to-sheet';
-import { updateCollectionCard } from '@/api/collection';
+import { fetchWishlistIds, updateCollectionCard } from '@/api/collection';
 
 // Draws an Ionicons icon in our green, for a menu item.
 function menuIcon(name: keyof typeof Ionicons.glyphMap) {
@@ -42,6 +43,33 @@ export default function CardList(props: CardListProps) {
   // The message in the bar at the bottom (null = hidden).
   const [message, setMessage] = useState<string | null>(null);
 
+  // Ids of the cards on your wishlist, so the menu knows Add or Remove.
+  const [wishlistIds, setWishlistIds] = useState<Set<string>>(new Set());
+  const insets = useSafeAreaInsets();
+
+  // Reload the wishlist every time this screen comes into view.
+  useFocusEffect(
+    useCallback(() => {
+      fetchWishlistIds()
+        .then(setWishlistIds)
+        .catch(() => setWishlistIds(new Set()));
+    }, []),
+  );
+
+  // Add or remove one id. Makes a NEW Set, because React only redraws
+  // when it gets a new object, not when the old one is changed.
+  function setInWishlist(cardId: string, inWishlist: boolean) {
+    setWishlistIds((current) => {
+      const next = new Set(current);
+      if (inWishlist) {
+        next.add(cardId);
+      } else {
+        next.delete(cardId);
+      }
+      return next;
+    });
+  }
+
   const closeMenu = () => setMenuCardId(null);
 
   function openSheet(type: SheetType, card: MagicCard) {
@@ -49,16 +77,22 @@ export default function CardList(props: CardListProps) {
     setSheet({ type, card });
   }
 
-  async function addToWishlist(card: MagicCard) {
+  async function toggleWishlist(card: MagicCard) {
     closeMenu();
+    const inWishlist = wishlistIds.has(card.id);
     try {
       await updateCollectionCard({
         card_id: card.id,
         quantity: 0,
         for_trade: false,
-        wishlist: true,
+        wishlist: !inWishlist,
       });
-      setMessage(`${card.name} added to your wishlist`);
+      setInWishlist(card.id, !inWishlist);
+      setMessage(
+        inWishlist
+          ? `${card.name} removed from your wishlist`
+          : `${card.name} added to your wishlist`,
+      );
     } catch {
       setMessage('Could not update your wishlist. Please try again.');
     }
@@ -76,6 +110,7 @@ export default function CardList(props: CardListProps) {
         for_trade: type === 'listing',
         wishlist: false,
       });
+      setInWishlist(card.id, false);
       setMessage(
         type === 'listing'
           ? `${card.name} listed for trade`
@@ -133,7 +168,7 @@ export default function CardList(props: CardListProps) {
         clearTimeout(timeoutId);
       }
     };
-    }, [props.query.trim(), props.fetchlist, refreshCount]);
+  }, [props.query.trim(), props.fetchlist, refreshCount]);
   async function loadMore() {
     if (loading || !pagination || loadingMore) return;
     if (pagination.page >= pagination.totalPages) return;
@@ -221,10 +256,10 @@ export default function CardList(props: CardListProps) {
             }
           >
             <Menu.Item
-              leadingIcon={menuIcon('heart-outline')}
-              title='Add to wishlist'
+              leadingIcon={menuIcon(wishlistIds.has(card.id) ? 'heart' : 'heart-outline')}
+              title={wishlistIds.has(card.id) ? 'Remove from wishlist' : 'Add to wishlist'}
               titleStyle={styles.menuItemText}
-              onPress={() => addToWishlist(card)}
+              onPress={() => toggleWishlist(card)}
             />
             <Menu.Item
               leadingIcon={menuIcon('pricetag-outline')}
@@ -256,7 +291,7 @@ export default function CardList(props: CardListProps) {
         data={filteredCards}
         renderItem={renderItem}
         keyExtractor={(item) => item.id}
-        extraData={menuCardId}
+        extraData={[menuCardId, wishlistIds]}
         numColumns={2}
         columnWrapperStyle={styles.cardNameRow}
         style={styles.container}
@@ -342,13 +377,17 @@ export default function CardList(props: CardListProps) {
         />
       )}
 
-      <Snackbar
-        visible={message !== null}
-        onDismiss={() => setMessage(null)}
-        duration={2500}
-      >
-        {message ?? ''}
-      </Snackbar>
+      {/* Portal = draw at the top level of the app, so it's never cut off */}
+      <Portal>
+        <Snackbar
+          visible={message !== null}
+          onDismiss={() => setMessage(null)}
+          duration={2500}
+          wrapperStyle={{ bottom: insets.bottom + 64 }}
+        >
+          {message ?? ''}
+        </Snackbar>
+      </Portal>
     </View>
   );
 }

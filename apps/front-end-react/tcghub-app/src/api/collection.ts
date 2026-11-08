@@ -61,3 +61,18 @@ export async function updateCollectionCard(body: CollectionUpdate): Promise<void
     throw new Error(`Failed to update collection (${res.status})`);
   }
 }
+
+
+// The ids of the cards on your wishlist.
+export async function fetchWishlistIds(): Promise<Set<string>> {
+  const cookies = await authClient.getCookie();
+  const res = await fetch(
+    `http://${ENV.EXPO_PUBLIC_API_URL}/api/v1/collection/wishlist`,
+    { headers: { Cookie: cookies } },
+  );
+  if (!res.ok) {
+    throw new Error(`Failed to load wishlist (${res.status})`);
+  }
+  const data: CollectionApiResponse = await res.json();
+  return new Set(data.items.map((item) => item.card_id));
+}

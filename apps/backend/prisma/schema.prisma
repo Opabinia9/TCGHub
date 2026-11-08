@@ -138,7 +138,7 @@ model Card {
 model UserCard {
   user_id   String  @db.Uuid
   card_id   String  @db.Uuid
-  quantity  Int     @default(autoincrement())
+  quantity  Int     @default(1)
   condition String
   for_trade Boolean @default(false)
   wishlist  Boolean @default(false)
@@ -165,7 +165,7 @@ model DeckCard {
   deck_id  String @db.Uuid
   card_id  String @db.Uuid
   quantity Int
-  Deck     Deck   @relation(fields: [deck_id], references: [id])
+  Deck     Deck   @relation(fields: [deck_id], references: [id], onDelete: Cascade)
   Card     Card   @relation(fields: [card_id], references: [id])
 
   @@id([deck_id, card_id])

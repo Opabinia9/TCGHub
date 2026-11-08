@@ -1,21 +1,24 @@
-import { useEffect, useState } from 'react';
-import { ScrollView, StyleSheet, View, Pressable, ActivityIndicator } from 'react-native';
+import { useState } from 'react';
+import { ScrollView, StyleSheet, View, Pressable } from 'react-native';
 import { Avatar, Text, Button, TextInput } from 'react-native-paper';
 import { Ionicons } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
 import { fetchCollection } from '@/api/collection';
-import { FilterOption, FILTERS, MagicCard, Pagination } from '@/api/types';
+import { FilterOption, FILTERS } from '@/api/types';
 import CardList from '@/components/card-list';
-import { fetchCards } from '@/api/cards';
 
 export default function Profile() {
   const router = useRouter();
 
-  const [bio, setBio] = useState('Magic player. Always looking for my next trade!');
+  const [bio, setBio] = useState(
+    'Magic player. Always looking for my next trade!',
+  );
   const [editedBio, setEditedBio] = useState(bio);
   const [isEditing, setIsEditing] = useState(false);
 
-  const [activeSection, setActiveSection] = useState<'collection' | 'wishlist'>('collection');
+  const [activeSection, setActiveSection] = useState<'collection' | 'wishlist'>(
+    'collection',
+  );
 
   const [searchQuery, setSearchQuery] = useState('');
   const [activeFilter, setActiveFilter] = useState<FilterOption>('All');
@@ -35,14 +38,14 @@ export default function Profile() {
   };
 
   return (
-    <ScrollView
-      style={styles.screen}
-      contentContainerStyle={styles.container}
-      showsVerticalScrollIndicator={false}
-    >
-      {/* Profile header */}
+    <View style={styles.screen}>
       <View style={styles.profileHeader}>
-        <Avatar.Icon size={76} icon="account" color="#E2D7BD" style={styles.avatar} />
+        <Avatar.Icon
+          size={76}
+          icon='account'
+          color='#E2D7BD'
+          style={styles.avatar}
+        />
 
         <View style={styles.userInfo}>
           <Text style={styles.name}>Lucas Zales</Text>
@@ -50,7 +53,7 @@ export default function Profile() {
         </View>
 
         <Button
-          mode="outlined"
+          mode='outlined'
           onPress={() => {
             if (isEditing) {
               handleCancel();
@@ -59,35 +62,34 @@ export default function Profile() {
               setIsEditing(true);
             }
           }}
-          textColor="#171717"
+          textColor='#171717'
           style={styles.editButton}
           compact
         >
           {isEditing ? 'CANCEL' : 'EDIT'}
         </Button>
       </View>
-      {/* Biography */}
       <View style={styles.bioContainer}>
         {isEditing ? (
           <>
             <TextInput
-              mode="outlined"
-              label="Your bio"
+              mode='outlined'
+              label='Your bio'
               value={editedBio}
               onChangeText={setEditedBio}
               multiline
               maxLength={150}
               style={styles.bioInput}
-              textColor="#171717"
-              placeholderTextColor="#655d50"
-              outlineColor="#655D50"
-              activeOutlineColor="#171717"
+              textColor='#171717'
+              placeholderTextColor='#655d50'
+              outlineColor='#655D50'
+              activeOutlineColor='#171717'
             />
             <Button
-              mode="contained"
+              mode='contained'
               onPress={handleSave}
-              buttonColor="#171717"
-              textColor="#E2D7BD"
+              buttonColor='#171717'
+              textColor='#E2D7BD'
               style={styles.saveButton}
             >
               SAVE BIO
@@ -97,13 +99,20 @@ export default function Profile() {
           <Text style={styles.bio}>{bio}</Text>
         )}
       </View>
-      {/* Collection and Wishlist */}
+      <View style={styles.logoutContainer}>
+        <Pressable onPress={handleLogout} style={styles.logoutButton}>
+          <Ionicons name='log-out-outline' size={20} color='#A12626' />
+          <Text style={styles.logoutText}>LOG OUT</Text>
+        </Pressable>
+      </View>
       <View style={styles.decksSection}>
-        {/* Main tabs */}
         <View style={styles.mainTabs}>
           <Pressable
             onPress={() => setActiveSection('collection')}
-            style={[styles.mainTab, activeSection === 'collection' && styles.activeMainTab]}
+            style={[
+              styles.mainTab,
+              activeSection === 'collection' && styles.activeMainTab,
+            ]}
           >
             <Text
               style={[
@@ -117,10 +126,16 @@ export default function Profile() {
 
           <Pressable
             onPress={() => setActiveSection('wishlist')}
-            style={[styles.mainTab, activeSection === 'wishlist' && styles.activeMainTab]}
+            style={[
+              styles.mainTab,
+              activeSection === 'wishlist' && styles.activeMainTab,
+            ]}
           >
             <Text
-              style={[styles.mainTabText, activeSection === 'wishlist' && styles.activeMainTabText]}
+              style={[
+                styles.mainTabText,
+                activeSection === 'wishlist' && styles.activeMainTabText,
+              ]}
             >
               MY WISHLIST
             </Text>
@@ -136,10 +151,16 @@ export default function Profile() {
               <Pressable
                 key={filter}
                 onPress={() => setActiveFilter(filter)}
-                style={[styles.filterButton, activeFilter === filter && styles.activeFilterButton]}
+                style={[
+                  styles.filterButton,
+                  activeFilter === filter && styles.activeFilterButton,
+                ]}
               >
                 <Text
-                  style={[styles.filterText, activeFilter === filter && styles.activeFilterText]}
+                  style={[
+                    styles.filterText,
+                    activeFilter === filter && styles.activeFilterText,
+                  ]}
                 >
                   {filter}
                 </Text>
@@ -152,16 +173,9 @@ export default function Profile() {
         fetchlist={fetchCollection}
         query={searchQuery}
         activeFilter={activeFilter}
-        emptyMessage="Unable to load collection"
+        emptyMessage='Unable to load collection'
       />
-      {/* Logout */}
-      <View style={styles.logoutContainer}>
-        <Pressable onPress={handleLogout} style={styles.logoutButton}>
-          <Ionicons name="log-out-outline" size={20} color="#A12626" />
-          <Text style={styles.logoutText}>LOG OUT</Text>
-        </Pressable>
-      </View>
-    </ScrollView>
+    </View>
   );
 }
 

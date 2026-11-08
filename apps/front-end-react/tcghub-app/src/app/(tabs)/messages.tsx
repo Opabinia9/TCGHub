@@ -7,7 +7,7 @@ import { CHATS, Chat } from '@/data/chats';
 export default function MessagesScreen() {
   const [searchQuery, setSearchQuery] = useState('');
 
-  // Keep chats whose person or card name matches the search.
+ 
   const query = searchQuery.trim().toLowerCase();
   const chats = CHATS.filter(
     (chat) =>
@@ -31,6 +31,8 @@ export default function MessagesScreen() {
         inputStyle={styles.searchInput}
         iconColor="#245f28"
         placeholderTextColor="#7A705F"
+        selectionColor="#171717"
+				cursorColor="#171717"
         elevation={0}
       />
 
@@ -46,7 +48,7 @@ export default function MessagesScreen() {
 }
 
 function ChatRow({ chat }: { chat: Chat }) {
-  // The preview is the last message in the chat.
+ 
   const last = chat.messages[chat.messages.length - 1];
   const preview = last ? (last.fromMe ? `You: ${last.text}` : last.text) : 'No messages yet';
 
@@ -111,7 +113,7 @@ const styles = StyleSheet.create({
     color: '#171717',
   },
 
-  // List
+ 
   list: {
     marginTop: 16,
     borderTopWidth: 1,

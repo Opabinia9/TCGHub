@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { Pressable, ScrollView, StyleSheet, View } from 'react-native';
 import { Text } from 'react-native-paper';
 import { Ionicons } from '@expo/vector-icons';
+import { router } from 'expo-router';
 
 // ─── Data ────────────────────────────────────────────────────────────────────
 // Placeholder listings until the backend has a listings endpoint.
@@ -15,36 +16,34 @@ type Listing = {
   type: ListingType;
   condition: string;
   seller: string;
-  distanceKm: number;
 };
 
 const LISTINGS: Listing[] = [
-  { id: '1', cardName: 'The One Ring', artColor: '#6E5A2E', type: 'TRADE', condition: 'Near mint', seller: 'Jordan', distanceKm: 1.2 },
-  { id: '2', cardName: 'Orcish Bowmasters', artColor: '#3B3550', type: 'SELL', condition: 'Lightly played', seller: 'Priya', distanceKm: 2.8 },
-  { id: '3', cardName: 'Ragavan, Nimble Pilferer', artColor: '#8A3B2E', type: 'TRADE / SELL', condition: 'Near mint', seller: 'Alex', distanceKm: 3.1 },
-  { id: '4', cardName: 'Sheoldred, the Apocalypse', artColor: '#2E2B33', type: 'SELL', condition: 'Near mint', seller: 'Marcus', distanceKm: 4.5 },
-  { id: '5', cardName: 'Llanowar Elves', artColor: '#3F6B3A', type: 'TRADE', condition: 'Played', seller: 'Sam', distanceKm: 6.0 },
-  { id: '6', cardName: 'Counterspell', artColor: '#34506E', type: 'TRADE / SELL', condition: 'Lightly played', seller: 'Jess', distanceKm: 8.4 },
-  { id: '7', cardName: 'Sol Ring', artColor: '#5E5A55', type: 'TRADE', condition: 'Near mint', seller: 'Chris', distanceKm: 17.9 },
-  { id: '8', cardName: 'Lightning Bolt', artColor: '#9A4A22', type: 'SELL', condition: 'Played', seller: 'Mia', distanceKm: 32.5 },
+  { id: '1', cardName: 'The One Ring', artColor: '#6E5A2E', type: 'TRADE', condition: 'Near mint', seller: 'Jordan' },
+  { id: '2', cardName: 'Orcish Bowmasters', artColor: '#3B3550', type: 'SELL', condition: 'Lightly played', seller: 'Priya' },
+  { id: '3', cardName: 'Ragavan, Nimble Pilferer', artColor: '#8A3B2E', type: 'TRADE / SELL', condition: 'Near mint', seller: 'Alex' },
+  { id: '4', cardName: 'Sheoldred, the Apocalypse', artColor: '#2E2B33', type: 'SELL', condition: 'Near mint', seller: 'Marcus' },
+  { id: '5', cardName: 'Llanowar Elves', artColor: '#3F6B3A', type: 'TRADE', condition: 'Played', seller: 'Sam' },
+  { id: '6', cardName: 'Counterspell', artColor: '#34506E', type: 'TRADE / SELL', condition: 'Lightly played', seller: 'Jess' },
+  { id: '7', cardName: 'Sol Ring', artColor: '#5E5A55', type: 'TRADE', condition: 'Near mint', seller: 'Chris' },
+  { id: '8', cardName: 'Lightning Bolt', artColor: '#9A4A22', type: 'SELL', condition: 'Played', seller: 'Mia' },
 ];
-
-const DISTANCES_KM = [5, 10, 25, 50];
-
-// Placeholder until messages come from the backend.
-const UNREAD_MESSAGES = 3;
 
 // ─── Screen ──────────────────────────────────────────────────────────────────
 
 export default function TradeScreen() {
-  const [radiusKm, setRadiusKm] = useState(10);
+  const listings = LISTINGS;
+ 
+  const [wishlistIds, setWishlistIds] = useState<string[]>([]);
 
-  // Only show listings within the selected distance.
-  const listings = LISTINGS.filter((listing) => listing.distanceKm <= radiusKm);
+ 
+  const toggleWishlist = (id: string) => {
+    setWishlistIds((current) =>
+      current.includes(id) ? current.filter((x) => x !== id) : [...current, id]
+    );
+  };
 
   return (
-    // The outer View holds two things side by side in the layout:
-    // the scrolling content, and the floating messages button on top of it.
     <View style={styles.screen}>
       <ScrollView contentContainerStyle={styles.content} showsVerticalScrollIndicator={false}>
         {/* Header */}
@@ -54,7 +53,7 @@ export default function TradeScreen() {
           </Text>
 
           <Pressable
-            onPress={() => console.log('List a card pressed')}
+            onPress={() => router.navigate({ pathname: '/(tabs)/decks', params: { tab: 'collection' } })}
             accessibilityRole="button"
             accessibilityLabel="List a card"
             style={styles.listButton}
@@ -65,75 +64,35 @@ export default function TradeScreen() {
         </View>
         <Text style={styles.subtitle}>Buy, sell and trade with players near you.</Text>
 
-        {/* Location */}
-        <Pressable
-          onPress={() => console.log('Change location pressed')}
-          accessibilityRole="button"
-          accessibilityLabel="Location: Melbourne, VIC. Tap to change."
-          style={styles.locationPicker}
-        >
-          <Ionicons name="location-outline" size={20} color="#245f28" />
-          <View style={styles.locationText}>
-            <Text style={styles.locationLabel}>LOCATION</Text>
-            <Text style={styles.locationValue}>Melbourne, VIC</Text>
-          </View>
-          <Ionicons name="chevron-down" size={18} color="#171717" />
-        </Pressable>
-
-        {/* Distance */}
-        <View style={styles.distanceRow} accessibilityRole="radiogroup">
-          {DISTANCES_KM.map((km) => {
-            const selected = km === radiusKm;
-            return (
-              <Pressable
-                key={km}
-                onPress={() => setRadiusKm(km)}
-                accessibilityRole="radio"
-                accessibilityState={{ checked: selected }}
-                accessibilityLabel={`Within ${km} kilometres`}
-                style={[styles.distanceChip, selected && styles.distanceChipSelected]}
-              >
-                <Text style={[styles.distanceText, selected && styles.distanceTextSelected]}>
-                  {km} km
-                </Text>
-              </Pressable>
-            );
-          })}
-        </View>
-
         {/* Listings */}
         <View style={styles.grid}>
           {listings.map((listing) => (
-            <ListingCard key={listing.id} listing={listing} />
+            <ListingCard
+              key={listing.id}
+              listing={listing}
+              wishlisted={wishlistIds.includes(listing.id)}
+              onToggleWishlist={() => toggleWishlist(listing.id)}
+            />
           ))}
         </View>
 
         {listings.length === 0 && (
-          <Text style={styles.emptyMessage}>No cards listed within {radiusKm} km.</Text>
+          <Text style={styles.emptyMessage}>No cards listed right now.</Text>
         )}
       </ScrollView>
-
-      {/* Floating messages button — outside the ScrollView so it stays put */}
-      <Pressable
-        onPress={() => console.log('Messages pressed')}
-        accessibilityRole="button"
-        accessibilityLabel={`Messages, ${UNREAD_MESSAGES} unread`}
-        style={styles.messagesButton}
-      >
-        <Ionicons name="chatbubble-outline" size={26} color="#E2D7BD" />
-        {UNREAD_MESSAGES > 0 && (
-          <View style={styles.badge}>
-            <Text style={styles.badgeText}>{UNREAD_MESSAGES}</Text>
-          </View>
-        )}
-      </Pressable>
     </View>
   );
 }
 
 // ─── Pieces ──────────────────────────────────────────────────────────────────
 
-function ListingCard({ listing }: { listing: Listing }) {
+type ListingCardProps = {
+  listing: Listing;
+  wishlisted: boolean;
+  onToggleWishlist: () => void;
+};
+
+function ListingCard({ listing, wishlisted, onToggleWishlist }: ListingCardProps) {
   return (
     <View style={styles.card}>
       {/* Card picture (placeholder colour until real card images are used) */}
@@ -155,22 +114,40 @@ function ListingCard({ listing }: { listing: Listing }) {
         </Text>
         <Text style={styles.cardCondition}>{listing.condition}</Text>
         <View style={styles.sellerRow}>
-          <Ionicons name="location-outline" size={13} color="#3A342B" />
-          <Text style={styles.sellerText}>
-            {listing.seller} · {listing.distanceKm.toFixed(1)} km
-          </Text>
+          <Ionicons name="person-outline" size={13} color="#3A342B" />
+          <Text style={styles.sellerText}>{listing.seller}</Text>
         </View>
       </View>
 
-      <Pressable
-        onPress={() => console.log('Message', listing.seller, 'about', listing.cardName)}
-        accessibilityRole="button"
-        accessibilityLabel={`Message ${listing.seller} about ${listing.cardName}`}
-        style={styles.messageButton}
-      >
-        <Ionicons name="chatbubble-outline" size={17} color="#171717" />
-        <Text style={styles.messageButtonText}>MESSAGE</Text>
-      </Pressable>
+      <View style={styles.actionRow}>
+        <Pressable
+          onPress={() => console.log('Message', listing.seller, 'about', listing.cardName)}
+          accessibilityRole="button"
+          accessibilityLabel={`Message ${listing.seller} about ${listing.cardName}`}
+          style={styles.messageButton}
+        >
+          <Ionicons name="chatbubble-outline" size={17} color="#171717" />
+          <Text style={styles.messageButtonText}>MESSAGE</Text>
+        </Pressable>
+
+        <Pressable
+          onPress={onToggleWishlist}
+          accessibilityRole="button"
+          accessibilityState={{ selected: wishlisted }}
+          accessibilityLabel={
+            wishlisted
+              ? `Remove ${listing.cardName} from wishlist`
+              : `Add ${listing.cardName} to wishlist`
+          }
+          style={[styles.wishlistButton, wishlisted && styles.wishlistButtonActive]}
+        >
+          <Ionicons
+            name={wishlisted ? 'heart' : 'heart-outline'}
+            size={20}
+            color={wishlisted ? '#FFFFFF' : '#171717'}
+          />
+        </Pressable>
+      </View>
     </View>
   );
 }
@@ -184,10 +161,9 @@ const styles = StyleSheet.create({
   },
   content: {
     padding: 20,
-    paddingBottom: 96, // room so the floating button never covers the last card
   },
 
-  // Header
+ 
   header: {
     flexDirection: 'row',
     alignItems: 'center',
@@ -222,63 +198,7 @@ const styles = StyleSheet.create({
     color: '#FFFFFF',
   },
 
-  // Location
-  locationPicker: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 10,
-    height: 50,
-    marginTop: 16,
-    paddingHorizontal: 14,
-    borderRadius: 12,
-    borderWidth: 1.5,
-    borderColor: '#B9A985',
-    backgroundColor: '#EFE7D4',
-  },
-  locationText: {
-    flex: 1,
-  },
-  locationLabel: {
-    fontSize: 11,
-    fontWeight: '600',
-    letterSpacing: 0.9,
-    color: '#5A5246',
-  },
-  locationValue: {
-    fontSize: 15,
-    fontWeight: '500',
-    color: '#171717',
-  },
-
-  // Distance
-  distanceRow: {
-    flexDirection: 'row',
-    gap: 8,
-    marginTop: 10,
-  },
-  distanceChip: {
-    flex: 1,
-    height: 36,
-    borderRadius: 18,
-    borderWidth: 1.5,
-    borderColor: '#171717',
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  distanceChipSelected: {
-    backgroundColor: '#171717',
-  },
-  distanceText: {
-    fontFamily: 'BarlowCondensed_700Bold',
-    fontSize: 14,
-    letterSpacing: 0.8,
-    color: '#171717',
-  },
-  distanceTextSelected: {
-    color: '#E2D7BD',
-  },
-
-  // Grid
+ 
   grid: {
     flexDirection: 'row',
     flexWrap: 'wrap',
@@ -344,7 +264,12 @@ const styles = StyleSheet.create({
     fontSize: 13,
     color: '#3A342B',
   },
+  actionRow: {
+    flexDirection: 'row',
+    gap: 8,
+  },
   messageButton: {
+    flex: 1,
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
@@ -360,43 +285,23 @@ const styles = StyleSheet.create({
     letterSpacing: 1.4,
     color: '#171717',
   },
+  wishlistButton: {
+    width: 44,
+    height: 44,
+    borderRadius: 10,
+    borderWidth: 1.5,
+    borderColor: '#171717',
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  wishlistButtonActive: {
+    backgroundColor: '#2e7d32',
+    borderColor: '#2e7d32',
+  },
 
   emptyMessage: {
     marginTop: 24,
     textAlign: 'center',
     color: '#5A5246',
-  },
-
-  // Floating messages button
-  messagesButton: {
-    position: 'absolute',
-    right: 20,
-    bottom: 20,
-    width: 60,
-    height: 60,
-    borderRadius: 30,
-    alignItems: 'center',
-    justifyContent: 'center',
-    backgroundColor: '#171717',
-    boxShadow: '0 6px 16px rgba(23, 23, 23, 0.28)',
-  },
-  badge: {
-    position: 'absolute',
-    top: -4,
-    right: -4,
-    minWidth: 22,
-    height: 22,
-    paddingHorizontal: 6,
-    borderRadius: 11,
-    borderWidth: 2,
-    borderColor: '#E2D7BD',
-    backgroundColor: '#2e7d32',
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  badgeText: {
-    fontSize: 12,
-    fontWeight: '600',
-    color: '#FFFFFF',
   },
 });

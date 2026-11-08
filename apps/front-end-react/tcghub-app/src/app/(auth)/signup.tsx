@@ -27,7 +27,7 @@ export default function Signup() {
     setLoading(true);
 
     try {
-      // TODO: swap this out for auto removing at the Text input level
+     
       const result = await authClient.signUp.email({
         username: username.trimEnd(),
         email: email.trimEnd(),

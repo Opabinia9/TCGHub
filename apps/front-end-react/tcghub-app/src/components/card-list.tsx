@@ -6,7 +6,6 @@ import { Image } from 'expo-image';
 import { FlatList } from 'react-native-gesture-handler';
 
 export default function CardList(props: CardListProps) {
-  // Load cards from the API, or use temporary cards if it fails.
   const [cards, setCards] = useState<MagicCard[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -62,7 +61,6 @@ export default function CardList(props: CardListProps) {
       }
     };
   }, [props.query.trim()]);
-  // Load the next page of cards.
   async function loadMore() {
     if (loading || !pagination || loadingMore) return;
     if (pagination.page >= pagination.totalPages) return;
@@ -70,25 +68,28 @@ export default function CardList(props: CardListProps) {
     try {
       setLoadingMore(true);
 
-      const result = await props.fetchlist(props.query.trim(), pagination.page + 1);
+      const result = await props.fetchlist(
+        props.query.trim(),
+        pagination.page + 1,
+      );
 
       setCards((previousCards) => [...previousCards, ...result.items]);
 
       setPagination(result.pagination);
     } catch {
-      // More cards could not be loaded.
     } finally {
       setLoadingMore(false);
     }
   }
   const filteredCards = cards.filter(
-    (card) => props.activeFilter === 'All' || card.category === props.activeFilter,
+    (card) =>
+      props.activeFilter === 'All' || card.category === props.activeFilter,
   );
   const renderItem = ({ item: card }: { item: MagicCard }) => (
     <View key={card.id} style={styles.card}>
       <Pressable
         onPress={() => setSelectedCard(card)}
-        accessibilityRole="button"
+        accessibilityRole='button'
         accessibilityLabel={`View ${card.name}`}
         style={styles.imageContainer}
       >
@@ -97,11 +98,11 @@ export default function CardList(props: CardListProps) {
             uri: card.imageUris?.grid ?? card.imageUris?.normal ?? undefined,
           }}
           style={styles.cardImage}
-          contentFit="cover"
+          contentFit='cover'
         />
 
         <View style={styles.expandIcon}>
-          <Ionicons name="expand-outline" size={18} color="#FFFFFF" />
+          <Ionicons name='expand-outline' size={18} color='#FFFFFF' />
         </View>
       </Pressable>
 
@@ -123,7 +124,7 @@ export default function CardList(props: CardListProps) {
         style={styles.container}
         contentContainerStyle={styles.content}
         showsVerticalScrollIndicator={false}
-        keyboardShouldPersistTaps="handled"
+        keyboardShouldPersistTaps='handled'
         onEndReached={loadMore}
         onEndReachedThreshold={0.5}
         ItemSeparatorComponent={() => <View style={{ height: 16 }} />}
@@ -131,7 +132,7 @@ export default function CardList(props: CardListProps) {
 
       {error && !loading && (
         <View style={styles.emptyState}>
-          <Ionicons name="alert-circle-outline" size={36} color="#77705F" />
+          <Ionicons name='alert-circle-outline' size={36} color='#77705F' />
           <Text style={styles.emptyTitle}>Something went wrong</Text>
           <Text style={styles.emptyText}>{error}</Text>
         </View>
@@ -139,24 +140,29 @@ export default function CardList(props: CardListProps) {
 
       {!loading && !error && filteredCards.length === 0 && (
         <View style={styles.emptyState}>
-          <Ionicons name="search-outline" size={36} color="#77705F" />
+          <Ionicons name='search-outline' size={36} color='#77705F' />
           <Text style={styles.emptyTitle}>No cards found</Text>
           <Text style={styles.emptyText}>Try another search or category.</Text>
         </View>
       )}
 
       <View style={styles.footer}>
-        <Text style={styles.footerText}>TCG HUB · YOUR NEXT TRADE STARTS HERE</Text>
+        <Text style={styles.footerText}>
+          TCG HUB · YOUR NEXT TRADE STARTS HERE
+        </Text>
       </View>
       <Modal
         visible={selectedCard !== null}
         transparent
-        animationType="fade"
+        animationType='fade'
         statusBarTranslucent
         onRequestClose={() => setSelectedCard(null)}
       >
         <View style={styles.previewOverlay}>
-          <Pressable style={styles.previewBackdrop} onPress={() => setSelectedCard(null)} />
+          <Pressable
+            style={styles.previewBackdrop}
+            onPress={() => setSelectedCard(null)}
+          />
 
           {selectedCard && (
             <View style={styles.previewContent}>
@@ -169,7 +175,7 @@ export default function CardList(props: CardListProps) {
                     undefined,
                 }}
                 style={styles.previewImage}
-                contentFit="contain"
+                contentFit='contain'
               />
 
               <Text style={styles.previewSetName}>
@@ -181,10 +187,10 @@ export default function CardList(props: CardListProps) {
           <Pressable
             style={styles.previewClose}
             onPress={() => setSelectedCard(null)}
-            accessibilityRole="button"
-            accessibilityLabel="Close preview"
+            accessibilityRole='button'
+            accessibilityLabel='Close preview'
           >
-            <Ionicons name="close" size={30} color="#FFFFFF" />
+            <Ionicons name='close' size={30} color='#FFFFFF' />
           </Pressable>
         </View>
       </Modal>

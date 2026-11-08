@@ -7,8 +7,8 @@ export interface CardListProps {
   query: string;
   activeFilter: FilterOption;
   emptyMessage: string;
+  refreshOnFocus?: boolean; // reload every time the screen comes into view
 }
-
 export const FILTERS = ['All', 'Creature', 'Sorcery', 'Enchantment', 'Instant', 'Artifact', 'Land'];
 
 export type FilterOption = (typeof FILTERS)[number];

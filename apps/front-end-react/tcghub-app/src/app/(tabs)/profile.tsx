@@ -174,6 +174,7 @@ export default function Profile() {
         query={searchQuery}
         activeFilter={activeFilter}
         emptyMessage='Unable to load collection'
+        refreshOnFocus
       />
     </View>
   );

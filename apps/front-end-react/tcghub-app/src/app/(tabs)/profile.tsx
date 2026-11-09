@@ -3,7 +3,8 @@ import { ScrollView, StyleSheet, View, Pressable } from 'react-native';
 import { Avatar, Text, Button, TextInput } from 'react-native-paper';
 import { Ionicons } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
-import { fetchCollection } from '@/api/collection';
+import { fetchMyTrades } from '@/api/myTrades';
+import { fetchWishlist } from '@/api/myWishlist';
 import { FilterOption, FILTERS } from '@/api/types';
 import CardList from '@/components/card-list';
 
@@ -16,8 +17,8 @@ export default function Profile() {
   const [editedBio, setEditedBio] = useState(bio);
   const [isEditing, setIsEditing] = useState(false);
 
-  const [activeSection, setActiveSection] = useState<'collection' | 'wishlist'>(
-    'collection',
+  const [activeSection, setActiveSection] = useState<'listings' | 'wishlist'>(
+    'listings',
   );
 
   const [searchQuery, setSearchQuery] = useState('');
@@ -108,19 +109,19 @@ export default function Profile() {
       <View style={styles.decksSection}>
         <View style={styles.mainTabs}>
           <Pressable
-            onPress={() => setActiveSection('collection')}
+            onPress={() => setActiveSection('listings')}
             style={[
               styles.mainTab,
-              activeSection === 'collection' && styles.activeMainTab,
+              activeSection === 'listings' && styles.activeMainTab,
             ]}
           >
             <Text
               style={[
                 styles.mainTabText,
-                activeSection === 'collection' && styles.activeMainTabText,
+                activeSection === 'listings' && styles.activeMainTabText,
               ]}
             >
-              MY COLLECTION
+              MY LISTINGS
             </Text>
           </Pressable>
 
@@ -170,10 +171,14 @@ export default function Profile() {
         </View>
       </View>
       <CardList
-        fetchlist={fetchCollection}
+        fetchlist={activeSection === 'listings' ? fetchMyTrades : fetchWishlist}
         query={searchQuery}
         activeFilter={activeFilter}
-        emptyMessage='Unable to load collection'
+        emptyMessage={
+          activeSection === 'listings'
+            ? 'Unable to load your listings'
+            : 'Unable to load your wishlist'
+        }
         refreshOnFocus
       />
     </View>

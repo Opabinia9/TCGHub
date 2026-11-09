@@ -269,9 +269,13 @@ export default function CardList(props: CardListProps) {
     />
   );
 
+  // Filter by category and by the search text. Some lists (collection, wishlist)
+  // ignore the search on the backend, so we also filter here.
+  const searchText = props.query.trim().toLowerCase();
   const filteredCards = cards.filter(
     (card) =>
-      props.activeFilter === 'All' || card.category === props.activeFilter,
+      (props.activeFilter === 'All' || card.category === props.activeFilter) &&
+      card.name.toLowerCase().includes(searchText),
   );
   const renderItem = ({ item: card }: { item: MagicCard }) => (
     <View key={card.id} style={styles.card}>
@@ -744,7 +748,7 @@ const styles = StyleSheet.create({
     fontWeight: '800',
     color: '#171717',
     marginBottom: 8,
-  },ame: {
+  }, ame: {
     fontSize: 11,
     color: '#77705F',
     marginTop: 5,

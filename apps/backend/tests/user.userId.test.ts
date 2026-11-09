@@ -7,11 +7,11 @@ import { createUser, userOne } from './helpers/userPresets.js';
 const server = await buildServer({}, ENV);
 
 describe('GET /api/v1/user/:userId', () => {
-  // afterEach(() => {
-  //   const found = [...server.specViolations];
-  //   server.specViolations.length = 0;
-  //   expect(found).toEqual([]);
-  // });
+  afterEach(() => {
+    const found = [...server.specViolations];
+    server.specViolations.length = 0;
+    expect(found).toEqual([]);
+  });
 
   it('returns service unavailable', async () => {
     const userOneDetails = await createUser({ ...userOne });
@@ -32,11 +32,11 @@ describe('GET /api/v1/user/:userId', () => {
 });
 
 describe('PATCH /api/v1/user/:userId', () => {
-  // afterEach(() => {
-  //   const found = [...server.specViolations];
-  //   server.specViolations.length = 0;
-  //   expect(found).toEqual([]);
-  // });
+  afterEach(() => {
+    const found = [...server.specViolations];
+    server.specViolations.length = 0;
+    expect(found).toEqual([]);
+  });
 
   it('returns service unavailable', async () => {
     const userOneDetails = await createUser({ ...userOne });
@@ -57,11 +57,11 @@ describe('PATCH /api/v1/user/:userId', () => {
 });
 
 describe('DELETE /api/v1/user/:userId', () => {
-  // afterEach(() => {
-  //   const found = [...server.specViolations];
-  //   server.specViolations.length = 0;
-  //   expect(found).toEqual([]);
-  // });
+  afterEach(() => {
+    const found = [...server.specViolations];
+    server.specViolations.length = 0;
+    expect(found).toEqual([]);
+  });
 
   it('returns service unavailable', async () => {
     const userOneDetails = await createUser({ ...userOne });

@@ -7,6 +7,8 @@ import { fetchCollection } from '@/api/collection';
 import { FilterOption, FILTERS, MagicCard, Pagination } from '@/api/types';
 import CardList from '@/components/card-list';
 import { fetchCards } from '@/api/cards';
+import { authClient } from '@/utils/auth-client';
+import { QueryCache, QueryClient } from '@tanstack/react-query';
 
 export default function Profile() {
   const router = useRouter();
@@ -20,6 +22,8 @@ export default function Profile() {
   const [searchQuery, setSearchQuery] = useState('');
   const [activeFilter, setActiveFilter] = useState<FilterOption>('All');
 
+  const queryClient = new QueryClient();
+
   const handleSave = () => {
     setBio(editedBio);
     setIsEditing(false);
@@ -30,7 +34,9 @@ export default function Profile() {
     setIsEditing(false);
   };
 
-  const handleLogout = () => {
+  const handleLogout = async () => {
+    await authClient.signOut();
+    queryClient.clear();
     router.replace('/(auth)/login');
   };
 

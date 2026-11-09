@@ -1,11 +1,11 @@
 import type { Prisma, Chat } from '@prisma/client';
 
-export type ChatCreationInterface = Pick<Chat, 'title' | 'type'>;
+export type ChatCreationInterface = Pick<Chat, 'name' | 'type'>;
 
 export type ChatWithMembersCreationInterface = ChatCreationInterface & {
   members: Array<string>;
-  seller_id?: string;
-  card_id?: string;
+  sellerId?: string;
+  cardId?: string;
 };
 
 export const chatWithMessages = {

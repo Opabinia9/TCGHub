@@ -28,7 +28,8 @@ export default function Login() {
       const result = await authClient.signIn.email({
         email: email.trimEnd(),
         password: password.trimEnd(),
-      })
+        fetchOptions: { signal: AbortSignal.timeout(20000) },
+      });
       if (result.error) {
         setError('Login failed. Please check your details.');
         return;
@@ -43,10 +44,7 @@ export default function Login() {
   };
 
   return (
-    <KeyboardAvoidingView
-      style={styles.container}
-      behavior={Platform.OS === 'ios' ? 'padding' : undefined}
-    >
+    <KeyboardAvoidingView style={styles.container} behavior={'padding'}>
       <ScrollView contentContainerStyle={styles.content} keyboardShouldPersistTaps="handled">
         <View style={styles.logoContainer}>
           <Text style={styles.logo}>TCG HUB</Text>

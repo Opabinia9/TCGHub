@@ -63,39 +63,39 @@ model Report {
 }
 
 model Chat {
-  id         String       @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
-  type       ChatType
-  title      String
-  seller_id  String?      @db.Uuid
-  card_id    String?      @db.Uuid
-  created_at DateTime     @default(now()) @db.Timestamp(6)
-  members    ChatMember[]
-  messages   Message[]
-  Trade      UserCard?    @relation(fields: [seller_id, card_id], references: [user_id, card_id])
+  id        String       @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  type      ChatType
+  name      String
+  sellerId  String?      @map("seller_id") @db.Uuid
+  cardId    String?      @map("card_id") @db.Uuid
+  createdAt DateTime     @default(now()) @map("created_at") @db.Timestamp(6)
+  members   ChatMember[]
+  messages  Message[]
+  Trade     UserCard?    @relation(fields: [sellerId, cardId], references: [user_id, card_id])
 
   @@map("chats")
 }
 
 model ChatMember {
-  chat_id              String   @db.Uuid
-  user_id              String   @db.Uuid
-  last_read_message_id String?  @db.Uuid
-  joined_at            DateTime @default(now()) @db.Timestamp(6)
-  Chat                 Chat     @relation(fields: [chat_id], references: [id], onDelete: Cascade)
-  User                 User     @relation(fields: [user_id], references: [id], onDelete: Cascade)
+  chatId            String   @map("chat_id") @db.Uuid
+  userId            String   @map("user_id") @db.Uuid
+  lastReadMessageId String?  @map("last_read_message_id") @db.Uuid
+  joinedAt          DateTime @default(now()) @map("joined_at") @db.Timestamp(6)
+  Chat              Chat     @relation(fields: [chatId], references: [id], onDelete: Cascade)
+  User              User     @relation(fields: [userId], references: [id], onDelete: Cascade)
 
-  @@id([chat_id, user_id])
+  @@id([chatId, userId])
   @@map("chat_members")
 }
 
 model Message {
-  id         String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
-  chat_id    String   @db.Uuid
-  sender_id  String?  @db.Uuid
-  body       String
-  created_at DateTime @default(now()) @db.Timestamp(6)
-  Chat       Chat     @relation(fields: [chat_id], references: [id], onDelete: Cascade)
-  User       User?    @relation(fields: [sender_id], references: [id], onDelete: SetNull)
+  id        String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  chatId    String   @map("chat_id") @db.Uuid
+  senderId  String?  @map("sender_id") @db.Uuid
+  body      String
+  createdAt DateTime @default(now()) @map("created_at") @db.Timestamp(6)
+  Chat      Chat     @relation(fields: [chatId], references: [id], onDelete: Cascade)
+  User      User?    @relation(fields: [senderId], references: [id], onDelete: SetNull)
 
   @@map("messages")
 }

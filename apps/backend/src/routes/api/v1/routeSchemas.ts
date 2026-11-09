@@ -1,4 +1,3 @@
-import type { ChatWithMembersCreationInterface } from '@/types/chatObject.js';
 import { ChatType } from '@prisma/client';
 import { CardSearchQuerySchema } from '@/types/cardObject.js';
 import { z } from 'zod';
@@ -29,6 +28,11 @@ export const chatParamsSchema = z.object({
 });
 export type ChatParamsInterface = z.infer<typeof chatParamsSchema>;
 
+export const chatUpdateLastReadBodySchema = z.object({
+  messageId: z.uuid(),
+});
+export type ChatUpdateLastReadBodyInterface = z.infer<typeof chatUpdateLastReadBodySchema>;
+
 export const chatPostMessageBodySchema = z.object({
   body: z.string(),
 });
@@ -36,15 +40,20 @@ export type ChatPostMessageBodyInterface = z.infer<typeof chatPostMessageBodySch
 
 export const chatCreationBodySchema = z.discriminatedUnion('type', [
   z.object({
-    title: z.string(),
+    name: z.string(),
     type: z.enum([ChatType.TRADE]),
-    seller_id: z.uuid(),
-    card_id: z.uuid(),
-    members: z.array(z.uuid()).min(1),
+    sellerId: z.uuid(),
+    cardId: z.uuid(),
+    members: z.array(z.uuid()).min(0).max(0),
   }),
   z.object({
-    title: z.string(),
-    type: z.enum([ChatType.DIRECT, ChatType.GROUP]),
+    type: z.enum([ChatType.DIRECT]),
+    name: z.string(),
+    members: z.array(z.uuid()).min(1).max(1),
+  }),
+  z.object({
+    name: z.string(),
+    type: z.enum([ChatType.GROUP]),
     members: z.array(z.uuid()).min(1),
   }),
 ]);

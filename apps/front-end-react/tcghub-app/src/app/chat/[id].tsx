@@ -1,7 +1,7 @@
-import { useRef, useState } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 import {
   KeyboardAvoidingView,
-  Platform,
+  ListViewToken,
   Pressable,
   ScrollView,
   StyleSheet,
@@ -12,22 +12,79 @@ import { Text } from 'react-native-paper';
 import { Ionicons } from '@expo/vector-icons';
 import { router, useLocalSearchParams } from 'expo-router';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
-import { CHATS, ChatMessage } from '@/data/chats';
+import { authClient } from '@/utils/auth-client';
+import { dateStringToMessageDate } from '@/components/ChatList';
+import {
+  Chat,
+  fetchChat,
+  fetchChats,
+  fetchMessages,
+  Message,
+  sendMessage,
+  updateLastReadMessage,
+} from '@/api/chats';
+import { FlatList } from 'react-native-gesture-handler';
+import { useQuery } from '@tanstack/react-query';
 
 const QUICK_REPLIES = ['Propose a trade', 'Suggest a meetup', 'Still available?'];
 
 export default function ChatScreen() {
-  // The [id] in the file name becomes this value, e.g. /chat/1 → id = '1'.
-  const { id } = useLocalSearchParams<{ id: string }>();
-  const chat = CHATS.find((c) => c.id === id);
-
-  const insets = useSafeAreaInsets();
-  const scrollRef = useRef<ScrollView>(null);
-
-  const [messages, setMessages] = useState<ChatMessage[]>(chat ? chat.messages : []);
+  const { id: chatId } = useLocalSearchParams<{ id: string }>();
+  const [chat, setChat] = useState<Chat>();
   const [draft, setDraft] = useState('');
+  const messagesRef = useRef<FlatList>(null);
+  const hasViewedLatest = useRef(false);
+  const insets = useSafeAreaInsets();
+  const { refetch: chatRefetch } = useQuery({
+    queryKey: ['chats'],
+    queryFn: fetchChats,
+  });
+  const { refetch: messageRefetch, data: messages } = useQuery({
+    queryKey: ['messages'],
+    queryFn: async () => await fetchMessages(chatId),
+  });
+  const onViewableItemsChanged = useCallback(
+    ({ viewableItems }: { viewableItems: Array<ListViewToken> }) => {
+      if (chat != null) {
+        if (!hasViewedLatest.current && viewableItems.some((v) => v.index === 0 && v.isViewable)) {
+          const message = viewableItems[0].item.props.message;
+          if (message != null && message.id != chat.lastReadMessageId) {
+            updateLastReadMessage(chat.id, message.id);
+          }
+          hasViewedLatest.current = true;
+        }
+      }
+    },
+    [chat],
+  );
 
-  if (!chat) {
+  useEffect(() => {
+    fetchChat(chatId).then((chat) => {
+      setChat(chat);
+    });
+    messageRefetch();
+  }, []);
+
+  const viewabilityConfig = useRef({
+    itemVisiblePercentThreshold: 50,
+    minimumViewTime: 500,
+  }).current;
+
+  const renderMessage = ({ item }: { item: any }) => {
+    return item;
+  };
+
+  const send = async () => {
+    const text = draft.trim();
+    if (!text) return;
+    const message = await sendMessage(chatId, text);
+    await updateLastReadMessage(chatId, message.id);
+    await messageRefetch();
+    await chatRefetch();
+    setDraft('');
+  };
+
+  if (chat === undefined) {
     return (
       <View style={styles.screen}>
         <Text style={styles.notFound}>Chat not found.</Text>
@@ -35,22 +92,16 @@ export default function ChatScreen() {
     );
   }
 
-  // Add the typed message to the bottom of the chat (only on this device for now).
-  const send = () => {
-    const text = draft.trim();
-    if (!text) return;
-    setMessages((current) => [
-      ...current,
-      { id: `local-${current.length + 1}`, fromMe: true, text, time: 'Now' },
-    ]);
-    setDraft('');
-  };
+  if (!messages) {
+    return (
+      <View style={styles.screen}>
+        <Text style={styles.notFound}>Loading.</Text>
+      </View>
+    );
+  }
 
   return (
-    <KeyboardAvoidingView
-      style={styles.screen}
-      behavior={Platform.OS === 'ios' ? 'padding' : undefined}
-    >
+    <KeyboardAvoidingView style={styles.screen} behavior={'padding'}>
       {/* Header */}
       <View style={styles.header}>
         <Pressable
@@ -62,12 +113,15 @@ export default function ChatScreen() {
           <Ionicons name="chevron-back" size={26} color="#171717" />
         </Pressable>
         <View style={styles.avatar}>
-          <Text style={styles.avatarText}>{chat.initials}</Text>
+          <Text style={styles.avatarText}>{chat.name[0]}</Text>
         </View>
         <View style={styles.headerText}>
           <Text style={styles.name}>{chat.name}</Text>
-          <Text style={styles.distance}>{chat.distance}</Text>
+          {chat.type === 'TRADE' ? (
+            <Text style={styles.distance}>DISTANCE NOT IMPLEMENTED</Text>
+          ) : null}
         </View>
+        {/* NOTE: this currently does nothing */}
         <Pressable
           onPress={() => console.log('More options pressed')}
           accessibilityRole="button"
@@ -79,49 +133,58 @@ export default function ChatScreen() {
       </View>
 
       {/* The listing this chat is about */}
-      <Pressable
-        onPress={() => console.log('View listing', chat.cardName)}
-        accessibilityRole="button"
-        accessibilityLabel={`View listing: ${chat.cardName}`}
-        style={styles.listing}
-      >
-        <View style={styles.listingThumbFrame}>
-          <View style={[styles.listingThumb, { backgroundColor: chat.cardColor }]} />
-        </View>
-        <View style={styles.listingText}>
-          <Text style={styles.listingName}>{chat.cardName}</Text>
-          <Text style={styles.listingDetail}>{chat.cardDetail}</Text>
-        </View>
-        <Text style={styles.listingLink}>View listing</Text>
-      </Pressable>
+      <View>
+        {chat.type === 'TRADE' ? (
+          <Pressable
+            onPress={() => console.log('View listing', chat.cardId)}
+            accessibilityRole="button"
+            accessibilityLabel={`View listing: ${chat.cardId}`}
+            style={styles.listing}
+          >
+            {/* TODO: better background color */}
+            <View style={styles.listingThumbFrame}>
+              <View style={[styles.listingThumb, { backgroundColor: '#FF0000' }]} />
+            </View>
+            <View style={styles.listingText}>
+              <Text style={styles.listingName}>CARD NAME GOES HERE</Text>
+              <Text style={styles.listingDetail}>CONDITION GOES HERE</Text>
+            </View>
+            <Text style={styles.listingLink}>View listing</Text>
+          </Pressable>
+        ) : null}
+      </View>
 
-      {/* Messages */}
-      <ScrollView
-        ref={scrollRef}
+      {/* messages in the chat */}
+      <FlatList
+        inverted
+        ref={messagesRef}
         style={styles.messageScroll}
-        contentContainerStyle={styles.messageList}
-        onContentSizeChange={() => scrollRef.current?.scrollToEnd({ animated: true })}
-      >
-        <Text style={styles.dayLabel}>TODAY</Text>
-        {messages.map((message) => (
-          <MessageBubble key={message.id} message={message} />
-        ))}
-      </ScrollView>
+        data={messages.map((message) => <MessageBubble message={message} />).reverse()}
+        renderItem={renderMessage}
+        onViewableItemsChanged={onViewableItemsChanged}
+        viewabilityConfig={viewabilityConfig}
+      />
 
       {/* Quick replies + typing box */}
       <View style={[styles.composer, { paddingBottom: insets.bottom + 10 }]}>
-        <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={styles.quickReplies}>
-          {QUICK_REPLIES.map((reply) => (
-            <Pressable
-              key={reply}
-              onPress={() => setDraft(reply)}
-              accessibilityRole="button"
-              style={styles.quickReply}
-            >
-              <Text style={styles.quickReplyText}>{reply}</Text>
-            </Pressable>
-          ))}
-        </ScrollView>
+        {chat.type === 'TRADE' ? (
+          <ScrollView
+            horizontal
+            showsHorizontalScrollIndicator={false}
+            contentContainerStyle={styles.quickReplies}
+          >
+            {QUICK_REPLIES.map((reply) => (
+              <Pressable
+                key={reply}
+                onPress={() => setDraft(reply)}
+                accessibilityRole="button"
+                style={styles.quickReply}
+              >
+                <Text style={styles.quickReplyText}>{reply}</Text>
+              </Pressable>
+            ))}
+          </ScrollView>
+        ) : null}
 
         <View style={styles.inputRow}>
           <TextInput
@@ -149,13 +212,30 @@ export default function ChatScreen() {
   );
 }
 
-function MessageBubble({ message }: { message: ChatMessage }) {
+function MessageBubble({ message }: { message: Message }) {
+  const selfId = authClient.useSession().data?.user.id;
+  const MessageDateString: string = dateStringToMessageDate(message.createdAt ?? null, 'SPECIFIC');
+
   return (
-    <View style={[styles.bubbleWrap, message.fromMe ? styles.bubbleWrapMine : styles.bubbleWrapTheirs]}>
-      <View style={[styles.bubble, message.fromMe ? styles.bubbleMine : styles.bubbleTheirs]}>
-        <Text style={[styles.bubbleText, message.fromMe && styles.bubbleTextMine]}>{message.text}</Text>
+    <View>
+      <View
+        style={[
+          styles.bubbleWrap,
+          message.senderId === selfId ? styles.bubbleWrapMine : styles.bubbleWrapTheirs,
+        ]}
+      >
+        <View
+          style={[
+            styles.bubble,
+            message.senderId === selfId ? styles.bubbleMine : styles.bubbleTheirs,
+          ]}
+        >
+          <Text style={[styles.bubbleText, message.senderId === selfId && styles.bubbleTextMine]}>
+            {message.body}
+          </Text>
+        </View>
+        <Text style={styles.bubbleTime}>{MessageDateString}</Text>
       </View>
-      <Text style={styles.bubbleTime}>{message.time}</Text>
     </View>
   );
 }

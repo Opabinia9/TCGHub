@@ -2,6 +2,7 @@ import type {
   ChatCreationBodyInterface,
   ChatParamsInterface,
   ChatPostMessageBodyInterface,
+  ChatUpdateLastReadBodyInterface,
 } from '@/routes/api/v1/routeSchemas.js';
 import Facade from '@/services/facade.js';
 import type { ChatWithMembers, ChatWithMembersCreationInterface } from '@/types/chatObject.js';
@@ -19,20 +20,24 @@ export default class ChatController {
     const userWithChats = await facade.getUserWithChats(user.id);
     return reply.code(200).send({
       success: 'Chats successfully retrieved',
-      chats: userWithChats.chats.map((x) => {
-        const members = x.Chat.members.map((y) => {
-          return y.user_id;
-        });
-        return {
-          id: x.Chat.id,
-          title: x.Chat.title,
-          type: x.Chat.type,
-          created_at: x.Chat.created_at,
-          members: members,
-          last_read_message_id: x.last_read_message_id,
-          joined_at: x.joined_at,
-        };
-      }),
+      chats: userWithChats.chats
+        .map((x) => {
+          const members = x.Chat.members.map((y) => {
+            return y.userId;
+          });
+          return {
+            id: x.Chat.id,
+            name: x.Chat.name,
+            type: x.Chat.type,
+            ...(x.Chat.sellerId != null && { sellerId: x.Chat.sellerId }),
+            ...(x.Chat.cardId != null && { cardId: x.Chat.cardId }),
+            members: members,
+            createdAt: x.Chat.createdAt,
+            lastReadMessageId: x.lastReadMessageId,
+            joinedAt: x.joinedAt,
+          };
+        })
+        .reverse(),
     });
   }
 
@@ -43,6 +48,7 @@ export default class ChatController {
     // TODO: handle invalid userId in members
     const { userId } = request.retriveSession(request).session;
     const chatDetails: ChatWithMembersCreationInterface = request.body;
+    chatDetails.type === 'TRADE' && chatDetails.members.push(chatDetails.sellerId ?? '');
     chatDetails.members.push(userId);
     const chat = await facade.createChatWithMembers(chatDetails);
     return reply.code(201).send({ success: 'Chat created', chatID: chat.id });
@@ -59,12 +65,10 @@ export default class ChatController {
     const { userId } = request.retriveSession(request).session;
     const user = await facade.getUserWithChats(userId);
     const userWithChats: UserWithChats = await facade.getUserWithChats(user.id);
-    const chat = await find<
-      ChatWithMembers & { joined_at: Date; last_read_message_id: string | null }
-    >(
+    const chat = await find<ChatWithMembers & { joinedAt: Date; lastReadMessageId: string | null }>(
       'id',
       userWithChats.chats.map((x) => {
-        return { ...x.Chat, joined_at: x.joined_at, last_read_message_id: x.last_read_message_id };
+        return { ...x.Chat, joinedAt: x.joinedAt, lastReadMessageId: x.lastReadMessageId };
       }),
       request.params.chatId,
     );
@@ -74,15 +78,36 @@ export default class ChatController {
 
     return reply.code(200).send({
       id: chat.id,
-      title: chat.title,
+      name: chat.name,
       type: chat.type,
-      created_at: chat.created_at,
+      createdAt: chat.createdAt,
       members: chat.members.map((x) => {
-        return x.user_id;
+        return x.userId;
       }),
-      joined_at: chat.joined_at,
-      last_read_message_id: chat.last_read_message_id,
+      joinedAt: chat.joinedAt,
+      lastReadMessageId: chat.lastReadMessageId,
     });
+  }
+
+  async updateLastRead(
+    request: FastifyRequest<{ Params: ChatParamsInterface; Body: ChatUpdateLastReadBodyInterface }>,
+    reply: FastifyReply,
+  ) {
+    const { userId } = request.retriveSession(request).session;
+    const user = await facade.getUserWithChats(userId);
+    const userWithChats: UserWithChats = await facade.getUserWithChats(user.id);
+    const chat = await find<ChatWithMembers & { joinedAt: Date; lastReadMessageId: string | null }>(
+      'id',
+      userWithChats.chats.map((x) => {
+        return { ...x.Chat, joinedAt: x.joinedAt, lastReadMessageId: x.lastReadMessageId };
+      }),
+      request.params.chatId,
+    );
+    if (chat === null) {
+      return reply.code(404).send({ error: 'Chat Not Found' });
+    }
+    facade.UpdateLastReadMessage(chat.id, userId, request.body.messageId);
+    return reply.code(200).send({ success: 'Last Read Update Successfull' });
   }
 
   async updateChatDetails(
@@ -98,15 +123,16 @@ export default class ChatController {
   ) {
     const { userId } = request.retriveSession(request).session;
     const user = await facade.getUserWithChats(userId);
-    const chatFromUser = await find<ChatMember>('chat_id', user.chats, request.params.chatId);
+    const chatFromUser = await find<ChatMember>('chatId', user.chats, request.params.chatId);
     if (chatFromUser === null) {
       return reply.code(404).send({ error: 'Chat not found' });
     }
-    const chat = await facade.getChatWithMessages(chatFromUser.chat_id);
+    const chat = await facade.getChatWithMessages(chatFromUser.chatId);
 
     return reply.code(200).send({
+      success: 'Messages Successfully Retrived',
       messages: chat.messages.sort((a, b) => {
-        return new Date(a.created_at).getTime() - new Date(b.created_at).getTime();
+        return new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime();
       }),
     });
   }
@@ -118,16 +144,16 @@ export default class ChatController {
     const { userId } = request.retriveSession(request).session;
     const message = request.body.body;
     const user = await facade.getUserWithChats(userId);
-    const chatFromUser = await find<ChatMember>('chat_id', user.chats, request.params.chatId);
+    const chatFromUser = await find<ChatMember>('chatId', user.chats, request.params.chatId);
     if (chatFromUser === null) {
       return reply.code(404).send({ error: 'Chat not found' });
     }
 
-    await facade.createMessage({
-      chat_id: chatFromUser.chat_id,
-      sender_id: userId,
+    const newMessage = await facade.createMessage({
+      chatId: chatFromUser.chatId,
+      senderId: userId,
       body: message,
     });
-    return reply.code(201).send({ success: 'message sent' });
+    return reply.code(201).send({ success: 'message sent', message: newMessage });
   }
 }

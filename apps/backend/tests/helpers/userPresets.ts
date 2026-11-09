@@ -1,5 +1,4 @@
-import { prisma } from '../../src/utils/prisma';
-import { Prisma, User } from '@prisma/client';
+import { User } from '@prisma/client';
 import { auth } from '../../src/utils/auth';
 export const badEmail = 'email.com';
 

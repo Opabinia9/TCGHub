@@ -9,11 +9,11 @@ import { createMessages } from './helpers/messagePresets.js';
 const server = await buildServer({}, ENV);
 
 describe('GET /api/v1/chats/:chatId/messages', () => {
-  // afterEach(() => {
-  //   const found = [...server.specViolations];
-  //   server.specViolations.length = 0;
-  //   expect(found).toEqual([]);
-  // });
+  afterEach(() => {
+    const found = [...server.specViolations];
+    server.specViolations.length = 0;
+    expect(found).toEqual([]);
+  });
 
   it('returns all messages in a chat for a logged in user', async () => {
     const userOneDetails = await createUser({ ...userOne });
@@ -24,9 +24,9 @@ describe('GET /api/v1/chats/:chatId/messages', () => {
       userTwoDetails.user.id,
     ]);
     const messages = [
-      { sender_id: userOneDetails.user.id, body: 'this is a message' },
-      { sender_id: userTwoDetails.user.id, body: 'message two' },
-      { sender_id: userOneDetails.user.id, body: 'and another' },
+      { senderId: userOneDetails.user.id, body: 'this is a message' },
+      { senderId: userTwoDetails.user.id, body: 'message two' },
+      { senderId: userOneDetails.user.id, body: 'and another' },
     ];
     await createMessages(chat.id, messages);
 
@@ -41,7 +41,7 @@ describe('GET /api/v1/chats/:chatId/messages', () => {
     expect(response.statusCode).toBe(200);
     expect(payload).toMatchObject({
       messages: messages.map((x) => {
-        return { ...x, chat_id: chat.id };
+        return { ...x, chatId: chat.id };
       }),
     });
   });
@@ -67,11 +67,11 @@ describe('GET /api/v1/chats/:chatId/messages', () => {
 });
 
 describe('POST /api/v1/chats/:chatId/messages', () => {
-  // afterEach(() => {
-  //   const found = [...server.specViolations];
-  //   server.specViolations.length = 0;
-  //   expect(found).toEqual([]);
-  // });
+  afterEach(() => {
+    const found = [...server.specViolations];
+    server.specViolations.length = 0;
+    expect(found).toEqual([]);
+  });
 
   it('lets logged in member send a message', async () => {
     const userOneDetails = await createUser({ ...userOne });

@@ -1,3 +1,4 @@
+import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { Stack } from 'expo-router';
 import { useColorScheme } from 'react-native';
 import { MD3DarkTheme, MD3LightTheme, PaperProvider } from 'react-native-paper';
@@ -10,17 +11,21 @@ export default function RootLayout() {
   const [fontsLoaded] = useFonts({ BarlowCondensed_700Bold });
   const isDark = useColorScheme() === 'dark';
   const theme = isDark ? MD3DarkTheme : MD3LightTheme;
+  const queryClient = new QueryClient();
+
   return (
-    <GestureHandlerRootView style={{ flex: 1 }}>
-      <PaperProvider theme={theme}>
-        <StatusBar style="dark" />
-        <SafeAreaView edges={['top', 'bottom']} style={{ flex: 1, backgroundColor: '#E2D7BD' }}>
-          <Stack screenOptions={{ headerShown: false }}>
-            <Stack.Screen name="(auth)" />
-            <Stack.Screen name="(tabs)" />
-          </Stack>
-        </SafeAreaView>
-      </PaperProvider>
-    </GestureHandlerRootView>
+    <QueryClientProvider client={queryClient}>
+      <GestureHandlerRootView style={{ flex: 1 }}>
+        <PaperProvider theme={theme}>
+          <StatusBar style="dark" />
+          <SafeAreaView edges={['top', 'bottom']} style={{ flex: 1, backgroundColor: '#E2D7BD' }}>
+            <Stack screenOptions={{ headerShown: false }}>
+              <Stack.Screen name="(auth)" />
+              <Stack.Screen name="(tabs)" />
+            </Stack>
+          </SafeAreaView>
+        </PaperProvider>
+      </GestureHandlerRootView>
+    </QueryClientProvider>
   );
 }

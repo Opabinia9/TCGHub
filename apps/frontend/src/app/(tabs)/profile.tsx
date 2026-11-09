@@ -9,6 +9,7 @@ import { FilterOption, FILTERS } from '@/api/types';
 import CardList from '@/components/card-list';
 import { authClient } from '@/utils/auth-client';
 import { QueryCache, QueryClient } from '@tanstack/react-query';
+import ScreenHeader from '@/components/screen-header';
 
 export default function Profile() {
   const router = useRouter();
@@ -42,6 +43,7 @@ export default function Profile() {
 
   return (
     <View style={styles.screen}>
+      <ScreenHeader title='PROFILE' />
       <View style={styles.profileHeader}>
         <Avatar.Icon size={76} icon="account" color="#E2D7BD" style={styles.avatar} />
 

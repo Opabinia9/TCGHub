@@ -5,6 +5,7 @@ import { Ionicons } from '@expo/vector-icons';
 import { FilterOption, FILTERS } from '@/api/types';
 import CardList from '@/components/card-list';
 import { fetchCards } from '@/api/cards';
+import ScreenHeader from '@/components/screen-header';
 
 export default function CardsScreen() {
   const [searchQuery, setSearchQuery] = useState('');
@@ -13,9 +14,7 @@ export default function CardsScreen() {
   return (
     <>
       <View style={styles.filterSection}>
-        <View style={styles.header}>
-          <Text style={styles.title}>EXPLORE CARDS</Text>
-        </View>
+        <ScreenHeader title='EXPLORE CARDS' subtitle='Find cards to collect and trade.' />
 
         <View style={[styles.header, styles.filterList]}>
           <ScrollView

@@ -4,6 +4,7 @@ import { Searchbar, Text } from 'react-native-paper';
 import { Ionicons } from '@expo/vector-icons';
 import { router, useLocalSearchParams } from 'expo-router';
 import CardList from '@/components/card-list';
+import ScreenHeader from '@/components/screen-header';
 import { fetchCollection } from '@/api/collection';
 
 const MANA = {
@@ -88,16 +89,11 @@ export default function Decks() {
 
   return (
     <View style={styles.screen}>
-      {/* Top part: title, toggle, search, filters (doesn't scroll) */}
-      <View style={styles.top}>
-        {/* Header */}
-        <View style={styles.header}>
-          <View>
-            <Text style={styles.title}>DECKS</Text>
-            <Text style={styles.subtitle}>Discover, build and share decks.</Text>
-          </View>
-
-          {!isCollection && (
+      <ScreenHeader
+        title='DECKS'
+        subtitle='Discover, build and share decks.'
+        right={
+          !isCollection && (
             <Pressable
               onPress={() => console.log('New deck pressed')}
               accessibilityRole='button'
@@ -107,8 +103,12 @@ export default function Decks() {
               <Ionicons name='add' size={18} color='#FFFFFF' />
               <Text style={styles.newButtonText}>NEW</Text>
             </Pressable>
-          )}
-        </View>
+          )
+        }
+      />
+
+      {/* Top part: toggle, search, filters (doesn't scroll) */}
+      <View style={styles.top}>
 
         {/* My decks / My collection toggle */}
         <View style={styles.toggle} accessibilityRole='tablist'>
@@ -267,7 +267,7 @@ const styles = StyleSheet.create({
   },
   top: {
     paddingHorizontal: 20,
-    paddingTop: 20,
+    paddingTop: 16,
   },
   listArea: {
     flex: 1,
@@ -275,22 +275,6 @@ const styles = StyleSheet.create({
   deckScroll: {
     paddingHorizontal: 20,
     paddingBottom: 32,
-  },
-  header: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'flex-end',
-    marginBottom: 20,
-  },
-  title: {
-    fontFamily: 'BarlowCondensed_700Bold',
-    fontSize: 48,
-    lineHeight: 50,
-    color: '#171717',
-  },
-  subtitle: {
-    fontSize: 14,
-    color: '#5A5246',
   },
   newButton: {
     flexDirection: 'row',
@@ -307,8 +291,6 @@ const styles = StyleSheet.create({
     letterSpacing: 1.5,
     color: '#FFFFFF',
   },
-
-
   toggle: {
     flexDirection: 'row',
     padding: 4,

@@ -195,8 +195,18 @@ export default function CardList(props: CardListProps) {
         pagination.page + 1,
       );
 
-      setCards((previousCards) => [...previousCards, ...result.items]);
+      // Only keep cards we don't already have. Some lists send everything
+      // on every page, which would otherwise repeat the cards forever.
+      const shownIds = new Set(cards.map((card) => card.id));
+      const newCards = result.items.filter((card) => !shownIds.has(card.id));
 
+      if (newCards.length === 0) {
+        // Nothing new came back, so treat this as the last page and stop asking.
+        setPagination({ ...pagination, totalPages: pagination.page });
+        return;
+      }
+
+      setCards((previousCards) => [...previousCards, ...newCards]);
       setPagination(result.pagination);
     } catch {
     } finally {
@@ -335,56 +345,56 @@ export default function CardList(props: CardListProps) {
               />
             </Menu>
           ) : (
-                      <Menu
-            visible={menuCardId === card.id}
-            onDismiss={closeMenu}
-            anchorPosition='bottom'
-            contentStyle={styles.menu}
-            anchor={
-              <Pressable
-                onPress={() => setMenuCardId(card.id)}
-                accessibilityRole='button'
-                accessibilityLabel={`Add ${card.name} to…`}
-                hitSlop={4}
-                style={[
-                  styles.addButton,
-                  menuCardId === card.id && styles.addButtonActive,
-                ]}
-              >
-                <Ionicons
-                  name='add'
-                  size={22}
-                  color={menuCardId === card.id ? '#E2D7BD' : '#171717'}
-                />
-              </Pressable>
-            }
-          >
-            <Menu.Item
-              leadingIcon={menuIcon(wishlistIds.has(card.id) ? 'heart' : 'heart-outline')}
-              title={wishlistIds.has(card.id) ? 'Remove from wishlist' : 'Add to wishlist'}
-              titleStyle={styles.menuItemText}
-              onPress={() => toggleWishlist(card)}
-            />
-            <Menu.Item
-              leadingIcon={menuIcon('pricetag-outline')}
-              title='Add to my listings'
-              titleStyle={styles.menuItemText}
-              onPress={() => openSheet('listing', card)}
-            />
-            <Menu.Item
-              leadingIcon={menuIcon('albums-outline')}
-              title='Add to collection'
-              titleStyle={styles.menuItemText}
-              onPress={() => openSheet('collection', card)}
-            />
-            <View style={styles.menuDivider} />
-            <Menu.Item
-              leadingIcon={menuIcon('layers-outline')}
-              title='Add to deck'
-              titleStyle={styles.menuItemText}
-              onPress={closeMenu}
-            />
-          </Menu>
+            <Menu
+              visible={menuCardId === card.id}
+              onDismiss={closeMenu}
+              anchorPosition='bottom'
+              contentStyle={styles.menu}
+              anchor={
+                <Pressable
+                  onPress={() => setMenuCardId(card.id)}
+                  accessibilityRole='button'
+                  accessibilityLabel={`Add ${card.name} to…`}
+                  hitSlop={4}
+                  style={[
+                    styles.addButton,
+                    menuCardId === card.id && styles.addButtonActive,
+                  ]}
+                >
+                  <Ionicons
+                    name='add'
+                    size={22}
+                    color={menuCardId === card.id ? '#E2D7BD' : '#171717'}
+                  />
+                </Pressable>
+              }
+            >
+              <Menu.Item
+                leadingIcon={menuIcon(wishlistIds.has(card.id) ? 'heart' : 'heart-outline')}
+                title={wishlistIds.has(card.id) ? 'Remove from wishlist' : 'Add to wishlist'}
+                titleStyle={styles.menuItemText}
+                onPress={() => toggleWishlist(card)}
+              />
+              <Menu.Item
+                leadingIcon={menuIcon('pricetag-outline')}
+                title='Add to my listings'
+                titleStyle={styles.menuItemText}
+                onPress={() => openSheet('listing', card)}
+              />
+              <Menu.Item
+                leadingIcon={menuIcon('albums-outline')}
+                title='Add to collection'
+                titleStyle={styles.menuItemText}
+                onPress={() => openSheet('collection', card)}
+              />
+              <View style={styles.menuDivider} />
+              <Menu.Item
+                leadingIcon={menuIcon('layers-outline')}
+                title='Add to deck'
+                titleStyle={styles.menuItemText}
+                onPress={closeMenu}
+              />
+            </Menu>
           )}
         </View>
       </View>
@@ -711,7 +721,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
   },
-    addButtonActive: {
+  addButtonActive: {
     backgroundColor: '#171717',
   },
   heartButton: {

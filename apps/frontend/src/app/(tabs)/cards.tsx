@@ -58,6 +58,8 @@ export default function CardsScreen() {
             contentStyle={styles.searchInputContent}
             placeholderTextColor='#77705F'
             textColor='#171717'
+            selectionColor='#171717'
+            cursorColor='#171717'
           />
           {searchQuery.length > 0 && (
             <Pressable onPress={() => setSearchQuery('')}>

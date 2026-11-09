@@ -33,7 +33,7 @@ export default function Signup() {
         email: email.trimEnd(),
         name: name.trimEnd(),
         password: password.trimEnd(),
-      })
+      });
 
       if (result.error) {
         setError('Account creation failed. Check your details or try another username or email.');
@@ -49,10 +49,7 @@ export default function Signup() {
   };
 
   return (
-    <KeyboardAvoidingView
-      style={styles.container}
-      behavior={Platform.OS === 'ios' ? 'padding' : undefined}
-    >
+    <KeyboardAvoidingView style={styles.container} behavior={'padding'}>
       <ScrollView contentContainerStyle={styles.content} keyboardShouldPersistTaps="handled">
         <View style={styles.logoContainer}>
           <Text style={styles.logo}>TCG HUB</Text>
@@ -130,7 +127,7 @@ export default function Signup() {
             <Text style={styles.success}>Account created successfully! You can now sign in.</Text>
           ) : null}
 
-          {(
+          {
             <Button
               mode="contained"
               onPress={handleSignup}
@@ -143,7 +140,7 @@ export default function Signup() {
             >
               Create Account
             </Button>
-          )}
+          }
 
           <View style={styles.loginContainer}>
             <Text style={styles.loginText}>Already have an account? </Text>

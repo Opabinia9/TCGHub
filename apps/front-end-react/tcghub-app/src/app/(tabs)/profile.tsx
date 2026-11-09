@@ -7,22 +7,22 @@ import { fetchMyTrades } from '@/api/myTrades';
 import { fetchWishlist } from '@/api/myWishlist';
 import { FilterOption, FILTERS } from '@/api/types';
 import CardList from '@/components/card-list';
+import { authClient } from '@/utils/auth-client';
+import { QueryCache, QueryClient } from '@tanstack/react-query';
 
 export default function Profile() {
   const router = useRouter();
 
-  const [bio, setBio] = useState(
-    'Magic player. Always looking for my next trade!',
-  );
+  const [bio, setBio] = useState('Magic player. Always looking for my next trade!');
   const [editedBio, setEditedBio] = useState(bio);
   const [isEditing, setIsEditing] = useState(false);
 
-  const [activeSection, setActiveSection] = useState<'listings' | 'wishlist'>(
-    'listings',
-  );
+  const [activeSection, setActiveSection] = useState<'listings' | 'wishlist'>('listings');
 
   const [searchQuery, setSearchQuery] = useState('');
   const [activeFilter, setActiveFilter] = useState<FilterOption>('All');
+
+  const queryClient = new QueryClient();
 
   const handleSave = () => {
     setBio(editedBio);
@@ -34,19 +34,16 @@ export default function Profile() {
     setIsEditing(false);
   };
 
-  const handleLogout = () => {
+  const handleLogout = async () => {
+    await authClient.signOut();
+    queryClient.clear();
     router.replace('/(auth)/login');
   };
 
   return (
     <View style={styles.screen}>
       <View style={styles.profileHeader}>
-        <Avatar.Icon
-          size={76}
-          icon='account'
-          color='#E2D7BD'
-          style={styles.avatar}
-        />
+        <Avatar.Icon size={76} icon="account" color="#E2D7BD" style={styles.avatar} />
 
         <View style={styles.userInfo}>
           <Text style={styles.name}>Lucas Zales</Text>
@@ -54,7 +51,7 @@ export default function Profile() {
         </View>
 
         <Button
-          mode='outlined'
+          mode="outlined"
           onPress={() => {
             if (isEditing) {
               handleCancel();
@@ -63,7 +60,7 @@ export default function Profile() {
               setIsEditing(true);
             }
           }}
-          textColor='#171717'
+          textColor="#171717"
           style={styles.editButton}
           compact
         >
@@ -74,23 +71,23 @@ export default function Profile() {
         {isEditing ? (
           <>
             <TextInput
-              mode='outlined'
-              label='Your bio'
+              mode="outlined"
+              label="Your bio"
               value={editedBio}
               onChangeText={setEditedBio}
               multiline
               maxLength={150}
               style={styles.bioInput}
-              textColor='#171717'
-              placeholderTextColor='#655d50'
-              outlineColor='#655D50'
-              activeOutlineColor='#171717'
+              textColor="#171717"
+              placeholderTextColor="#655d50"
+              outlineColor="#655D50"
+              activeOutlineColor="#171717"
             />
             <Button
-              mode='contained'
+              mode="contained"
               onPress={handleSave}
-              buttonColor='#171717'
-              textColor='#E2D7BD'
+              buttonColor="#171717"
+              textColor="#E2D7BD"
               style={styles.saveButton}
             >
               SAVE BIO
@@ -102,7 +99,7 @@ export default function Profile() {
       </View>
       <View style={styles.logoutContainer}>
         <Pressable onPress={handleLogout} style={styles.logoutButton}>
-          <Ionicons name='log-out-outline' size={20} color='#A12626' />
+          <Ionicons name="log-out-outline" size={20} color="#A12626" />
           <Text style={styles.logoutText}>LOG OUT</Text>
         </Pressable>
       </View>
@@ -110,16 +107,10 @@ export default function Profile() {
         <View style={styles.mainTabs}>
           <Pressable
             onPress={() => setActiveSection('listings')}
-            style={[
-              styles.mainTab,
-              activeSection === 'listings' && styles.activeMainTab,
-            ]}
+            style={[styles.mainTab, activeSection === 'listings' && styles.activeMainTab]}
           >
             <Text
-              style={[
-                styles.mainTabText,
-                activeSection === 'listings' && styles.activeMainTabText,
-              ]}
+              style={[styles.mainTabText, activeSection === 'listings' && styles.activeMainTabText]}
             >
               MY LISTINGS
             </Text>
@@ -127,16 +118,10 @@ export default function Profile() {
 
           <Pressable
             onPress={() => setActiveSection('wishlist')}
-            style={[
-              styles.mainTab,
-              activeSection === 'wishlist' && styles.activeMainTab,
-            ]}
+            style={[styles.mainTab, activeSection === 'wishlist' && styles.activeMainTab]}
           >
             <Text
-              style={[
-                styles.mainTabText,
-                activeSection === 'wishlist' && styles.activeMainTabText,
-              ]}
+              style={[styles.mainTabText, activeSection === 'wishlist' && styles.activeMainTabText]}
             >
               MY WISHLIST
             </Text>
@@ -152,16 +137,10 @@ export default function Profile() {
               <Pressable
                 key={filter}
                 onPress={() => setActiveFilter(filter)}
-                style={[
-                  styles.filterButton,
-                  activeFilter === filter && styles.activeFilterButton,
-                ]}
+                style={[styles.filterButton, activeFilter === filter && styles.activeFilterButton]}
               >
                 <Text
-                  style={[
-                    styles.filterText,
-                    activeFilter === filter && styles.activeFilterText,
-                  ]}
+                  style={[styles.filterText, activeFilter === filter && styles.activeFilterText]}
                 >
                   {filter}
                 </Text>

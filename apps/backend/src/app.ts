@@ -25,21 +25,9 @@ import {
   validatorCompiler,
 } from 'fastify-type-provider-zod';
 import type { PrismaClientKnownRequestError } from '@prisma/client/runtime/client';
-import testRoutes from './routes/api/v1/test.js';
 import registerAuthDecorator from './decorators/authDecorator.js';
 
-export default async function buildServer(
-  opts = {},
-  env: Env,
-): Promise<
-  FastifyInstance<
-    RawServerDefault,
-    IncomingMessage,
-    ServerResponse<IncomingMessage>,
-    FastifyBaseLogger,
-    FastifyTypeProviderDefault
-  >
-> {
+export default async function buildServer(opts = {}, env: Env) {
   const server: Fastify.FastifyInstance = Fastify({
     ...opts,
     ajv: {

@@ -4,11 +4,13 @@ import {
   chatCreationBodySchema,
   chatParamsSchema,
   chatPostMessageBodySchema,
+  chatUpdateLastReadBodySchema,
 } from './routeSchemas.js';
 import type {
   ChatCreationBodyInterface,
   ChatParamsInterface,
   ChatPostMessageBodyInterface,
+  ChatUpdateLastReadBodyInterface,
 } from './routeSchemas.js';
 import { ChatType } from '@prisma/client';
 import z from 'zod';
@@ -29,11 +31,13 @@ export default async function chatRoutes(fastify: Fastify.FastifyInstance, optio
                 z.object({
                   id: z.uuid(),
                   type: z.enum(Object.values(ChatType)),
-                  title: z.string(),
-                  created_at: z.date(),
+                  name: z.string(),
+                  sellerId: z.uuid().optional(),
+                  cardId: z.uuid().optional(),
+                  createdAt: z.date(),
                   members: z.array(z.uuid()),
-                  last_read_message_id: z.uuid().nullable(),
-                  joined_at: z.date(),
+                  lastReadMessageId: z.uuid().nullable(),
+                  joinedAt: z.date(),
                 }),
               ),
             })
@@ -101,11 +105,11 @@ export default async function chatRoutes(fastify: Fastify.FastifyInstance, optio
             .object({
               id: z.uuid(),
               type: z.enum(Object.values(ChatType)),
-              title: z.string(),
-              created_at: z.date(),
+              name: z.string(),
+              createdAt: z.date(),
               members: z.array(z.uuid()),
-              last_read_message_id: z.uuid().nullable(),
-              joined_at: z.date(),
+              lastReadMessageId: z.uuid().nullable(),
+              joinedAt: z.date(),
             })
             .meta({ description: 'OK' }),
           401: z
@@ -151,11 +155,14 @@ export default async function chatRoutes(fastify: Fastify.FastifyInstance, optio
         response: {
           200: z
             .object({
+              success: z.string(),
               messages: z.array(
                 z.object({
+                  id: z.uuid(),
+                  createdAt: z.date(),
                   body: z.string(),
-                  chat_id: z.uuid(),
-                  sender_id: z.uuid(),
+                  chatId: z.uuid(),
+                  senderId: z.uuid(),
                 }),
               ),
             })
@@ -187,6 +194,13 @@ export default async function chatRoutes(fastify: Fastify.FastifyInstance, optio
           201: z
             .object({
               success: z.string(),
+              message: z.object({
+                id: z.uuid(),
+                createdAt: z.date(),
+                body: z.string(),
+                chatId: z.uuid(),
+                senderId: z.uuid().nullable(),
+              }),
             })
             .meta({ description: 'Created' }),
           401: z
@@ -203,5 +217,34 @@ export default async function chatRoutes(fastify: Fastify.FastifyInstance, optio
       },
     },
     controller.postMessage,
+  );
+
+  fastify.put<{ Params: ChatParamsInterface; Body: ChatUpdateLastReadBodyInterface }>(
+    '/:chatId',
+    {
+      preHandler: [fastify.authenticate],
+      schema: {
+        params: chatParamsSchema,
+        body: chatUpdateLastReadBodySchema,
+        response: {
+          200: z
+            .object({
+              success: z.string(),
+            })
+            .meta({ description: 'Ok' }),
+          401: z
+            .object({
+              error: z.string(),
+            })
+            .meta({ description: 'Unauthorized' }),
+          404: z
+            .object({
+              error: z.string(),
+            })
+            .meta({ description: 'Not Found' }),
+        },
+      },
+    },
+    controller.updateLastRead,
   );
 }

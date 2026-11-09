@@ -5,16 +5,15 @@ import { ENV } from '../src/utils/env.js';
 import { createUser, userOne, userTwo } from './helpers/userPresets.js';
 import { ChatDetailsInterface, createChats } from './helpers/chatPresets.js';
 import { auth } from '../src/utils/auth.js';
-import { request } from 'node:https';
 
 const server = await buildServer({}, ENV);
 
 describe('GET /api/v1/chats', () => {
-  // afterEach(() => {
-  //   const found = [...server.specViolations];
-  //   server.specViolations.length = 0;
-  //   expect(found).toEqual([]);
-  // });
+  afterEach(() => {
+    const found = [...server.specViolations];
+    server.specViolations.length = 0;
+    expect(found).toEqual([]);
+  });
 
   it('returns chats user is part of', async () => {
     const userOneDetails = await createUser({ ...userOne });
@@ -26,17 +25,17 @@ describe('GET /api/v1/chats', () => {
     ).token;
     const createChatsInput: Array<ChatDetailsInterface> = [
       {
-        title: 'chatOne',
+        name: 'chatOne',
         type: 'DIRECT',
         memberIDs: [userOneDetails.user.id, userTwoDetails.user.id],
       },
       {
-        title: 'chatTwo',
+        name: 'chatTwo',
         type: 'DIRECT',
         memberIDs: [userOneDetails.user.id, userTwoDetails.user.id],
       },
       {
-        title: 'chatThree',
+        name: 'chatThree',
         type: 'GROUP',
         memberIDs: [userOneDetails.user.id, userTwoDetails.user.id],
       },
@@ -56,26 +55,38 @@ describe('GET /api/v1/chats', () => {
     expect(payload).toHaveProperty('success');
     expect(payload).toHaveProperty('chats');
     expect(payload.chats).toHaveLength(createChatsInput.length);
-    payload.chats.forEach((x, idx) => {
+    payload.chats.reverse().forEach((x, idx) => {
       expect(x).toEqual({
         id: savedChats[idx].id,
         type: createChatsInput[idx].type,
-        title: createChatsInput[idx].title,
-        created_at: savedChats[idx].created_at.toISOString(),
+        name: createChatsInput[idx].name,
+        createdAt: savedChats[idx].createdAt.toISOString(),
         members: createChatsInput[idx].memberIDs,
-        last_read_message_id: null,
-        joined_at: expect.any(String),
+        lastReadMessageId: null,
+        joinedAt: expect.any(String),
       });
+    });
+  });
+
+  it('blocks unverified user', async () => {
+    const response: LightMyRequestResponse = await server.inject({
+      method: 'GET',
+      url: '/api/v1/chats/',
+    });
+    const payload = await response.json();
+    expect(response.statusCode).toBe(401);
+    expect(payload).toEqual({
+      error: 'Unauthorized',
     });
   });
 });
 
 describe('POST /api/v1/chats', () => {
-  // afterEach(() => {
-  //   const found = [...server.specViolations];
-  //   server.specViolations.length = 0;
-  //   expect(found).toEqual([]);
-  // });
+  afterEach(() => {
+    const found = [...server.specViolations];
+    server.specViolations.length = 0;
+    expect(found).toEqual([]);
+  });
   it('lets a logged in user create a chat', async () => {
     const userOneDetails = await createUser({ ...userOne });
     const userTwoDetails = await createUser({ ...userTwo });
@@ -88,7 +99,7 @@ describe('POST /api/v1/chats', () => {
         Authorization: `Bearer ${userOneAccessToken}`,
       },
       payload: {
-        title: 'test Chat',
+        name: 'test Chat',
         type: 'DIRECT',
         members: [userTwoDetails.user.id],
       },
@@ -103,11 +114,11 @@ describe('POST /api/v1/chats', () => {
 });
 
 describe('DELETE /api/v1/chats/', () => {
-  // afterEach(() => {
-  //   const found = [...server.specViolations];
-  //   server.specViolations.length = 0;
-  //   expect(found).toEqual([]);
-  // });
+  afterEach(() => {
+    const found = [...server.specViolations];
+    server.specViolations.length = 0;
+    expect(found).toEqual([]);
+  });
   it('returns service unavailable', async () => {
     const userOneDetails = await createUser({ ...userOne });
     const userOneAccessToken = userOneDetails.token;

@@ -4,16 +4,17 @@ import buildServer from '../src/app.js';
 import { ENV } from '../src/utils/env.js';
 import { createUser, userOne, userTwo } from './helpers/userPresets.js';
 import { createChat, invalidChatId } from './helpers/chatPresets.js';
-import { auth } from '../src/utils/auth.js';
+import { createMessage } from './helpers/messagePresets.js';
+import { prisma } from '../src/utils/prisma.js';
 
 const server = await buildServer({}, ENV);
 
 describe('GET /api/v1/chats/:chatId', () => {
-  // afterEach(() => {
-  //   const found = [...server.specViolations];
-  //   server.specViolations.length = 0;
-  //   expect(found).toEqual([]);
-  // });
+  afterEach(() => {
+    const found = [...server.specViolations];
+    server.specViolations.length = 0;
+    expect(found).toEqual([]);
+  });
 
   it('returns details of a chat the user is apart of', async () => {
     const userOneDetails = await createUser({ ...userOne });
@@ -37,11 +38,11 @@ describe('GET /api/v1/chats/:chatId', () => {
     expect(payload).toEqual({
       id: chat.id,
       type: chat.type,
-      title: chat.title,
-      created_at: chat.created_at.toISOString(),
+      name: chat.name,
+      createdAt: chat.createdAt.toISOString(),
       members: [userOneDetails.user.id, userTwoDetails.user.id],
-      last_read_message_id: null,
-      joined_at: expect.any(String),
+      lastReadMessageId: null,
+      joinedAt: expect.any(String),
     });
   });
 
@@ -63,11 +64,11 @@ describe('GET /api/v1/chats/:chatId', () => {
 });
 
 describe('PATCH /api/v1/chats/:chatId', () => {
-  // afterEach(() => {
-  //   const found = [...server.specViolations];
-  //   server.specViolations.length = 0;
-  //   expect(found).toEqual([]);
-  // });
+  afterEach(() => {
+    const found = [...server.specViolations];
+    server.specViolations.length = 0;
+    expect(found).toEqual([]);
+  });
 
   it('returns service unavailable', async () => {
     const userOneDetails = await createUser({ ...userOne });
@@ -89,6 +90,62 @@ describe('PATCH /api/v1/chats/:chatId', () => {
     expect(response.statusCode).toBe(503);
     expect(payload).toMatchObject({
       error: 'not implemented yet',
+    });
+  });
+});
+
+describe('PUT /api/v1/chats/:chatId', () => {
+  afterEach(() => {
+    const found = [...server.specViolations];
+    server.specViolations.length = 0;
+    expect(found).toEqual([]);
+  });
+
+  it('updates last read message in chat successfully', async () => {
+    const userOneDetails = await createUser({ ...userOne });
+    const userTwoDetails = await createUser({ ...userTwo });
+    const userOneAccessToken = userOneDetails.token;
+    const chat = await createChat('chatOne', 'DIRECT', [
+      userOneDetails.user.id,
+      userTwoDetails.user.id,
+    ]);
+    const message = await createMessage(chat.id, userOneDetails.user.id, 'here have some text');
+    const response = await server.inject({
+      method: 'PUT',
+      url: `/api/v1/chats/${chat.id}`,
+      headers: {
+        Authorization: `Bearer ${userOneAccessToken}`,
+      },
+      body: { messageId: message.id },
+    });
+    const payload = await response.json();
+    const databaseChatMember = await prisma.chatMember.findUnique({
+      where: { chatId_userId: { chatId: chat.id, userId: userOneDetails.user.id } },
+    });
+
+    expect(response.statusCode).toBe(200);
+    expect(payload).toMatchObject({
+      success: 'Last Read Update Successfull',
+    });
+    expect(databaseChatMember).not.toBeNull();
+    expect(databaseChatMember?.lastReadMessageId).toBe(message.id);
+  });
+
+  it('handles chat not found', async () => {
+    const userOneDetails = await createUser({ ...userOne });
+    const userOneAccessToken = userOneDetails.token;
+    const response = await server.inject({
+      method: 'PUT',
+      url: `/api/v1/chats/${invalidChatId}`,
+      headers: {
+        Authorization: `Bearer ${userOneAccessToken}`,
+      },
+      body: { messageId: invalidChatId },
+    });
+    const payload = await response.json();
+    expect(response.statusCode).toBe(404);
+    expect(payload).toMatchObject({
+      error: 'Chat Not Found',
     });
   });
 });

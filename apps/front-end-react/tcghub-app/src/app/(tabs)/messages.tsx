@@ -1,27 +1,15 @@
 import { useState } from 'react';
-import { Pressable, ScrollView, StyleSheet, View } from 'react-native';
+import { StyleSheet, View } from 'react-native';
 import { Searchbar, Text } from 'react-native-paper';
-import { router } from 'expo-router';
-import { CHATS, Chat } from '@/data/chats';
+import ChatList from '@/components/ChatList';
 
 export default function MessagesScreen() {
   const [searchQuery, setSearchQuery] = useState('');
 
- 
-  const query = searchQuery.trim().toLowerCase();
-  const chats = CHATS.filter(
-    (chat) =>
-      chat.name.toLowerCase().includes(query) || chat.cardName.toLowerCase().includes(query),
-  );
-
   return (
-    <ScrollView
-      style={styles.screen}
-      contentContainerStyle={styles.content}
-      showsVerticalScrollIndicator={false}
-    >
+    <View style={styles.screen}>
       <Text style={styles.title}>MESSAGES</Text>
-      <Text style={styles.subtitle}>Chats with buyers, sellers and traders.</Text>
+      {/* <Text style={styles.subtitle}>Chats with buyers, sellers and traders.</Text> */}
 
       <Searchbar
         placeholder="Search messages…"
@@ -32,51 +20,11 @@ export default function MessagesScreen() {
         iconColor="#245f28"
         placeholderTextColor="#7A705F"
         selectionColor="#171717"
-				cursorColor="#171717"
+        cursorColor="#171717"
         elevation={0}
       />
-
-      <View style={styles.list}>
-        {chats.map((chat) => (
-          <ChatRow key={chat.id} chat={chat} />
-        ))}
-      </View>
-
-      {chats.length === 0 && <Text style={styles.emptyMessage}>No chats found.</Text>}
-    </ScrollView>
-  );
-}
-
-function ChatRow({ chat }: { chat: Chat }) {
- 
-  const last = chat.messages[chat.messages.length - 1];
-  const preview = last ? (last.fromMe ? `You: ${last.text}` : last.text) : 'No messages yet';
-
-  return (
-    <Pressable
-      onPress={() => router.push({ pathname: '/chat/[id]', params: { id: chat.id } })}
-      accessibilityRole="button"
-      accessibilityLabel={`${chat.name}, about ${chat.cardName}${chat.unread ? ', unread' : ''}: ${preview}`}
-      style={styles.row}
-    >
-      <View style={styles.avatar}>
-        <Text style={styles.avatarText}>{chat.initials}</Text>
-      </View>
-
-      <View style={styles.rowText}>
-        <View style={styles.rowTop}>
-          <Text style={styles.name}>{chat.name}</Text>
-          <Text style={styles.time}>{chat.lastTime}</Text>
-        </View>
-        <Text style={styles.about}>About: {chat.cardName}</Text>
-        <View style={styles.previewRow}>
-          <Text style={[styles.preview, chat.unread && styles.previewUnread]} numberOfLines={1}>
-            {preview}
-          </Text>
-          {chat.unread && <View style={styles.unreadDot} />}
-        </View>
-      </View>
-    </Pressable>
+      <ChatList query={searchQuery} />
+    </View>
   );
 }
 
@@ -113,7 +61,6 @@ const styles = StyleSheet.create({
     color: '#171717',
   },
 
- 
   list: {
     marginTop: 16,
     borderTopWidth: 1,

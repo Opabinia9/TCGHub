@@ -5,32 +5,20 @@ import DeckRepository from '@/persistence/deckRepository.js';
 import ChatRepository from '@/persistence/chatReposistory.js';
 import MessageRepository from '@/persistence/messageReposistory.js';
 import NotFoundError from '@/errortypes/NotFoundError.js';
-import type { Deck, DeckCard, User, UserCard } from '@prisma/client';
-import type {
-  AuthSignupBody,
-  DeckCardParams,
-} from '@/routes/api/v1/routeSchemas.js';
-import type {
-  UserCreationInterface,
-  UserWithChats,
-} from '@/types/userObject.js';
-import type {
-  ChatWithMembersCreationInterface,
-  ChatWithMessages,
-} from '@/types/chatObject.js';
+import type { Deck, DeckCard, Message, User, UserCard } from '@prisma/client';
+import type { AuthSignupBody, DeckCardParams } from '@/routes/api/v1/routeSchemas.js';
+import type { UserCreationInterface, UserWithChats } from '@/types/userObject.js';
+import type { ChatWithMembersCreationInterface, ChatWithMessages } from '@/types/chatObject.js';
 import type { MessageCreationInterface } from '@/types/MessageObject.js';
 import type { CardSearchQuery, CardSummary } from '@/types/cardObject.js';
-import type {
-  DeckCards,
-  DeckCreationInterface,
-  DeckRef,
-  UserDecks,
-} from '@/types/deckObject.js';
+import type { DeckCards, DeckCreationInterface, DeckRef, UserDecks } from '@/types/deckObject.js';
 import type { UserCollection } from '@/types/userCardObject.js';
+import ChatMemberRepository from '@/persistence/chatMemberRepository.js';
 
 export default class Facade {
   userRepo: UserRepository;
   chatRepo: ChatRepository;
+  chatMemberRepo: ChatMemberRepository;
   messageRepo: MessageRepository;
   cardRepo: CardRepository;
   userCardsRepo: UserCardsRepository;
@@ -39,6 +27,7 @@ export default class Facade {
   constructor() {
     this.userRepo = new UserRepository();
     this.chatRepo = new ChatRepository();
+    this.chatMemberRepo = new ChatMemberRepository();
     this.messageRepo = new MessageRepository();
     this.cardRepo = new CardRepository();
     this.userCardsRepo = new UserCardsRepository();
@@ -107,12 +96,16 @@ export default class Facade {
     }
   }
 
-  async createMessage(message: MessageCreationInterface): Promise<void> {
-    await this.messageRepo.add(message);
+  async createMessage(message: MessageCreationInterface): Promise<Message> {
+    return await this.messageRepo.add(message);
   }
 
   async createChatWithMembers(chat: ChatWithMembersCreationInterface) {
     return await this.chatRepo.addChatWithMembers(chat);
+  }
+
+  async UpdateLastReadMessage(chatId: string, userId: string, messageId: string) {
+    return await this.chatMemberRepo.UpdateLastReadMessage(chatId, userId, messageId);
   }
 
   /**  Card Functions */
@@ -231,18 +224,12 @@ export default class Facade {
     return new_deck_card;
   }
 
-  async delDeckCard(
-    owner_id: string,
-    deck_card: DeckCardParams,
-  ): Promise<DeckCard | void> {
+  async delDeckCard(owner_id: string, deck_card: DeckCardParams): Promise<DeckCard | void> {
     await this.deckRepo.delDeckCard(owner_id, deck_card);
   }
 
   async updDeckCard(owner_id: string, deck_card: DeckCard): Promise<DeckCard> {
-    const updated_deck_card = await this.deckRepo.updDeckCard(
-      owner_id,
-      deck_card,
-    );
+    const updated_deck_card = await this.deckRepo.updDeckCard(owner_id, deck_card);
     if (updated_deck_card === null) {
       throw new NotFoundError('Deck Not Updated');
     }

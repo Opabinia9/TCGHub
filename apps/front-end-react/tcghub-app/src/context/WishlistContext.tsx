@@ -1,45 +1,38 @@
-import {
-    createContext,
-    useContext,
-    useState,
-    type ReactNode,
-} from "react";
+import { createContext, useContext, useState, type ReactNode } from 'react';
 
-import type { MagicCard } from "@/api/cards";
+import type { MagicCard } from '@/api/types';
 
 type WishlistContextType = {
-    wishlistCards: MagicCard[];
-    toggleWishlist: (card: MagicCard) => void;
+  wishlistCards: MagicCard[];
+  toggleWishlist: (card: MagicCard) => void;
 };
 
-const WishlistContext = createContext<WishlistContextType | undefined>(
-    undefined
-);
+const WishlistContext = createContext<WishlistContextType | undefined>(undefined);
 
 export function WishlistProvider({ children }: { children: ReactNode }) {
-    const [wishlistCards, setWishlistCards] = useState<MagicCard[]>([]);
+  const [wishlistCards, setWishlistCards] = useState<MagicCard[]>([]);
 
-    const toggleWishlist = (card: MagicCard) => {
-        setWishlistCards((currentCards) =>
-            currentCards.some((item) => item.id === card.id)
-                ? currentCards.filter((item) => item.id !== card.id)
-                : [...currentCards, card]
-        );
-    };
-
-    return (
-        <WishlistContext.Provider value={{ wishlistCards, toggleWishlist }}>
-            {children}
-        </WishlistContext.Provider>
+  const toggleWishlist = (card: MagicCard) => {
+    setWishlistCards((currentCards) =>
+      currentCards.some((item) => item.id === card.id)
+        ? currentCards.filter((item) => item.id !== card.id)
+        : [...currentCards, card],
     );
+  };
+
+  return (
+    <WishlistContext.Provider value={{ wishlistCards, toggleWishlist }}>
+      {children}
+    </WishlistContext.Provider>
+  );
 }
 
 export function useWishlist() {
-    const context = useContext(WishlistContext);
+  const context = useContext(WishlistContext);
 
-    if (!context) {
-        throw new Error("useWishlist must be used inside WishlistProvider");
-    }
+  if (!context) {
+    throw new Error('useWishlist must be used inside WishlistProvider');
+  }
 
-    return context;
+  return context;
 }

@@ -1,7 +1,6 @@
 import { auth } from '@/utils/auth.js';
 import type { FastifyInstance, FastifyReply, FastifyRequest } from 'fastify';
 import { fromNodeHeaders } from 'better-auth/node';
-import type { request } from 'node:http';
 
 declare module 'fastify' {
   interface FastifyInstance {
@@ -26,6 +25,7 @@ export default function registerAuthDecorator(fastify: FastifyInstance) {
     request.session = session;
   });
 
+  /* c8 ignore next */
   fastify.decorateRequest('retriveSession', (request: FastifyRequest) => {
     if (!request.session) {
       throw new Error('retriveSession used on an unprotected route');

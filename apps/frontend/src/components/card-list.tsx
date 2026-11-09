@@ -288,10 +288,6 @@ export default function CardList(props: CardListProps) {
         <Text style={styles.cardName} numberOfLines={2}>
           {card.name}
         </Text>
-        <Text style={styles.cardSetName} numberOfLines={2}>
-          {card.setName || 'Set information unavailable'}
-        </Text>
-
         {variant === 'listings' && (
           <Text style={styles.listedInfo}>
             Listed ×{(card as CollectionCard).quantity} ·{' '}
@@ -688,6 +684,7 @@ const styles = StyleSheet.create({
     fontSize: 15,
     fontWeight: '800',
     color: '#171717',
+    marginBottom: 10,
   },
   cardSetName: {
     fontSize: 11,

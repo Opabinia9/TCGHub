@@ -4,7 +4,11 @@ import { useQuery } from '@tanstack/react-query';
 import { router } from 'expo-router';
 import { ReactNode, useEffect, useState } from 'react';
 import { StyleSheet, View } from 'react-native';
-import { FlatList, Pressable, RefreshControl } from 'react-native-gesture-handler';
+import {
+  FlatList,
+  Pressable,
+  RefreshControl,
+} from 'react-native-gesture-handler';
 import { Text } from 'react-native-paper';
 
 export type Props = { query: string };
@@ -60,12 +64,17 @@ export default function ChatList(props: Props): ReactNode {
           <ChatRow chat={chat} />
         ))}
       renderItem={renderChats}
-      refreshControl={<RefreshControl refreshing={refreshing} onRefresh={refreshChats} />}
+      refreshControl={
+        <RefreshControl refreshing={refreshing} onRefresh={refreshChats} />
+      }
     />
   );
 }
 
-export function dateStringToMessageDate(dateString: string | null, type: 'SPECIFIC' | 'GENERAL') {
+export function dateStringToMessageDate(
+  dateString: string | null,
+  type: 'SPECIFIC' | 'GENERAL',
+) {
   if (dateString == null) {
     return '';
   }
@@ -79,7 +88,8 @@ export function dateStringToMessageDate(dateString: string | null, type: 'SPECIF
     const minute = date.getMinutes();
     return `${date.getHours()}:${minute < 10 ? `0${minute}` : minute}`;
   } else if (
-    date.getTime() > new Date(now.getFullYear(), now.getMonth(), now.getDate() - 7).getTime()
+    date.getTime() >
+    new Date(now.getFullYear(), now.getMonth(), now.getDate() - 7).getTime()
   ) {
     if (type === 'GENERAL') {
       return `${date.toLocaleDateString('en-au', { weekday: 'short' })}`;
@@ -95,10 +105,15 @@ export function dateStringToMessageDate(dateString: string | null, type: 'SPECIF
 }
 
 function ChatRow({ chat }: { chat: ChatWithMessages }) {
-  const chatTitle: string = chat.sellerId ? `Trade with ${chat.sellerId}` : chat.name;
-  const selfId = authClient.useSession().data?.user.id;
+  const chatTitle: string = chat.sellerId
+    ? `Trade for ${chat.name}`
+    : chat.name;
+  const selfId = authClient.useSession().data?.user.username;
   const last = chat.messages.at(-1);
-  const lastDateString: string = dateStringToMessageDate(last?.createdAt ?? null, 'GENERAL');
+  const lastDateString: string = dateStringToMessageDate(
+    last?.createdAt ?? null,
+    'GENERAL',
+  );
   const unread =
     chat.messages.length -
     (chat.messages
@@ -115,9 +130,11 @@ function ChatRow({ chat }: { chat: ChatWithMessages }) {
 
   return (
     <Pressable
-      onPress={() => router.push({ pathname: '/chat/[id]', params: { id: chat.id } })}
-      accessibilityRole="button"
-      accessibilityLabel={`${chatTitle}, about ${chat.cardId}${unread ? ', unread' : ''}: ${preview}`}
+      onPress={() =>
+        router.push({ pathname: '/chat/[id]', params: { id: chat.id } })
+      }
+      accessibilityRole='button'
+      accessibilityLabel={`${chatTitle}, about ${chat.name}${unread ? ', unread' : ''}: ${preview}`}
       style={styles.row}
     >
       <View style={styles.avatar}>
@@ -129,9 +146,14 @@ function ChatRow({ chat }: { chat: ChatWithMessages }) {
           <Text style={styles.name}>{chatTitle}</Text>
           <Text style={styles.time}>{lastDateString}</Text>
         </View>
-        <Text style={styles.about}>{chat.cardId != null ? `About: ${chat.cardId}` : ''}</Text>
+        <Text style={styles.about}>
+          {chat.name != null ? `About: ${chat.name}` : ''}
+        </Text>
         <View style={styles.previewRow}>
-          <Text style={[styles.preview, chat.type && styles.previewUnread]} numberOfLines={1}>
+          <Text
+            style={[styles.preview, chat.type && styles.previewUnread]}
+            numberOfLines={1}
+          >
             {preview}
           </Text>
           {unread > 0 && <View style={styles.unreadDot} />}

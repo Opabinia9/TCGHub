@@ -86,7 +86,7 @@ export default class CardRepository extends Repository<CardSummary> {
       this.db.card.findMany({
         where,
         omit: { rawData: true },
-        orderBy: [{ name: 'asc' }, { id: 'asc' }],
+        orderBy: [{ releasedAt: 'desc' }, { id: 'asc' }],
         skip: (filters.page - 1) * filters.limit,
         take: filters.limit,
       }),

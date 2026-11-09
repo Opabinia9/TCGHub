@@ -1,5 +1,11 @@
 import { useCallback, useState } from 'react';
-import { ActivityIndicator, Pressable, StyleSheet, Text, View } from 'react-native';
+import {
+  ActivityIndicator,
+  Pressable,
+  StyleSheet,
+  Text,
+  View,
+} from 'react-native';
 import { FlatList } from 'react-native-gesture-handler';
 import { Portal, Snackbar } from 'react-native-paper';
 import { Image } from 'expo-image';
@@ -9,6 +15,7 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import type { CollectionCard } from '@/api/types';
 import { fetchTradeListings } from '@/api/tradeListings';
 import { fetchWishlistIds, updateCollectionCard } from '@/api/collection';
+import { createChat } from '@/api/chats';
 
 // Cards other players have listed for trade.
 export default function TradeList() {
@@ -36,7 +43,8 @@ export default function TradeList() {
           setWishlistIds(ids);
         })
         .catch(() => {
-          if (!cancelled) setError('Unable to load listings. Please try again later.');
+          if (!cancelled)
+            setError('Unable to load listings. Please try again later.');
         })
         .finally(() => {
           if (!cancelled) setLoading(false);
@@ -87,7 +95,9 @@ export default function TradeList() {
     return (
       <View style={styles.card}>
         <Image
-          source={{ uri: item.imageUris?.normal ?? item.imageUris?.grid ?? undefined }}
+          source={{
+            uri: item.imageUris?.normal ?? item.imageUris?.grid ?? undefined,
+          }}
           style={styles.cardImage}
           contentFit='cover'
         />
@@ -108,7 +118,7 @@ export default function TradeList() {
 
         <View style={styles.actionRow}>
           <Pressable
-            onPress={() => console.log('Message seller about', item.name)}
+            onPress={() => createChat(item, 'TRADE', item.user_id)}
             accessibilityRole='button'
             accessibilityLabel={`Message the seller about ${item.name}`}
             style={styles.messageButton}
@@ -126,7 +136,10 @@ export default function TradeList() {
                 ? `Remove ${item.name} from wishlist`
                 : `Add ${item.name} to wishlist`
             }
-            style={[styles.wishlistButton, inWishlist && styles.wishlistButtonActive]}
+            style={[
+              styles.wishlistButton,
+              inWishlist && styles.wishlistButtonActive,
+            ]}
           >
             <Ionicons
               name={inWishlist ? 'heart' : 'heart-outline'}

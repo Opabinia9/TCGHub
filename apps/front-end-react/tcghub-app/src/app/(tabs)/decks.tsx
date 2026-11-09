@@ -71,8 +71,6 @@ export default function Decks() {
   const [tab, setTab] = useState<Tab>('mine');
   const [searchQuery, setSearchQuery] = useState('');
 
-
-
   useEffect(() => {
     if (params.tab === 'collection') {
       setTab('collection');
@@ -94,7 +92,9 @@ export default function Decks() {
         <View style={styles.header}>
           <View>
             <Text style={styles.title}>DECKS</Text>
-            <Text style={styles.subtitle}>Discover, build and share decks.</Text>
+            <Text style={styles.subtitle}>
+              Discover, build and share decks.
+            </Text>
           </View>
 
           {!isCollection && (
@@ -156,7 +156,6 @@ export default function Decks() {
             </Pressable>
           ))}
         </View>
-
       </View>
 
       {/* Bottom part: scrolls by itself */}
@@ -257,7 +256,6 @@ function DeckRow({ deck }: { deck: Deck }) {
   );
 }
 
-
 // ─── Styles ──────────────────────────────────────────────────────────────────
 
 const styles = StyleSheet.create({
@@ -276,6 +274,7 @@ const styles = StyleSheet.create({
     paddingHorizontal: 20,
     paddingBottom: 32,
   },
+
   header: {
     flexDirection: 'row',
     justifyContent: 'space-between',
@@ -308,7 +307,6 @@ const styles = StyleSheet.create({
     color: '#FFFFFF',
   },
 
-
   toggle: {
     flexDirection: 'row',
     padding: 4,
@@ -335,7 +333,6 @@ const styles = StyleSheet.create({
     color: '#E2D7BD',
   },
 
-
   searchbar: {
     marginTop: 14,
     height: 46,
@@ -349,7 +346,6 @@ const styles = StyleSheet.create({
     fontSize: 15,
     color: '#171717',
   },
-
 
   filterRow: {
     flexDirection: 'row',
@@ -373,7 +369,6 @@ const styles = StyleSheet.create({
     letterSpacing: 1.1,
     color: '#171717',
   },
-
 
   deckList: {
     marginTop: 16,

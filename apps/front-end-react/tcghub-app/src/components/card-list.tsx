@@ -1,13 +1,21 @@
 import { useState, useEffect, useCallback } from 'react';
 import { useFocusEffect } from 'expo-router';
-import type { CardListProps, CollectionCard, MagicCard, Pagination } from '@/api/types';
+import type {
+  CardListProps,
+  CollectionCard,
+  MagicCard,
+  Pagination,
+} from '@/api/types';
 import { Pressable, Text, View, StyleSheet, Modal } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { Image } from 'expo-image';
 import { FlatList } from 'react-native-gesture-handler';
 import { Menu, Portal, Snackbar } from 'react-native-paper';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
-import AddToSheet, { type Condition, type SheetType } from '@/components/add-to-sheet';
+import AddToSheet, {
+  type Condition,
+  type SheetType,
+} from '@/components/add-to-sheet';
 import { fetchWishlistIds, updateCollectionCard } from '@/api/collection';
 
 // Draws an Ionicons icon in our green, for a menu item.
@@ -18,7 +26,9 @@ function menuIcon(name: keyof typeof Ionicons.glyphMap) {
 }
 
 function conditionLabel(condition: string) {
-  return condition && condition !== 'unmarked' ? condition : 'Condition not set';
+  return condition && condition !== 'unmarked'
+    ? condition
+    : 'Condition not set';
 }
 export default function CardList(props: CardListProps) {
   const [cards, setCards] = useState<MagicCard[]>([]);
@@ -42,7 +52,10 @@ export default function CardList(props: CardListProps) {
   // Which card's + menu is open (null = none).
   const [menuCardId, setMenuCardId] = useState<string | null>(null);
   // The listing / collection panel that's open (null = none).
-  const [sheet, setSheet] = useState<{ type: SheetType; card: MagicCard } | null>(null);
+  const [sheet, setSheet] = useState<{
+    type: SheetType;
+    card: MagicCard;
+  } | null>(null);
   // The message in the bar at the bottom (null = hidden).
   const [message, setMessage] = useState<string | null>(null);
 
@@ -285,11 +298,8 @@ export default function CardList(props: CardListProps) {
       </Pressable>
 
       <View style={styles.cardInfo}>
-        <Text style={styles.cardName} numberOfLines={2}>
-          {card.name}
-        </Text>
-        <Text style={styles.cardSetName} numberOfLines={2}>
-          {card.setName || 'Set information unavailable'}
+        <Text style={styles.cardPriceLabel} numberOfLines={1}>
+          {card.finishes.includes('foil') ? 'F' : 'N'} | {card.setName || ' '}
         </Text>
 
         {variant === 'listings' && (
@@ -370,8 +380,14 @@ export default function CardList(props: CardListProps) {
               }
             >
               <Menu.Item
-                leadingIcon={menuIcon(wishlistIds.has(card.id) ? 'heart' : 'heart-outline')}
-                title={wishlistIds.has(card.id) ? 'Remove from wishlist' : 'Add to wishlist'}
+                leadingIcon={menuIcon(
+                  wishlistIds.has(card.id) ? 'heart' : 'heart-outline',
+                )}
+                title={
+                  wishlistIds.has(card.id)
+                    ? 'Remove from wishlist'
+                    : 'Add to wishlist'
+                }
                 titleStyle={styles.menuItemText}
                 onPress={() => toggleWishlist(card)}
               />
@@ -506,7 +522,9 @@ export default function CardList(props: CardListProps) {
               <View>
                 <Text style={styles.previewPriceLabel}>MARKET PRICE</Text>
                 <Text style={styles.previewPrice}>
-                  {selectedCard.prices.usd ? `$${selectedCard.prices.usd}` : '—'}
+                  {selectedCard.prices.usd
+                    ? `$${selectedCard.prices.usd}`
+                    : '—'}
                 </Text>
               </View>
 
@@ -529,7 +547,9 @@ export default function CardList(props: CardListProps) {
                 <View style={[styles.menu, styles.previewMenu]}>
                   <Menu.Item
                     leadingIcon={menuIcon(
-                      wishlistIds.has(selectedCard.id) ? 'heart' : 'heart-outline',
+                      wishlistIds.has(selectedCard.id)
+                        ? 'heart'
+                        : 'heart-outline',
                     )}
                     title={
                       wishlistIds.has(selectedCard.id)
@@ -639,7 +659,6 @@ const styles = StyleSheet.create({
     color: '#77705F',
   },
   content: {
-    paddingHorizontal: 20,
     paddingTop: 24,
     paddingBottom: 400,
   },
@@ -687,6 +706,7 @@ const styles = StyleSheet.create({
     color: '#171717',
   },
   cardSetName: {
+    textAlign: 'center',
     fontSize: 11,
     color: '#77705F',
     marginTop: 5,

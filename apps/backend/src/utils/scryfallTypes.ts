@@ -22,6 +22,10 @@ export interface ScryfallCard {
   artist?: string;
   legalities?: Record<string, string>;
   prices?: Record<string, any>;
+  foil: boolean;
+  power: string;
+  toughness: string;
+  keywords: string[];
   [key: string]: any;
 }
 

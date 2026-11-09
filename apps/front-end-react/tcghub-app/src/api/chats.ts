@@ -1,4 +1,5 @@
 import { authClient } from '@/utils/auth-client';
+import { MagicCard } from './types';
 export interface Chat {
   id: string;
   name: string;
@@ -26,15 +27,19 @@ export async function fetchChats() {
   const headers = {
     Cookie: cookies,
   };
-  const response = await fetch(`http://${process.env.EXPO_PUBLIC_API_URL}/api/v1/chats`, {
-    method: 'GET',
-    headers,
-  });
+  const response = await fetch(
+    `http://${process.env.EXPO_PUBLIC_API_URL}/api/v1/chats`,
+    {
+      method: 'GET',
+      headers,
+    },
+  );
   if (!response.ok) {
     throw new Error(`Failed to load chats (${response.status})`);
   }
 
-  const chats: { error?: string; success?: string; chats: Array<Chat> } = await response.json();
+  const chats: { error?: string; success?: string; chats: Array<Chat> } =
+    await response.json();
   if (chats.error) {
     throw new Error(chats.error);
   }
@@ -51,8 +56,11 @@ export async function fetchChats() {
       if (!response.ok) {
         throw new Error(`Failed to load chats (${response.status})`);
       }
-      const payload: { error?: string; success?: string; messages: Array<Message> } =
-        await response.json();
+      const payload: {
+        error?: string;
+        success?: string;
+        messages: Array<Message>;
+      } = await response.json();
       return {
         ...chat,
         messages: payload.messages,
@@ -72,11 +80,14 @@ export async function fetchChat(chatId: string) {
   const headers = {
     Cookie: cookies,
   };
-  const response = await fetch(`http://${process.env.EXPO_PUBLIC_API_URL}/api/v1/chats/${chatId}`, {
-    method: 'GET',
-    headers,
-    signal: AbortSignal.timeout(10000),
-  });
+  const response = await fetch(
+    `http://${process.env.EXPO_PUBLIC_API_URL}/api/v1/chats/${chatId}`,
+    {
+      method: 'GET',
+      headers,
+      signal: AbortSignal.timeout(10000),
+    },
+  );
   if (!response.ok) {
     console.error(response);
     throw new Error(`Failed to load chats (${response.status})`);
@@ -107,8 +118,11 @@ export async function fetchMessages(chatId: string) {
     throw new Error(`Failed to load chats (${response.status})`);
   }
 
-  const messages: { error?: string; success?: string; messages: Array<Message> } =
-    await response.json();
+  const messages: {
+    error?: string;
+    success?: string;
+    messages: Array<Message>;
+  } = await response.json();
   if (messages.error) {
     throw new Error(messages.error);
   }
@@ -144,13 +158,50 @@ export async function updateLastReadMessage(chatId: string, messageId: string) {
     Cookie: cookies,
     'Content-Type': 'application/json',
   };
-  const response = await fetch(`http://${process.env.EXPO_PUBLIC_API_URL}/api/v1/chats/${chatId}`, {
-    method: 'PUT',
-    headers,
-    body: JSON.stringify({ messageId }),
-  });
+  const response = await fetch(
+    `http://${process.env.EXPO_PUBLIC_API_URL}/api/v1/chats/${chatId}`,
+    {
+      method: 'PUT',
+      headers,
+      body: JSON.stringify({ messageId }),
+    },
+  );
   if (!response.ok) {
     console.error(response);
     throw new Error(`Failed to load chats (${response.status})`);
+  }
+}
+
+export async function createChat(
+  card: MagicCard,
+  type: string,
+  seller_id: string,
+): Promise<void> {
+  const cookies = await authClient.getCookie();
+  console.log(
+    JSON.stringify({
+      name: card.name,
+      type: type,
+      members: [seller_id],
+      sellerId: seller_id,
+      cardId: card.id,
+    }),
+  );
+  const res = await fetch(
+    `http://${process.env.EXPO_PUBLIC_API_URL}/api/v1/chats`,
+    {
+      method: 'POST',
+      headers: { Cookie: cookies, 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        name: card.name,
+        type: type,
+        members: [],
+        sellerId: seller_id,
+        cardId: card.id,
+      }),
+    },
+  );
+  if (!res.ok) {
+    throw new Error(`Failed to create chat (${res.status})`);
   }
 }

@@ -13,11 +13,11 @@ export default function CardsScreen() {
   return (
     <>
       <View style={styles.filterSection}>
-        <View style={styles.header}>
-          <Text style={styles.title}>EXPLORE CARDS</Text>
+        <View>
+          <Text style={styles.title}>DISCOVER</Text>
         </View>
 
-        <View style={[styles.header, styles.filterList]}>
+        <View style={styles.filterList}>
           <ScrollView
             horizontal
             showsHorizontalScrollIndicator={false}
@@ -81,14 +81,7 @@ const styles = StyleSheet.create({
   container: {
     backgroundColor: '#E2D7BD',
   },
-  content: {
-    paddingHorizontal: 20,
-    paddingTop: 24,
-    paddingBottom: 32,
-  },
-  header: {
-    paddingHorizontal: 20,
-  },
+  header: {},
   eyebrow: {
     fontSize: 11,
     fontWeight: '700',
@@ -118,8 +111,6 @@ const styles = StyleSheet.create({
     paddingHorizontal: 14,
     gap: 10,
     marginBottom: 10,
-    marginLeft: 15,
-    marginRight: 15,
   },
   searchInput: {
     flex: 1,
@@ -127,10 +118,10 @@ const styles = StyleSheet.create({
     backgroundColor: 'transparent',
   },
   searchInputContent: {
-    paddingHorizontal: 0,
     fontSize: 14,
   },
   filterSection: {
+    paddingHorizontal: 6,
     backgroundColor: '#E2D7BD',
   },
   filterList: {
@@ -191,10 +182,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
   },
-  cardInfo: {
-    paddingHorizontal: 11,
-    paddingVertical: 12,
-  },
+  cardInfo: {},
   cardNameRow: {
     flexDirection: 'row',
     alignItems: 'center',

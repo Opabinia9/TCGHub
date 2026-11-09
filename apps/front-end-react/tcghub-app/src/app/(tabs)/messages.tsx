@@ -12,15 +12,15 @@ export default function MessagesScreen() {
       {/* <Text style={styles.subtitle}>Chats with buyers, sellers and traders.</Text> */}
 
       <Searchbar
-        placeholder="Search messages…"
+        placeholder='Search messages…'
         value={searchQuery}
         onChangeText={setSearchQuery}
         style={styles.searchbar}
         inputStyle={styles.searchInput}
-        iconColor="#245f28"
-        placeholderTextColor="#7A705F"
-        selectionColor="#171717"
-        cursorColor="#171717"
+        iconColor='#245f28'
+        placeholderTextColor='#7A705F'
+        selectionColor='#171717'
+        cursorColor='#171717'
         elevation={0}
       />
       <ChatList query={searchQuery} />
@@ -32,6 +32,7 @@ const styles = StyleSheet.create({
   screen: {
     flex: 1,
     backgroundColor: '#E2D7BD',
+    paddingHorizontal: 6,
   },
   content: {
     padding: 20,

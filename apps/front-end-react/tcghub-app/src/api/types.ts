@@ -1,6 +1,10 @@
 import { CardsPage } from './cards';
 
-type FetchFunc = (search: string, page?: number, limit?: number) => Promise<CardsPage>;
+type FetchFunc = (
+  search: string,
+  page?: number,
+  limit?: number,
+) => Promise<CardsPage>;
 
 export interface CardListProps {
   fetchlist: FetchFunc;
@@ -10,7 +14,16 @@ export interface CardListProps {
   refreshOnFocus?: boolean; // reload every time the screen comes into view
   variant?: 'browse' | 'wishlist' | 'listings'; // which buttons each card shows
 }
-export const FILTERS = ['All', 'Creature', 'Sorcery', 'Enchantment', 'Instant', 'Artifact', 'Land'];
+
+export const FILTERS = [
+  'All',
+  'Creature',
+  'Sorcery',
+  'Enchantment',
+  'Instant',
+  'Artifact',
+  'Land',
+];
 
 export type FilterOption = (typeof FILTERS)[number];
 
@@ -23,6 +36,9 @@ export type SearchCard = {
   prices: {
     usd: number;
   };
+  finishes: Array<string>;
+  power: string;
+  toughness: string;
 };
 
 export type UserCard = {
@@ -71,10 +87,19 @@ export type MagicCard = {
   prices: {
     usd: number;
   };
+  finishes: Array<string>;
+  power: string;
+  toughness: string;
 };
 
 export type CardCategory =
-  'Creature' | 'Sorcery' | 'Enchantment' | 'Instant' | 'Artifact' | 'Land' | null;
+  | 'Creature'
+  | 'Sorcery'
+  | 'Enchantment'
+  | 'Instant'
+  | 'Artifact'
+  | 'Land'
+  | null;
 
 export function toCategory(typeLine: string): CardCategory {
   const type = typeLine.toLowerCase();
@@ -97,6 +122,9 @@ export function toMagicCard(card: SearchCard): MagicCard {
     setName: card.setName,
     imageUris: card.imageUris,
     prices: card.prices,
+    finishes: card.finishes,
+    power: card.power,
+    toughness: card.toughness,
   };
 }
 
@@ -116,6 +144,9 @@ export function toCollectionCard(card: UserCard): CollectionCard {
     setName: card.Card.setName,
     imageUris: card.Card.imageUris,
     prices: card.Card.prices,
+    finishes: card.Card.finishes,
+    power: card.Card.power,
+    toughness: card.Card.toughness,
   };
 }
 
@@ -131,5 +162,8 @@ export function toDeckCard(card: DeckCard): DeckList {
     setName: card.Card.setName,
     imageUris: card.Card.imageUris,
     prices: card.Card.prices,
+    finishes: card.Card.finishes,
+    power: card.Card.power,
+    toughness: card.Card.toughness,
   };
 }

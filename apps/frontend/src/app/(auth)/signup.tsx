@@ -1,12 +1,12 @@
 import { useState } from 'react';
-import { StyleSheet, View, KeyboardAvoidingView, Platform, ScrollView } from 'react-native';
+import { StyleSheet, View } from 'react-native';
+import { KeyboardAwareScrollView } from 'react-native-keyboard-controller';
 import { Button, Text, TextInput } from 'react-native-paper';
 import { Link, useRouter } from 'expo-router';
 import { authClient } from '@/utils/auth-client';
 
 export default function Signup() {
   const router = useRouter();
-
   const [name, setName] = useState('');
   const [username, setUsername] = useState('');
   const [email, setEmail] = useState('');
@@ -27,7 +27,7 @@ export default function Signup() {
     setLoading(true);
 
     try {
-     
+
       const result = await authClient.signUp.email({
         username: username.trimEnd(),
         email: email.trimEnd(),
@@ -49,110 +49,113 @@ export default function Signup() {
   };
 
   return (
-    <KeyboardAvoidingView style={styles.container} behavior={'padding'}>
-      <ScrollView contentContainerStyle={styles.content} keyboardShouldPersistTaps="handled">
-        <View style={styles.logoContainer}>
-          <Text style={styles.logo}>TCG HUB</Text>
-          <Text style={styles.subtitle}>YOUR NEXT TRADE STARTS HERE</Text>
-        </View>
+    <KeyboardAwareScrollView
+      style={styles.container}
+      contentContainerStyle={styles.content}
+      keyboardShouldPersistTaps="handled"
+      bottomOffset={24}
+    >
+      <View style={styles.logoContainer}>
+        <Text style={styles.logo}>TCG HUB</Text>
+        <Text style={styles.subtitle}>YOUR NEXT TRADE STARTS HERE</Text>
+      </View>
 
-        <View style={styles.form}>
-          <Text variant="headlineMedium" style={styles.title}>
-            Create your account
-          </Text>
+      <View style={styles.form}>
+        <Text variant="headlineMedium" style={styles.title}>
+          Create your account
+        </Text>
 
-          <Text style={styles.description}>Join other Planeswalkers and find your next trade.</Text>
+        <Text style={styles.description}>Join other Planeswalkers and find your next trade.</Text>
 
-          <TextInput
-            label="Name"
-            value={name}
-            onChangeText={setName}
-            mode="outlined"
-            autoCapitalize="words"
-            outlineColor="#C7B99E"
-            activeOutlineColor="#171717"
-            textColor="#171717"
-            style={styles.input}
-          />
+        <TextInput
+          label="Name"
+          value={name}
+          onChangeText={setName}
+          mode="outlined"
+          autoCapitalize="words"
+          outlineColor="#C7B99E"
+          activeOutlineColor="#171717"
+          textColor="#171717"
+          style={styles.input}
+        />
 
-          <TextInput
-            label="Username"
-            value={username}
-            onChangeText={setUsername}
-            mode="outlined"
-            autoCapitalize="none"
-            autoCorrect={false}
-            outlineColor="#C7B99E"
-            activeOutlineColor="#171717"
-            textColor="#171717"
-            style={styles.input}
-          />
+        <TextInput
+          label="Username"
+          value={username}
+          onChangeText={setUsername}
+          mode="outlined"
+          autoCapitalize="none"
+          autoCorrect={false}
+          outlineColor="#C7B99E"
+          activeOutlineColor="#171717"
+          textColor="#171717"
+          style={styles.input}
+        />
 
-          <TextInput
-            label="Email"
-            value={email}
-            onChangeText={setEmail}
-            mode="outlined"
-            keyboardType="email-address"
-            autoCapitalize="none"
-            autoCorrect={false}
-            outlineColor="#C7B99E"
-            activeOutlineColor="#171717"
-            textColor="#171717"
-            style={styles.input}
-          />
+        <TextInput
+          label="Email"
+          value={email}
+          onChangeText={setEmail}
+          mode="outlined"
+          keyboardType="email-address"
+          autoCapitalize="none"
+          autoCorrect={false}
+          outlineColor="#C7B99E"
+          activeOutlineColor="#171717"
+          textColor="#171717"
+          style={styles.input}
+        />
 
-          <TextInput
-            label="Password"
-            value={password}
-            onChangeText={setPassword}
-            mode="outlined"
-            secureTextEntry={!passwordVisible}
-            autoCapitalize="none"
-            outlineColor="#C7B99E"
-            activeOutlineColor="#171717"
-            textColor="#171717"
-            style={styles.input}
-            right={
-              <TextInput.Icon
-                icon={passwordVisible ? 'eye-off' : 'eye'}
-                onPress={() => setPasswordVisible(!passwordVisible)}
-              />
-            }
-          />
-
-          {error ? <Text style={styles.error}>{error}</Text> : null}
-
-          {success ? (
-            <Text style={styles.success}>Account created successfully! You can now sign in.</Text>
-          ) : null}
-
-          {
-            <Button
-              mode="contained"
-              onPress={handleSignup}
-              loading={loading}
-              disabled={loading}
-              buttonColor="#171717"
-              textColor="#E2D7BD"
-              style={styles.button}
-              contentStyle={styles.buttonContent}
-            >
-              Create Account
-            </Button>
+        <TextInput
+          label="Password"
+          value={password}
+          onChangeText={setPassword}
+          mode="outlined"
+          secureTextEntry={!passwordVisible}
+          autoCapitalize="none"
+          outlineColor="#C7B99E"
+          activeOutlineColor="#171717"
+          textColor="#171717"
+          style={styles.input}
+          right={
+            <TextInput.Icon
+              icon={passwordVisible ? 'eye-off' : 'eye'}
+              onPress={() => setPasswordVisible(!passwordVisible)}
+            />
           }
+        />
 
-          <View style={styles.loginContainer}>
-            <Text style={styles.loginText}>Already have an account? </Text>
-            <Link href="/(auth)/login" style={styles.loginLink}>
-              Sign In
-            </Link>
-          </View>
+        {error ? <Text style={styles.error}>{error}</Text> : null}
+
+        {success ? (
+          <Text style={styles.success}>Account created successfully! You can now sign in.</Text>
+        ) : null}
+
+        {
+          <Button
+            mode="contained"
+            onPress={handleSignup}
+            loading={loading}
+            disabled={loading}
+            buttonColor="#171717"
+            textColor="#E2D7BD"
+            style={styles.button}
+            contentStyle={styles.buttonContent}
+          >
+            Create Account
+          </Button>
+        }
+
+        <View style={styles.loginContainer}>
+          <Text style={styles.loginText}>Already have an account? </Text>
+          <Link href="/(auth)/login" style={styles.loginLink}>
+            Sign In
+          </Link>
         </View>
+      </View>
 
-        <Text style={styles.footer}>Built for the love of the game.</Text>
-      </ScrollView>
-    </KeyboardAvoidingView>
+      <Text style={styles.footer}>Built for the love of the game.</Text>
+    </KeyboardAwareScrollView>
   );
 }
 

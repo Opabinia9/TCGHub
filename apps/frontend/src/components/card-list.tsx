@@ -8,7 +8,7 @@ import { FlatList } from 'react-native-gesture-handler';
 import { Menu, Portal, Snackbar } from 'react-native-paper';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import AddToSheet, { type Condition, type SheetType } from '@/components/add-to-sheet';
-import { fetchWishlistIds, updateCollectionCard } from '@/api/collection';
+import { fetchOwnedQuantities, fetchWishlistIds, updateCollectionCard } from '@/api/collection';
 
 // Draws an Ionicons icon in our green, for a menu item.
 function menuIcon(name: keyof typeof Ionicons.glyphMap) {
@@ -48,6 +48,8 @@ export default function CardList(props: CardListProps) {
 
   // Ids of the cards on your wishlist, so the menu knows Add or Remove.
   const [wishlistIds, setWishlistIds] = useState<Set<string>>(new Set());
+  // How many of each card you own (card id → quantity).
+  const [ownedQuantities, setOwnedQuantities] = useState<Map<string, number>>(new Map());
   const insets = useSafeAreaInsets();
 
   // Reload the wishlist every time this screen comes into view.
@@ -56,6 +58,9 @@ export default function CardList(props: CardListProps) {
       fetchWishlistIds()
         .then(setWishlistIds)
         .catch(() => setWishlistIds(new Set()));
+      fetchOwnedQuantities()
+        .then(setOwnedQuantities)
+        .catch(() => setOwnedQuantities(new Map()));
     }, []),
   );
 
@@ -125,6 +130,11 @@ export default function CardList(props: CardListProps) {
         wishlist: false,
       });
       setInWishlist(card.id, false);
+      setOwnedQuantities((current) => {
+        const next = new Map(current);
+        next.set(card.id, (current.get(card.id) ?? 0) + quantity);
+        return next;
+      });
       setMessage(
         type === 'listing'
           ? `${card.name} listed for trade`
@@ -268,7 +278,10 @@ export default function CardList(props: CardListProps) {
       <Pressable
         onPress={() => setSelectedCard(card)}
         accessibilityRole='button'
-        accessibilityLabel={`View ${card.name}`}
+        accessibilityLabel={`View ${card.name}${(ownedQuantities.get(card.id) ?? 0) > 0
+          ? `, you own ${ownedQuantities.get(card.id)}`
+          : ''
+          }${wishlistIds.has(card.id) ? ', on your wishlist' : ''}`}
         style={styles.imageContainer}
       >
         <Image
@@ -288,6 +301,25 @@ export default function CardList(props: CardListProps) {
         <Text style={styles.cardName} numberOfLines={2}>
           {card.name}
         </Text>
+
+        {/* Tags: how many you own, and whether it's on your wishlist */}
+        {((ownedQuantities.get(card.id) ?? 0) > 0 || wishlistIds.has(card.id)) && (
+          <View style={styles.tagRow}>
+            {(ownedQuantities.get(card.id) ?? 0) > 0 && (
+              <View style={styles.tag}>
+                <Text style={styles.tagText}>
+                  OWNED ×{ownedQuantities.get(card.id)}
+                </Text>
+              </View>
+            )}
+            {wishlistIds.has(card.id) && (
+              <View style={[styles.tag, styles.tagWishlist]}>
+                <Ionicons name='heart' size={11} color='#FFFFFF' />
+                <Text style={[styles.tagText, styles.tagTextLight]}>WISHLIST</Text>
+              </View>
+            )}
+          </View>
+        )}
         {variant === 'listings' && (
           <Text style={styles.listedInfo}>
             Listed ×{(card as CollectionCard).quantity} ·{' '}
@@ -402,7 +434,7 @@ export default function CardList(props: CardListProps) {
         data={filteredCards}
         renderItem={renderItem}
         keyExtractor={(item) => item.id}
-        extraData={[menuCardId, wishlistIds]}
+        extraData={[menuCardId, wishlistIds, ownedQuantities]}
         numColumns={2}
         columnWrapperStyle={styles.cardNameRow}
         style={styles.container}
@@ -654,6 +686,33 @@ const styles = StyleSheet.create({
     aspectRatio: 0.72,
     backgroundColor: '#D1C4A8',
   },
+  tagRow: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    gap: 6,
+    marginBottom: 10,
+  },
+  tag: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 3,
+    height: 22,
+    paddingHorizontal: 8,
+    borderRadius: 11,
+    backgroundColor: '#E2D7BD',
+  },
+  tagWishlist: {
+    backgroundColor: '#2e7d32',
+  },
+  tagText: {
+    fontFamily: 'BarlowCondensed_700Bold',
+    fontSize: 12,
+    letterSpacing: 0.8,
+    color: '#3A342B',
+  },
+  tagTextLight: {
+    color: '#FFFFFF',
+  },
   expandIcon: {
     position: 'absolute',
     right: 8,
@@ -684,9 +743,8 @@ const styles = StyleSheet.create({
     fontSize: 15,
     fontWeight: '800',
     color: '#171717',
-    marginBottom: 10,
-  },
-  cardSetName: {
+    marginBottom: 8,
+  },ame: {
     fontSize: 11,
     color: '#77705F',
     marginTop: 5,

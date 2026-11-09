@@ -1,8 +1,6 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
 import {
-  KeyboardAvoidingView,
   ListViewToken,
-  Platform,
   Pressable,
   ScrollView,
   StyleSheet,
@@ -13,6 +11,7 @@ import { Text } from 'react-native-paper';
 import { Ionicons } from '@expo/vector-icons';
 import { router, useLocalSearchParams } from 'expo-router';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
+import { KeyboardAvoidingView } from 'react-native-keyboard-controller';
 import { authClient } from '@/utils/auth-client';
 import { dateStringToMessageDate } from '@/components/ChatList';
 import {
@@ -104,8 +103,8 @@ export default function ChatScreen() {
   return (
     <KeyboardAvoidingView
       style={styles.screen}
-      behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
-      keyboardVerticalOffset={Platform.OS === 'ios' ? insets.top - insets.bottom : 0}
+      behavior="padding"
+      keyboardVerticalOffset={insets.top - insets.bottom}
     >
       {/* Header */}
       <View style={styles.header}>

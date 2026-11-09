@@ -1,6 +1,6 @@
 import { useState, useEffect, useCallback } from 'react';
 import { useFocusEffect } from 'expo-router';
-import type { CardListProps, MagicCard, Pagination } from '@/api/types';
+import type { CardListProps, CollectionCard, MagicCard, Pagination } from '@/api/types';
 import { Pressable, Text, View, StyleSheet, Modal } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { Image } from 'expo-image';
@@ -17,6 +17,9 @@ function menuIcon(name: keyof typeof Ionicons.glyphMap) {
   );
 }
 
+function conditionLabel(condition: string) {
+  return condition && condition !== 'unmarked' ? condition : 'Condition not set';
+}
 export default function CardList(props: CardListProps) {
   const [cards, setCards] = useState<MagicCard[]>([]);
   const [loading, setLoading] = useState(true);
@@ -200,6 +203,42 @@ export default function CardList(props: CardListProps) {
       setLoadingMore(false);
     }
   }
+  const variant = props.variant ?? 'browse';
+
+  // Profile → My Wishlist: take it off the wishlist and out of this list.
+  async function removeFromWishlist(card: MagicCard) {
+    closeMenu();
+    try {
+      await updateCollectionCard({
+        card_id: card.id,
+        quantity: 0,
+        for_trade: false,
+        wishlist: false,
+      });
+      setInWishlist(card.id, false);
+      setCards((current) => current.filter((c) => c.id !== card.id));
+      setMessage(`${card.name} removed from your wishlist`);
+    } catch {
+      setMessage('Could not update your wishlist. Please try again.');
+    }
+  }
+
+  // Profile → My Listings: stop trading it (you still own it) and take it out of this list.
+  async function removeFromListings(card: MagicCard) {
+    try {
+      await updateCollectionCard({
+        card_id: card.id,
+        quantity: 0,
+        for_trade: false,
+        wishlist: false,
+      });
+      setCards((current) => current.filter((c) => c.id !== card.id));
+      setMessage(`${card.name} removed from your listings`);
+    } catch {
+      setMessage('Could not remove the listing. Please try again.');
+    }
+  }
+
   // The listing / collection panel, built once so we can show it in two places.
   const sheetPanel = sheet && (
     <AddToSheet
@@ -243,6 +282,13 @@ export default function CardList(props: CardListProps) {
           {card.setName || 'Set information unavailable'}
         </Text>
 
+        {variant === 'listings' && (
+          <Text style={styles.listedInfo}>
+            Listed ×{(card as CollectionCard).quantity} ·{' '}
+            {conditionLabel((card as CollectionCard).condition)}
+          </Text>
+        )}
+
         {/* Price on the left, + on the right */}
         <View style={styles.cardPriceRow}>
           <View>
@@ -251,8 +297,45 @@ export default function CardList(props: CardListProps) {
               {card.prices.usd ? `$${card.prices.usd}` : '—'}
             </Text>
           </View>
-
-          <Menu
+          {variant === 'listings' ? (
+            // My Listings: ✕ removes the card from your listings
+            <Pressable
+              onPress={() => removeFromListings(card)}
+              accessibilityRole='button'
+              accessibilityLabel={`Remove ${card.name} from your listings`}
+              hitSlop={4}
+              style={styles.removeButton}
+            >
+              <Ionicons name='close' size={22} color='#7A2E22' />
+            </Pressable>
+          ) : variant === 'wishlist' ? (
+            // My Wishlist: filled heart opens a menu with "Remove from wishlist"
+            <Menu
+              visible={menuCardId === card.id}
+              onDismiss={closeMenu}
+              anchorPosition='bottom'
+              contentStyle={styles.menu}
+              anchor={
+                <Pressable
+                  onPress={() => setMenuCardId(card.id)}
+                  accessibilityRole='button'
+                  accessibilityLabel={`${card.name} is on your wishlist. Show options`}
+                  hitSlop={4}
+                  style={styles.heartButton}
+                >
+                  <Ionicons name='heart' size={20} color='#FFFFFF' />
+                </Pressable>
+              }
+            >
+              <Menu.Item
+                leadingIcon={menuIcon('heart-dislike-outline')}
+                title='Remove from wishlist'
+                titleStyle={styles.menuItemText}
+                onPress={() => removeFromWishlist(card)}
+              />
+            </Menu>
+          ) : (
+                      <Menu
             visible={menuCardId === card.id}
             onDismiss={closeMenu}
             anchorPosition='bottom'
@@ -302,6 +385,7 @@ export default function CardList(props: CardListProps) {
               onPress={closeMenu}
             />
           </Menu>
+          )}
         </View>
       </View>
     </View>
@@ -627,8 +711,32 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
   },
-  addButtonActive: {
+    addButtonActive: {
     backgroundColor: '#171717',
+  },
+  heartButton: {
+    width: 36,
+    height: 36,
+    borderRadius: 10,
+    backgroundColor: '#2e7d32',
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  removeButton: {
+    width: 36,
+    height: 36,
+    borderRadius: 10,
+    borderWidth: 1.5,
+    borderColor: '#7A2E22',
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  listedInfo: {
+    marginTop: -4,
+    marginBottom: 10,
+    fontSize: 12,
+    fontWeight: '600',
+    color: '#3A342B',
   },
   menu: {
     backgroundColor: '#FBF7EE',
@@ -658,7 +766,7 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     borderColor: '#C9BDA3',
   },
-    preview: {
+  preview: {
     flex: 1,
     paddingHorizontal: 20,
     backgroundColor: '#171717',

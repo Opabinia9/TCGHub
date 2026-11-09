@@ -180,6 +180,7 @@ export default function Profile() {
             : 'Unable to load your wishlist'
         }
         refreshOnFocus
+        variant={activeSection}
       />
     </View>
   );

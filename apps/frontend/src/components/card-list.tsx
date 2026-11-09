@@ -1,7 +1,7 @@
 import { useState, useEffect, useCallback } from 'react';
 import { useFocusEffect } from 'expo-router';
 import type { CardListProps, CollectionCard, MagicCard, Pagination } from '@/api/types';
-import { Pressable, Text, View, StyleSheet, Modal } from 'react-native';
+import { ActivityIndicator, Pressable, Text, View, StyleSheet, Modal } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { Image } from 'expo-image';
 import { FlatList } from 'react-native-gesture-handler';
@@ -416,29 +416,32 @@ export default function CardList(props: CardListProps) {
         onEndReached={loadMore}
         onEndReachedThreshold={0.5}
         ItemSeparatorComponent={() => <View style={{ height: 16 }} />}
+        ListEmptyComponent={
+          loading ? (
+            <ActivityIndicator style={styles.emptyState} color='#171717' />
+          ) : error ? (
+            <View style={styles.emptyState}>
+              <Ionicons name='alert-circle-outline' size={36} color='#77705F' />
+              <Text style={styles.emptyTitle}>Something went wrong</Text>
+              <Text style={styles.emptyText}>{error}</Text>
+            </View>
+          ) : (
+            <View style={styles.emptyState}>
+              <Ionicons name='search-outline' size={36} color='#77705F' />
+              <Text style={styles.emptyTitle}>No cards found</Text>
+              <Text style={styles.emptyText}>Try another search or category.</Text>
+            </View>
+          )
+        }
+        ListFooterComponent={
+          <View style={styles.footer}>
+            <Text style={styles.footerText}>
+              TCG HUB · YOUR NEXT TRADE STARTS HERE
+            </Text>
+          </View>
+        }
       />
 
-      {error && !loading && (
-        <View style={styles.emptyState}>
-          <Ionicons name='alert-circle-outline' size={36} color='#77705F' />
-          <Text style={styles.emptyTitle}>Something went wrong</Text>
-          <Text style={styles.emptyText}>{error}</Text>
-        </View>
-      )}
-
-      {!loading && !error && filteredCards.length === 0 && (
-        <View style={styles.emptyState}>
-          <Ionicons name='search-outline' size={36} color='#77705F' />
-          <Text style={styles.emptyTitle}>No cards found</Text>
-          <Text style={styles.emptyText}>Try another search or category.</Text>
-        </View>
-      )}
-
-      <View style={styles.footer}>
-        <Text style={styles.footerText}>
-          TCG HUB · YOUR NEXT TRADE STARTS HERE
-        </Text>
-      </View>
       <Modal
         visible={selectedCard !== null}
         transparent

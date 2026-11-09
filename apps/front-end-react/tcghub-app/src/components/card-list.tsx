@@ -1,10 +1,25 @@
-import { useState, useEffect } from 'react';
-import type { CardListProps, MagicCard, Pagination } from '@/api/types';
+import { useState, useEffect, useCallback } from 'react';
+import { useFocusEffect } from 'expo-router';
+import type { CardListProps, CollectionCard, MagicCard, Pagination } from '@/api/types';
 import { Pressable, Text, View, StyleSheet, Modal } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { Image } from 'expo-image';
 import { FlatList } from 'react-native-gesture-handler';
+import { Menu, Portal, Snackbar } from 'react-native-paper';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
+import AddToSheet, { type Condition, type SheetType } from '@/components/add-to-sheet';
+import { fetchWishlistIds, updateCollectionCard } from '@/api/collection';
 
+// Draws an Ionicons icon in our green, for a menu item.
+function menuIcon(name: keyof typeof Ionicons.glyphMap) {
+  return ({ size }: { size: number }) => (
+    <Ionicons name={name} size={size} color='#245f28' />
+  );
+}
+
+function conditionLabel(condition: string) {
+  return condition && condition !== 'unmarked' ? condition : 'Condition not set';
+}
 export default function CardList(props: CardListProps) {
   const [cards, setCards] = useState<MagicCard[]>([]);
   const [loading, setLoading] = useState(true);
@@ -12,6 +27,113 @@ export default function CardList(props: CardListProps) {
   const [pagination, setPagination] = useState<Pagination | null>(null);
   const [loadingMore, setLoadingMore] = useState(false);
   const [selectedCard, setSelectedCard] = useState<MagicCard | null>(null);
+
+  // Goes up by 1 each time the screen comes into view, which makes the list reload.
+  const [refreshCount, setRefreshCount] = useState(0);
+
+  useFocusEffect(
+    useCallback(() => {
+      if (props.refreshOnFocus) {
+        setRefreshCount((count) => count + 1);
+      }
+    }, [props.refreshOnFocus]),
+  );
+
+  // Which card's + menu is open (null = none).
+  const [menuCardId, setMenuCardId] = useState<string | null>(null);
+  // The listing / collection panel that's open (null = none).
+  const [sheet, setSheet] = useState<{ type: SheetType; card: MagicCard } | null>(null);
+  // The message in the bar at the bottom (null = hidden).
+  const [message, setMessage] = useState<string | null>(null);
+
+  // Ids of the cards on your wishlist, so the menu knows Add or Remove.
+  const [wishlistIds, setWishlistIds] = useState<Set<string>>(new Set());
+  const insets = useSafeAreaInsets();
+
+  // Reload the wishlist every time this screen comes into view.
+  useFocusEffect(
+    useCallback(() => {
+      fetchWishlistIds()
+        .then(setWishlistIds)
+        .catch(() => setWishlistIds(new Set()));
+    }, []),
+  );
+
+  // Add or remove one id. Makes a NEW Set, because React only redraws
+  // when it gets a new object, not when the old one is changed.
+  function setInWishlist(cardId: string, inWishlist: boolean) {
+    setWishlistIds((current) => {
+      const next = new Set(current);
+      if (inWishlist) {
+        next.add(cardId);
+      } else {
+        next.delete(cardId);
+      }
+      return next;
+    });
+  }
+
+  const closeMenu = () => setMenuCardId(null);
+
+  // Is the ADD TO menu in the fullscreen view open?
+  const [previewMenuOpen, setPreviewMenuOpen] = useState(false);
+
+  // Closes the fullscreen view, and its menu, so it starts closed next time.
+  function closePreview() {
+    setSelectedCard(null);
+    setPreviewMenuOpen(false);
+  }
+
+  function openSheet(type: SheetType, card: MagicCard) {
+    closeMenu();
+    setPreviewMenuOpen(false);
+    setSheet({ type, card });
+  }
+
+  async function toggleWishlist(card: MagicCard) {
+    closeMenu();
+    setPreviewMenuOpen(false);
+    const inWishlist = wishlistIds.has(card.id);
+    try {
+      await updateCollectionCard({
+        card_id: card.id,
+        quantity: 0,
+        for_trade: false,
+        wishlist: !inWishlist,
+      });
+      setInWishlist(card.id, !inWishlist);
+      setMessage(
+        inWishlist
+          ? `${card.name} removed from your wishlist`
+          : `${card.name} added to your wishlist`,
+      );
+    } catch {
+      setMessage('Could not update your wishlist. Please try again.');
+    }
+  }
+
+  async function handleConfirm(quantity: number, condition: Condition) {
+    if (!sheet) return;
+    const { type, card } = sheet;
+    setSheet(null);
+    try {
+      await updateCollectionCard({
+        card_id: card.id,
+        quantity,
+        condition: type === 'listing' ? condition : undefined,
+        for_trade: type === 'listing',
+        wishlist: false,
+      });
+      setInWishlist(card.id, false);
+      setMessage(
+        type === 'listing'
+          ? `${card.name} listed for trade`
+          : `${card.name} added to your collection`,
+      );
+    } catch {
+      setMessage('Could not save. Please try again.');
+    }
+  }
 
   useEffect(() => {
     let cancelled = false;
@@ -60,7 +182,7 @@ export default function CardList(props: CardListProps) {
         clearTimeout(timeoutId);
       }
     };
-  }, [props.query.trim()]);
+  }, [props.query.trim(), props.fetchlist, refreshCount]);
   async function loadMore() {
     if (loading || !pagination || loadingMore) return;
     if (pagination.page >= pagination.totalPages) return;
@@ -73,14 +195,70 @@ export default function CardList(props: CardListProps) {
         pagination.page + 1,
       );
 
-      setCards((previousCards) => [...previousCards, ...result.items]);
+      // Only keep cards we don't already have. Some lists send everything
+      // on every page, which would otherwise repeat the cards forever.
+      const shownIds = new Set(cards.map((card) => card.id));
+      const newCards = result.items.filter((card) => !shownIds.has(card.id));
 
+      if (newCards.length === 0) {
+        // Nothing new came back, so treat this as the last page and stop asking.
+        setPagination({ ...pagination, totalPages: pagination.page });
+        return;
+      }
+
+      setCards((previousCards) => [...previousCards, ...newCards]);
       setPagination(result.pagination);
     } catch {
     } finally {
       setLoadingMore(false);
     }
   }
+  const variant = props.variant ?? 'browse';
+
+  // Profile → My Wishlist: take it off the wishlist and out of this list.
+  async function removeFromWishlist(card: MagicCard) {
+    closeMenu();
+    try {
+      await updateCollectionCard({
+        card_id: card.id,
+        quantity: 0,
+        for_trade: false,
+        wishlist: false,
+      });
+      setInWishlist(card.id, false);
+      setCards((current) => current.filter((c) => c.id !== card.id));
+      setMessage(`${card.name} removed from your wishlist`);
+    } catch {
+      setMessage('Could not update your wishlist. Please try again.');
+    }
+  }
+
+  // Profile → My Listings: stop trading it (you still own it) and take it out of this list.
+  async function removeFromListings(card: MagicCard) {
+    try {
+      await updateCollectionCard({
+        card_id: card.id,
+        quantity: 0,
+        for_trade: false,
+        wishlist: false,
+      });
+      setCards((current) => current.filter((c) => c.id !== card.id));
+      setMessage(`${card.name} removed from your listings`);
+    } catch {
+      setMessage('Could not remove the listing. Please try again.');
+    }
+  }
+
+  // The listing / collection panel, built once so we can show it in two places.
+  const sheetPanel = sheet && (
+    <AddToSheet
+      type={sheet.type}
+      card={sheet.card}
+      onClose={() => setSheet(null)}
+      onConfirm={handleConfirm}
+    />
+  );
+
   const filteredCards = cards.filter(
     (card) =>
       props.activeFilter === 'All' || card.category === props.activeFilter,
@@ -107,9 +285,118 @@ export default function CardList(props: CardListProps) {
       </Pressable>
 
       <View style={styles.cardInfo}>
-        <Text style={styles.cardSetName} numberOfLines={2}>
-          {card.prices.usd ? `$${card.prices.usd}` : 'Price unavailable'}
+        <Text style={styles.cardName} numberOfLines={2}>
+          {card.name}
         </Text>
+        <Text style={styles.cardSetName} numberOfLines={2}>
+          {card.setName || 'Set information unavailable'}
+        </Text>
+
+        {variant === 'listings' && (
+          <Text style={styles.listedInfo}>
+            Listed ×{(card as CollectionCard).quantity} ·{' '}
+            {conditionLabel((card as CollectionCard).condition)}
+          </Text>
+        )}
+
+        {/* Price on the left, + on the right */}
+        <View style={styles.cardPriceRow}>
+          <View>
+            <Text style={styles.cardPriceLabel}>PRICE</Text>
+            <Text style={styles.cardPrice}>
+              {card.prices.usd ? `$${card.prices.usd}` : '—'}
+            </Text>
+          </View>
+          {variant === 'listings' ? (
+            // My Listings: ✕ removes the card from your listings
+            <Pressable
+              onPress={() => removeFromListings(card)}
+              accessibilityRole='button'
+              accessibilityLabel={`Remove ${card.name} from your listings`}
+              hitSlop={4}
+              style={styles.removeButton}
+            >
+              <Ionicons name='close' size={22} color='#7A2E22' />
+            </Pressable>
+          ) : variant === 'wishlist' ? (
+            // My Wishlist: filled heart opens a menu with "Remove from wishlist"
+            <Menu
+              visible={menuCardId === card.id}
+              onDismiss={closeMenu}
+              anchorPosition='bottom'
+              contentStyle={styles.menu}
+              anchor={
+                <Pressable
+                  onPress={() => setMenuCardId(card.id)}
+                  accessibilityRole='button'
+                  accessibilityLabel={`${card.name} is on your wishlist. Show options`}
+                  hitSlop={4}
+                  style={styles.heartButton}
+                >
+                  <Ionicons name='heart' size={20} color='#FFFFFF' />
+                </Pressable>
+              }
+            >
+              <Menu.Item
+                leadingIcon={menuIcon('heart-dislike-outline')}
+                title='Remove from wishlist'
+                titleStyle={styles.menuItemText}
+                onPress={() => removeFromWishlist(card)}
+              />
+            </Menu>
+          ) : (
+            <Menu
+              visible={menuCardId === card.id}
+              onDismiss={closeMenu}
+              anchorPosition='bottom'
+              contentStyle={styles.menu}
+              anchor={
+                <Pressable
+                  onPress={() => setMenuCardId(card.id)}
+                  accessibilityRole='button'
+                  accessibilityLabel={`Add ${card.name} to…`}
+                  hitSlop={4}
+                  style={[
+                    styles.addButton,
+                    menuCardId === card.id && styles.addButtonActive,
+                  ]}
+                >
+                  <Ionicons
+                    name='add'
+                    size={22}
+                    color={menuCardId === card.id ? '#E2D7BD' : '#171717'}
+                  />
+                </Pressable>
+              }
+            >
+              <Menu.Item
+                leadingIcon={menuIcon(wishlistIds.has(card.id) ? 'heart' : 'heart-outline')}
+                title={wishlistIds.has(card.id) ? 'Remove from wishlist' : 'Add to wishlist'}
+                titleStyle={styles.menuItemText}
+                onPress={() => toggleWishlist(card)}
+              />
+              <Menu.Item
+                leadingIcon={menuIcon('pricetag-outline')}
+                title='Add to my listings'
+                titleStyle={styles.menuItemText}
+                onPress={() => openSheet('listing', card)}
+              />
+              <Menu.Item
+                leadingIcon={menuIcon('albums-outline')}
+                title='Add to collection'
+                titleStyle={styles.menuItemText}
+                onPress={() => openSheet('collection', card)}
+              />
+              <View style={styles.menuDivider} />
+              <Menu.Item
+                leadingIcon={menuIcon('layers-outline')}
+                title='Add to deck'
+                titleStyle={styles.menuItemText}
+                onPress={closeMenu}
+              />
+            </Menu>
+          )}
+        </View>
       </View>
     </View>
   );
@@ -119,6 +406,7 @@ export default function CardList(props: CardListProps) {
         data={filteredCards}
         renderItem={renderItem}
         keyExtractor={(item) => item.id}
+        extraData={[menuCardId, wishlistIds]}
         numColumns={2}
         columnWrapperStyle={styles.cardNameRow}
         style={styles.container}
@@ -156,16 +444,40 @@ export default function CardList(props: CardListProps) {
         transparent
         animationType='fade'
         statusBarTranslucent
-        onRequestClose={() => setSelectedCard(null)}
+        navigationBarTranslucent
+        onRequestClose={closePreview}
       >
-        <View style={styles.previewOverlay}>
-          <Pressable
-            style={styles.previewBackdrop}
-            onPress={() => setSelectedCard(null)}
-          />
+        {selectedCard && (
+          <View
+            style={[
+              styles.preview,
+              { paddingTop: insets.top + 8, paddingBottom: insets.bottom + 16 },
+            ]}
+          >
+            {/* While the menu is open, tapping anywhere else closes it */}
+            {previewMenuOpen && (
+              <Pressable
+                style={styles.menuCatcher}
+                onPress={() => setPreviewMenuOpen(false)}
+                accessibilityRole='button'
+                accessibilityLabel='Close menu'
+              />
+            )}
 
-          {selectedCard && (
-            <View style={styles.previewContent}>
+            {/* Top: close button on the right */}
+            <View style={styles.previewTopRow}>
+              <Pressable
+                style={styles.previewClose}
+                onPress={closePreview}
+                accessibilityRole='button'
+                accessibilityLabel='Close preview'
+              >
+                <Ionicons name='close' size={22} color='#E2D7BD' />
+              </Pressable>
+            </View>
+
+            {/* Middle: the card, as big as fits */}
+            <View style={styles.previewImageArea}>
               <Image
                 source={{
                   uri:
@@ -177,23 +489,109 @@ export default function CardList(props: CardListProps) {
                 style={styles.previewImage}
                 contentFit='contain'
               />
+            </View>
 
-              <Text style={styles.previewSetName}>
+            {/* Name and set */}
+            <View style={styles.previewInfo}>
+              <Text style={styles.previewName} numberOfLines={2}>
+                {selectedCard.name}
+              </Text>
+              <Text style={styles.previewSetName} numberOfLines={1}>
                 {selectedCard.setName || 'Set information unavailable'}
               </Text>
             </View>
-          )}
 
-          <Pressable
-            style={styles.previewClose}
-            onPress={() => setSelectedCard(null)}
-            accessibilityRole='button'
-            accessibilityLabel='Close preview'
-          >
-            <Ionicons name='close' size={30} color='#FFFFFF' />
-          </Pressable>
-        </View>
+            {/* Bottom bar: price on the left, ADD TO on the right */}
+            <View style={styles.previewBar}>
+              <View>
+                <Text style={styles.previewPriceLabel}>MARKET PRICE</Text>
+                <Text style={styles.previewPrice}>
+                  {selectedCard.prices.usd ? `$${selectedCard.prices.usd}` : '—'}
+                </Text>
+              </View>
+
+              <Pressable
+                onPress={() => setPreviewMenuOpen((open) => !open)}
+                accessibilityRole='button'
+                accessibilityLabel={`Add ${selectedCard.name} to…`}
+                accessibilityState={{ expanded: previewMenuOpen }}
+                style={[
+                  styles.previewAddButton,
+                  previewMenuOpen && styles.previewAddButtonActive,
+                ]}
+              >
+                <Ionicons name='add' size={20} color='#FFFFFF' />
+                <Text style={styles.previewAddText}>ADD TO</Text>
+              </Pressable>
+
+              {/* Same items as the grid menu, drawn ourselves because Paper's <Menu> can't show inside a Modal */}
+              {previewMenuOpen && (
+                <View style={[styles.menu, styles.previewMenu]}>
+                  <Menu.Item
+                    leadingIcon={menuIcon(
+                      wishlistIds.has(selectedCard.id) ? 'heart' : 'heart-outline',
+                    )}
+                    title={
+                      wishlistIds.has(selectedCard.id)
+                        ? 'Remove from wishlist'
+                        : 'Add to wishlist'
+                    }
+                    titleStyle={styles.menuItemText}
+                    onPress={() => toggleWishlist(selectedCard)}
+                  />
+                  <Menu.Item
+                    leadingIcon={menuIcon('pricetag-outline')}
+                    title='Add to my listings'
+                    titleStyle={styles.menuItemText}
+                    onPress={() => openSheet('listing', selectedCard)}
+                  />
+                  <Menu.Item
+                    leadingIcon={menuIcon('albums-outline')}
+                    title='Add to collection'
+                    titleStyle={styles.menuItemText}
+                    onPress={() => openSheet('collection', selectedCard)}
+                  />
+                  <View style={styles.menuDivider} />
+                  <Menu.Item
+                    leadingIcon={menuIcon('layers-outline')}
+                    title='Add to deck'
+                    titleStyle={styles.menuItemText}
+                    onPress={() => setPreviewMenuOpen(false)}
+                  />
+                </View>
+              )}
+            </View>
+
+            {/* Message bar, drawn inside the popup so it isn't hidden behind it */}
+            <Snackbar
+              visible={message !== null}
+              onDismiss={() => setMessage(null)}
+              duration={2500}
+              wrapperStyle={{ bottom: insets.bottom + 110 }}
+            >
+              {message ?? ''}
+            </Snackbar>
+
+            {/* From the fullscreen view: the panel has to be inside this Modal on iOS */}
+            {sheetPanel}
+          </View>
+        )}
       </Modal>
+
+      {/* From the grid: show the panel normally */}
+      {!selectedCard && sheetPanel}
+
+      {/* Portal = draw at the top level of the app, so it's never cut off */}
+      <Portal>
+        <Snackbar
+          visible={message !== null}
+          onDismiss={() => setMessage(null)}
+          duration={2500}
+          wrapperStyle={{ bottom: insets.bottom + 64 }}
+        >
+          {message ?? ''}
+        </Snackbar>
+      </Portal>
     </View>
   );
 }
@@ -273,19 +671,96 @@ const styles = StyleSheet.create({
     height: '100%',
   },
   cardInfo: {
+    flex: 1,
     paddingHorizontal: 11,
     paddingVertical: 12,
   },
   cardNameRow: {
     flexDirection: 'row',
-    alignItems: 'center',
+    alignItems: 'stretch',
     justifyContent: 'space-between',
     gap: 6,
+  },
+  cardName: {
+    fontSize: 15,
+    fontWeight: '800',
+    color: '#171717',
   },
   cardSetName: {
     fontSize: 11,
     color: '#77705F',
     marginTop: 5,
+    marginBottom: 10,
+  },
+  cardPriceRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    gap: 6,
+    marginTop: 'auto',
+    paddingTop: 10,
+    borderTopWidth: 1,
+    borderTopColor: '#DCCFB3',
+  },
+  cardPriceLabel: {
+    fontSize: 10,
+    fontWeight: '700',
+    letterSpacing: 1,
+    color: '#77705F',
+  },
+  cardPrice: {
+    fontFamily: 'BarlowCondensed_700Bold',
+    fontSize: 19,
+    color: '#171717',
+  },
+  addButton: {
+    width: 36,
+    height: 36,
+    borderRadius: 10,
+    backgroundColor: '#E2D7BD',
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  addButtonActive: {
+    backgroundColor: '#171717',
+  },
+  heartButton: {
+    width: 36,
+    height: 36,
+    borderRadius: 10,
+    backgroundColor: '#2e7d32',
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  removeButton: {
+    width: 36,
+    height: 36,
+    borderRadius: 10,
+    borderWidth: 1.5,
+    borderColor: '#7A2E22',
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  listedInfo: {
+    marginTop: -4,
+    marginBottom: 10,
+    fontSize: 12,
+    fontWeight: '600',
+    color: '#3A342B',
+  },
+  menu: {
+    backgroundColor: '#FBF7EE',
+    borderRadius: 14,
+  },
+  menuItemText: {
+    fontSize: 15,
+    color: '#171717',
+  },
+  menuDivider: {
+    height: 1,
+    marginHorizontal: 12,
+    marginVertical: 4,
+    backgroundColor: '#DCCFB3',
   },
   wishlistButton: {
     width: 30,
@@ -301,42 +776,98 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     borderColor: '#C9BDA3',
   },
-  previewOverlay: {
+  preview: {
     flex: 1,
-    backgroundColor: 'rgba(0, 0, 0, 0.94)',
-    alignItems: 'center',
-    justifyContent: 'center',
-    paddingHorizontal: 10,
+    paddingHorizontal: 20,
+    backgroundColor: '#171717',
   },
-  previewBackdrop: {
+  menuCatcher: {
     ...StyleSheet.absoluteFill,
   },
-  previewContent: {
-    width: '100%',
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  previewImage: {
-    width: '90%',
-    height: '72%',
-    borderRadius: 35,
-  },
-  previewSetName: {
-    marginTop: 14,
-    fontSize: 14,
-    fontWeight: '600',
-    color: '#E2D7BD',
-    textAlign: 'center',
+  previewTopRow: {
+    flexDirection: 'row',
+    justifyContent: 'flex-end',
   },
   previewClose: {
-    position: 'absolute',
-    top: 55,
-    right: 22,
-    width: 42,
-    height: 42,
-    borderRadius: 21,
-    backgroundColor: 'rgba(255, 255, 255, 0.15)',
+    width: 44,
+    height: 44,
+    borderRadius: 22,
+    backgroundColor: '#2C2A26',
     alignItems: 'center',
     justifyContent: 'center',
+  },
+  previewImageArea: {
+    flex: 1,
+    paddingVertical: 12,
+  },
+  previewImage: {
+    width: '100%',
+    height: '100%',
+  },
+  previewInfo: {
+    paddingHorizontal: 4,
+    marginBottom: 16,
+  },
+  previewName: {
+    fontFamily: 'BarlowCondensed_700Bold',
+    fontSize: 28,
+    letterSpacing: 1,
+    textTransform: 'uppercase',
+    color: '#F4EEDF',
+  },
+  previewSetName: {
+    marginTop: 2,
+    fontSize: 14,
+    color: '#A79E8B',
+  },
+  previewBar: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    gap: 12,
+    paddingVertical: 14,
+    paddingLeft: 18,
+    paddingRight: 14,
+    borderRadius: 18,
+    backgroundColor: '#E2D7BD',
+  },
+  previewPriceLabel: {
+    fontSize: 11,
+    fontWeight: '700',
+    letterSpacing: 1.2,
+    color: '#5A5246',
+  },
+  previewPrice: {
+    fontFamily: 'BarlowCondensed_700Bold',
+    fontSize: 30,
+    color: '#171717',
+  },
+  previewAddButton: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 6,
+    height: 52,
+    paddingLeft: 16,
+    paddingRight: 20,
+    borderRadius: 14,
+    backgroundColor: '#2e7d32',
+  },
+  previewAddButtonActive: {
+    backgroundColor: '#171717',
+  },
+  previewAddText: {
+    fontFamily: 'BarlowCondensed_700Bold',
+    fontSize: 18,
+    letterSpacing: 1.2,
+    color: '#FFFFFF',
+  },
+  previewMenu: {
+    position: 'absolute',
+    right: 0,
+    bottom: '100%',
+    marginBottom: 10,
+    width: 250,
+    paddingVertical: 6,
+    boxShadow: '0 12px 30px rgba(0, 0, 0, 0.4)',
   },
 });

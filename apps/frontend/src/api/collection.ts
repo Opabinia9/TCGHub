@@ -76,3 +76,20 @@ export async function fetchWishlistIds(): Promise<Set<string>> {
   const data: CollectionApiResponse = await res.json();
   return new Set(data.items.map((item) => item.card_id));
 }
+
+// How many copies you own of each card
+export async function fetchOwnedQuantities(): Promise<Map<string, number>> {
+  const cookies = await authClient.getCookie();
+  const res = await fetch(`http://${ENV.EXPO_PUBLIC_API_URL}/api/v1/collection`, {
+    headers: { Cookie: cookies },
+  });
+  if (!res.ok) {
+    throw new Error(`Failed to load collection (${res.status})`);
+  }
+  const data: CollectionApiResponse = await res.json();
+  return new Map(
+    data.items
+      .filter((item) => item.quantity > 0)
+      .map((item) => [item.card_id, item.quantity] as [string, number]),
+  );
+}

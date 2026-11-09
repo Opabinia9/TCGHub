@@ -1,7 +1,10 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { Pressable, ScrollView, StyleSheet, View } from 'react-native';
 import { Searchbar, Text } from 'react-native-paper';
 import { Ionicons } from '@expo/vector-icons';
+import { router, useLocalSearchParams } from 'expo-router';
+import CardList from '@/components/card-list';
+import { fetchCollection } from '@/api/collection';
 
 const MANA = {
   G: { color: '#2e7d32', name: 'green' },
@@ -22,7 +25,7 @@ type Deck = {
   colors: ManaColor[];
 };
 
-type Tab = 'mine' | 'community';
+type Tab = 'mine' | 'collection';
 
 const MY_DECKS: Deck[] = [
   {
@@ -59,115 +62,134 @@ const MY_DECKS: Deck[] = [
   },
 ];
 
-const COMMUNITY_DECKS: Deck[] = [
-  {
-    id: '5',
-    name: 'Mono Red Burn',
-    format: 'Modern',
-    cardCount: 60,
-    artColor: '#9A4A22',
-    colors: ['R'],
-  },
-  {
-    id: '6',
-    name: 'Selesnya Tokens',
-    format: 'Standard',
-    cardCount: 60,
-    artColor: '#6B7A3A',
-    colors: ['G', 'W'],
-  },
-];
-
 const FILTERS = ['GAME', 'FORMAT', 'COLOUR'];
 
 // ─── Screen ──────────────────────────────────────────────────────────────────
 
 export default function Decks() {
+  const params = useLocalSearchParams<{ tab?: string }>();
   const [tab, setTab] = useState<Tab>('mine');
   const [searchQuery, setSearchQuery] = useState('');
 
-  // Pick the list for the selected tab, then keep only decks whose name
-  // contains what's typed in the search bar.
-  const allDecks = tab === 'mine' ? MY_DECKS : COMMUNITY_DECKS;
+
+
+  useEffect(() => {
+    if (params.tab === 'collection') {
+      setTab('collection');
+      router.setParams({ tab: undefined });
+    }
+  }, [params.tab]);
+
+  const isCollection = tab === 'collection';
   const query = searchQuery.trim().toLowerCase();
-  const decks = allDecks.filter((deck) => deck.name.toLowerCase().includes(query));
+  const decks = MY_DECKS.filter((deck) =>
+    deck.name.toLowerCase().includes(query),
+  );
 
   return (
-    <ScrollView
-      style={styles.screen}
-      contentContainerStyle={styles.content}
-      showsVerticalScrollIndicator={false}
-    >
-      {/* Header */}
-      <View style={styles.header}>
-        <View>
-          <Text style={styles.title}>DECKS</Text>
-          <Text style={styles.subtitle}>Discover, build and share decks.</Text>
+    <View style={styles.screen}>
+      {/* Top part: title, toggle, search, filters (doesn't scroll) */}
+      <View style={styles.top}>
+        {/* Header */}
+        <View style={styles.header}>
+          <View>
+            <Text style={styles.title}>DECKS</Text>
+            <Text style={styles.subtitle}>Discover, build and share decks.</Text>
+          </View>
+
+          {!isCollection && (
+            <Pressable
+              onPress={() => console.log('New deck pressed')}
+              accessibilityRole='button'
+              accessibilityLabel='Create a new deck'
+              style={styles.newButton}
+            >
+              <Ionicons name='add' size={18} color='#FFFFFF' />
+              <Text style={styles.newButtonText}>NEW</Text>
+            </Pressable>
+          )}
         </View>
 
-        <Pressable
-          onPress={() => console.log('New deck pressed')}
-          accessibilityRole="button"
-          accessibilityLabel="Create a new deck"
-          style={styles.newButton}
-        >
-          <Ionicons name="add" size={18} color="#FFFFFF" />
-          <Text style={styles.newButtonText}>NEW</Text>
-        </Pressable>
-      </View>
+        {/* My decks / My collection toggle */}
+        <View style={styles.toggle} accessibilityRole='tablist'>
+          <ToggleButton
+            label='MY DECKS'
+            active={tab === 'mine'}
+            onPress={() => setTab('mine')}
+          />
+          <ToggleButton
+            label='MY COLLECTION'
+            active={isCollection}
+            onPress={() => setTab('collection')}
+          />
+        </View>
 
-      {/* My decks / Community toggle */}
-      <View style={styles.toggle} accessibilityRole="tablist">
-        <ToggleButton label="MY DECKS" active={tab === 'mine'} onPress={() => setTab('mine')} />
-        <ToggleButton
-          label="COMMUNITY"
-          active={tab === 'community'}
-          onPress={() => setTab('community')}
+        {/* Search */}
+        <Searchbar
+          placeholder={
+            isCollection ? 'Search your collection…' : 'Search for a deck…'
+          }
+          value={searchQuery}
+          onChangeText={setSearchQuery}
+          style={styles.searchbar}
+          inputStyle={styles.searchInput}
+          iconColor='#245f28'
+          placeholderTextColor='#7A705F'
+          selectionColor='#171717'
+          cursorColor='#171717'
+          elevation={0}
         />
+
+        {/* Filters */}
+        <View style={styles.filterRow}>
+          {FILTERS.map((label) => (
+            <Pressable
+              key={label}
+              onPress={() => console.log(label + ' filter pressed')}
+              hitSlop={4}
+              accessibilityRole='button'
+              accessibilityLabel={`Filter by ${label.toLowerCase()}`}
+              style={styles.filterChip}
+            >
+              <Text style={styles.filterText}>{label}</Text>
+              <Ionicons name='chevron-down' size={16} color='#171717' />
+            </Pressable>
+          ))}
+        </View>
+
       </View>
 
-      {/* Search */}
-      <Searchbar
-        placeholder="Search for a deck…"
-        value={searchQuery}
-        onChangeText={setSearchQuery}
-        style={styles.searchbar}
-        inputStyle={styles.searchInput}
-        iconColor="#245f28"
-        placeholderTextColor="#7A705F"
-        elevation={0}
-      />
+      {/* Bottom part: scrolls by itself */}
+      {isCollection ? (
+        <View style={styles.listArea}>
+          <CardList
+            fetchlist={fetchCollection}
+            query={searchQuery}
+            activeFilter='All'
+            emptyMessage='Unable to load your collection'
+            refreshOnFocus
+          />
+        </View>
+      ) : (
+        <ScrollView
+          style={styles.listArea}
+          contentContainerStyle={styles.deckScroll}
+          showsVerticalScrollIndicator={false}
+        >
+          <View style={styles.deckList}>
+            {decks.map((deck) => (
+              <DeckRow key={deck.id} deck={deck} />
+            ))}
+          </View>
 
-      {/* Filters */}
-      <View style={styles.filterRow}>
-        {FILTERS.map((label) => (
-          <Pressable
-            key={label}
-            onPress={() => console.log(label + ' filter pressed')}
-            hitSlop={4}
-            accessibilityRole="button"
-            accessibilityLabel={`Filter by ${label.toLowerCase()}`}
-            style={styles.filterChip}
-          >
-            <Text style={styles.filterText}>{label}</Text>
-            <Ionicons name="chevron-down" size={16} color="#171717" />
-          </Pressable>
-        ))}
-      </View>
-
-      {/* Deck list */}
-      <View style={styles.deckList}>
-        {decks.map((deck) => (
-          <DeckRow key={deck.id} deck={deck} />
-        ))}
-      </View>
-
-      {decks.length === 0 && (
-        <Text style={styles.emptyMessage}>
-          {query ? `No decks match "${searchQuery}".` : 'No decks yet.'}
-        </Text>
+          {decks.length === 0 && (
+            <Text style={styles.emptyMessage}>
+              {query ? `No decks match "${searchQuery}".` : 'No decks yet.'}
+            </Text>
+          )}
+        </ScrollView>
       )}
-    </ScrollView>
+    </View>
   );
 }
 
@@ -183,11 +205,13 @@ function ToggleButton({ label, active, onPress }: ToggleButtonProps) {
   return (
     <Pressable
       onPress={onPress}
-      accessibilityRole="tab"
+      accessibilityRole='tab'
       accessibilityState={{ selected: active }}
       style={[styles.toggleButton, active && styles.toggleButtonActive]}
     >
-      <Text style={[styles.toggleText, active && styles.toggleTextActive]}>{label}</Text>
+      <Text style={[styles.toggleText, active && styles.toggleTextActive]}>
+        {label}
+      </Text>
     </Pressable>
   );
 }
@@ -198,9 +222,16 @@ function DeckRow({ deck }: { deck: Deck }) {
   return (
     <View style={styles.deckRow}>
       <View style={[styles.deckArt, { backgroundColor: deck.artColor }]}>
-        <View style={styles.pipRow} accessible accessibilityLabel={`Colours: ${colourNames}`}>
+        <View
+          style={styles.pipRow}
+          accessible
+          accessibilityLabel={`Colours: ${colourNames}`}
+        >
           {deck.colors.map((c) => (
-            <View key={c} style={[styles.pip, { backgroundColor: MANA[c].color }]} />
+            <View
+              key={c}
+              style={[styles.pip, { backgroundColor: MANA[c].color }]}
+            />
           ))}
         </View>
       </View>
@@ -216,7 +247,7 @@ function DeckRow({ deck }: { deck: Deck }) {
 
       <Pressable
         onPress={() => console.log('View deck', deck.name)}
-        accessibilityRole="button"
+        accessibilityRole='button'
         accessibilityLabel={`View ${deck.name} deck`}
         style={styles.viewButton}
       >
@@ -226,6 +257,7 @@ function DeckRow({ deck }: { deck: Deck }) {
   );
 }
 
+
 // ─── Styles ──────────────────────────────────────────────────────────────────
 
 const styles = StyleSheet.create({
@@ -233,12 +265,17 @@ const styles = StyleSheet.create({
     flex: 1,
     backgroundColor: '#E2D7BD',
   },
-  content: {
-    padding: 20,
+  top: {
+    paddingHorizontal: 20,
+    paddingTop: 20,
+  },
+  listArea: {
+    flex: 1,
+  },
+  deckScroll: {
+    paddingHorizontal: 20,
     paddingBottom: 32,
   },
-
-  // Header
   header: {
     flexDirection: 'row',
     justifyContent: 'space-between',
@@ -271,7 +308,7 @@ const styles = StyleSheet.create({
     color: '#FFFFFF',
   },
 
-  // Toggle
+
   toggle: {
     flexDirection: 'row',
     padding: 4,
@@ -298,7 +335,7 @@ const styles = StyleSheet.create({
     color: '#E2D7BD',
   },
 
-  // Search
+
   searchbar: {
     marginTop: 14,
     height: 46,
@@ -313,7 +350,7 @@ const styles = StyleSheet.create({
     color: '#171717',
   },
 
-  // Filters
+
   filterRow: {
     flexDirection: 'row',
     gap: 8,
@@ -337,7 +374,7 @@ const styles = StyleSheet.create({
     color: '#171717',
   },
 
-  // Deck list
+
   deckList: {
     marginTop: 16,
     borderTopWidth: 1,
@@ -355,6 +392,11 @@ const styles = StyleSheet.create({
     width: 56,
     height: 56,
     borderRadius: 12,
+  },
+  cardThumb: {
+    width: 40,
+    height: 56,
+    borderRadius: 6,
   },
   pipRow: {
     position: 'absolute',

@@ -1,5 +1,5 @@
 import { ENV } from '@/api/env';
-import type { ApiCard, Pagination, MagicCard } from '@/api/types';
+import type { SearchCard, Pagination, MagicCard } from '@/api/types';
 import { toMagicCard } from '@/api/types';
 import { authClient } from '@/utils/auth-client';
 
@@ -9,7 +9,7 @@ export type CardsPage = {
 };
 
 type CardsApiResponse = {
-  items: Array<ApiCard>;
+  items: Array<SearchCard>;
   pagination: Pagination;
 };
 

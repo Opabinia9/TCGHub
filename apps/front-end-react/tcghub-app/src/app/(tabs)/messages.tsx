@@ -19,6 +19,8 @@ export default function MessagesScreen() {
         inputStyle={styles.searchInput}
         iconColor="#245f28"
         placeholderTextColor="#7A705F"
+        selectionColor="#171717"
+        cursorColor="#171717"
         elevation={0}
       />
       <ChatList query={searchQuery} />
@@ -59,7 +61,6 @@ const styles = StyleSheet.create({
     color: '#171717',
   },
 
-  // List
   list: {
     marginTop: 16,
     borderTopWidth: 1,

@@ -2,6 +2,7 @@ import { useCallback, useEffect, useRef, useState } from 'react';
 import {
   KeyboardAvoidingView,
   ListViewToken,
+  Platform,
   Pressable,
   ScrollView,
   StyleSheet,
@@ -101,7 +102,11 @@ export default function ChatScreen() {
   }
 
   return (
-    <KeyboardAvoidingView style={styles.screen} behavior={'padding'}>
+    <KeyboardAvoidingView
+      style={styles.screen}
+      behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
+      keyboardVerticalOffset={Platform.OS === 'ios' ? insets.top - insets.bottom : 0}
+    >
       {/* Header */}
       <View style={styles.header}>
         <Pressable
@@ -193,6 +198,8 @@ export default function ChatScreen() {
             onSubmitEditing={send}
             placeholder="Message…"
             placeholderTextColor="#7A705F"
+            selectionColor="#171717"
+            cursorColor="#171717"
             returnKeyType="send"
             accessibilityLabel={`Message ${chat.name}`}
             style={styles.input}
@@ -251,7 +258,6 @@ const styles = StyleSheet.create({
     color: '#5A5246',
   },
 
-  // Header
   header: {
     flexDirection: 'row',
     alignItems: 'center',
@@ -294,7 +300,6 @@ const styles = StyleSheet.create({
     color: '#5A5246',
   },
 
-  // Pinned listing
   listing: {
     flexDirection: 'row',
     alignItems: 'center',
@@ -339,7 +344,6 @@ const styles = StyleSheet.create({
     color: '#245f28',
   },
 
-  // Messages
   messageScroll: {
     flex: 1,
   },
@@ -395,7 +399,6 @@ const styles = StyleSheet.create({
     color: '#5A5246',
   },
 
-  // Quick replies + typing box
   composer: {
     gap: 8,
     paddingTop: 8,

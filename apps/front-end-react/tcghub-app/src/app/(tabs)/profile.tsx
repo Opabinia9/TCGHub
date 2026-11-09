@@ -1,12 +1,12 @@
-import { useEffect, useState } from 'react';
-import { ScrollView, StyleSheet, View, Pressable, ActivityIndicator } from 'react-native';
+import { useState } from 'react';
+import { ScrollView, StyleSheet, View, Pressable } from 'react-native';
 import { Avatar, Text, Button, TextInput } from 'react-native-paper';
 import { Ionicons } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
-import { fetchCollection } from '@/api/collection';
-import { FilterOption, FILTERS, MagicCard, Pagination } from '@/api/types';
+import { fetchMyTrades } from '@/api/myTrades';
+import { fetchWishlist } from '@/api/myWishlist';
+import { FilterOption, FILTERS } from '@/api/types';
 import CardList from '@/components/card-list';
-import { fetchCards } from '@/api/cards';
 import { authClient } from '@/utils/auth-client';
 import { QueryCache, QueryClient } from '@tanstack/react-query';
 
@@ -17,7 +17,7 @@ export default function Profile() {
   const [editedBio, setEditedBio] = useState(bio);
   const [isEditing, setIsEditing] = useState(false);
 
-  const [activeSection, setActiveSection] = useState<'collection' | 'wishlist'>('collection');
+  const [activeSection, setActiveSection] = useState<'listings' | 'wishlist'>('listings');
 
   const [searchQuery, setSearchQuery] = useState('');
   const [activeFilter, setActiveFilter] = useState<FilterOption>('All');
@@ -41,12 +41,7 @@ export default function Profile() {
   };
 
   return (
-    <ScrollView
-      style={styles.screen}
-      contentContainerStyle={styles.container}
-      showsVerticalScrollIndicator={false}
-    >
-      {/* Profile header */}
+    <View style={styles.screen}>
       <View style={styles.profileHeader}>
         <Avatar.Icon size={76} icon="account" color="#E2D7BD" style={styles.avatar} />
 
@@ -72,7 +67,6 @@ export default function Profile() {
           {isEditing ? 'CANCEL' : 'EDIT'}
         </Button>
       </View>
-      {/* Biography */}
       <View style={styles.bioContainer}>
         {isEditing ? (
           <>
@@ -103,21 +97,22 @@ export default function Profile() {
           <Text style={styles.bio}>{bio}</Text>
         )}
       </View>
-      {/* Collection and Wishlist */}
+      <View style={styles.logoutContainer}>
+        <Pressable onPress={handleLogout} style={styles.logoutButton}>
+          <Ionicons name="log-out-outline" size={20} color="#A12626" />
+          <Text style={styles.logoutText}>LOG OUT</Text>
+        </Pressable>
+      </View>
       <View style={styles.decksSection}>
-        {/* Main tabs */}
         <View style={styles.mainTabs}>
           <Pressable
-            onPress={() => setActiveSection('collection')}
-            style={[styles.mainTab, activeSection === 'collection' && styles.activeMainTab]}
+            onPress={() => setActiveSection('listings')}
+            style={[styles.mainTab, activeSection === 'listings' && styles.activeMainTab]}
           >
             <Text
-              style={[
-                styles.mainTabText,
-                activeSection === 'collection' && styles.activeMainTabText,
-              ]}
+              style={[styles.mainTabText, activeSection === 'listings' && styles.activeMainTabText]}
             >
-              MY COLLECTION
+              MY LISTINGS
             </Text>
           </Pressable>
 
@@ -155,19 +150,18 @@ export default function Profile() {
         </View>
       </View>
       <CardList
-        fetchlist={fetchCollection}
+        fetchlist={activeSection === 'listings' ? fetchMyTrades : fetchWishlist}
         query={searchQuery}
         activeFilter={activeFilter}
-        emptyMessage="Unable to load collection"
+        emptyMessage={
+          activeSection === 'listings'
+            ? 'Unable to load your listings'
+            : 'Unable to load your wishlist'
+        }
+        refreshOnFocus
+        variant={activeSection}
       />
-      {/* Logout */}
-      <View style={styles.logoutContainer}>
-        <Pressable onPress={handleLogout} style={styles.logoutButton}>
-          <Ionicons name="log-out-outline" size={20} color="#A12626" />
-          <Text style={styles.logoutText}>LOG OUT</Text>
-        </Pressable>
-      </View>
-    </ScrollView>
+    </View>
   );
 }
 

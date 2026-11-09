@@ -18,7 +18,7 @@ export default function RootLayout() {
       <GestureHandlerRootView style={{ flex: 1 }}>
         <PaperProvider theme={theme}>
           <StatusBar style="dark" />
-          <SafeAreaView edges={['top', 'bottom']} style={{ flex: 1, backgroundColor: '#E2D7BD' }}>
+          <SafeAreaView edges={['top']} style={{ flex: 1, backgroundColor: '#E2D7BD' }}>
             <Stack screenOptions={{ headerShown: false }}>
               <Stack.Screen name="(auth)" />
               <Stack.Screen name="(tabs)" />

@@ -72,13 +72,24 @@ export default function CardList(props: CardListProps) {
 
   const closeMenu = () => setMenuCardId(null);
 
+  // Is the ADD TO menu in the fullscreen view open?
+  const [previewMenuOpen, setPreviewMenuOpen] = useState(false);
+
+  // Closes the fullscreen view, and its menu, so it starts closed next time.
+  function closePreview() {
+    setSelectedCard(null);
+    setPreviewMenuOpen(false);
+  }
+
   function openSheet(type: SheetType, card: MagicCard) {
     closeMenu();
+    setPreviewMenuOpen(false);
     setSheet({ type, card });
   }
 
   async function toggleWishlist(card: MagicCard) {
     closeMenu();
+    setPreviewMenuOpen(false);
     const inWishlist = wishlistIds.has(card.id);
     try {
       await updateCollectionCard({
@@ -189,6 +200,16 @@ export default function CardList(props: CardListProps) {
       setLoadingMore(false);
     }
   }
+  // The listing / collection panel, built once so we can show it in two places.
+  const sheetPanel = sheet && (
+    <AddToSheet
+      type={sheet.type}
+      card={sheet.card}
+      onClose={() => setSheet(null)}
+      onConfirm={handleConfirm}
+    />
+  );
+
   const filteredCards = cards.filter(
     (card) =>
       props.activeFilter === 'All' || card.category === props.activeFilter,
@@ -329,16 +350,40 @@ export default function CardList(props: CardListProps) {
         transparent
         animationType='fade'
         statusBarTranslucent
-        onRequestClose={() => setSelectedCard(null)}
+        navigationBarTranslucent
+        onRequestClose={closePreview}
       >
-        <View style={styles.previewOverlay}>
-          <Pressable
-            style={styles.previewBackdrop}
-            onPress={() => setSelectedCard(null)}
-          />
+        {selectedCard && (
+          <View
+            style={[
+              styles.preview,
+              { paddingTop: insets.top + 8, paddingBottom: insets.bottom + 16 },
+            ]}
+          >
+            {/* While the menu is open, tapping anywhere else closes it */}
+            {previewMenuOpen && (
+              <Pressable
+                style={styles.menuCatcher}
+                onPress={() => setPreviewMenuOpen(false)}
+                accessibilityRole='button'
+                accessibilityLabel='Close menu'
+              />
+            )}
 
-          {selectedCard && (
-            <View style={styles.previewContent}>
+            {/* Top: close button on the right */}
+            <View style={styles.previewTopRow}>
+              <Pressable
+                style={styles.previewClose}
+                onPress={closePreview}
+                accessibilityRole='button'
+                accessibilityLabel='Close preview'
+              >
+                <Ionicons name='close' size={22} color='#E2D7BD' />
+              </Pressable>
+            </View>
+
+            {/* Middle: the card, as big as fits */}
+            <View style={styles.previewImageArea}>
               <Image
                 source={{
                   uri:
@@ -350,32 +395,97 @@ export default function CardList(props: CardListProps) {
                 style={styles.previewImage}
                 contentFit='contain'
               />
+            </View>
 
-              <Text style={styles.previewSetName}>
+            {/* Name and set */}
+            <View style={styles.previewInfo}>
+              <Text style={styles.previewName} numberOfLines={2}>
+                {selectedCard.name}
+              </Text>
+              <Text style={styles.previewSetName} numberOfLines={1}>
                 {selectedCard.setName || 'Set information unavailable'}
               </Text>
             </View>
-          )}
 
-          <Pressable
-            style={styles.previewClose}
-            onPress={() => setSelectedCard(null)}
-            accessibilityRole='button'
-            accessibilityLabel='Close preview'
-          >
-            <Ionicons name='close' size={30} color='#FFFFFF' />
-          </Pressable>
-        </View>
+            {/* Bottom bar: price on the left, ADD TO on the right */}
+            <View style={styles.previewBar}>
+              <View>
+                <Text style={styles.previewPriceLabel}>MARKET PRICE</Text>
+                <Text style={styles.previewPrice}>
+                  {selectedCard.prices.usd ? `$${selectedCard.prices.usd}` : '—'}
+                </Text>
+              </View>
+
+              <Pressable
+                onPress={() => setPreviewMenuOpen((open) => !open)}
+                accessibilityRole='button'
+                accessibilityLabel={`Add ${selectedCard.name} to…`}
+                accessibilityState={{ expanded: previewMenuOpen }}
+                style={[
+                  styles.previewAddButton,
+                  previewMenuOpen && styles.previewAddButtonActive,
+                ]}
+              >
+                <Ionicons name='add' size={20} color='#FFFFFF' />
+                <Text style={styles.previewAddText}>ADD TO</Text>
+              </Pressable>
+
+              {/* Same items as the grid menu, drawn ourselves because Paper's <Menu> can't show inside a Modal */}
+              {previewMenuOpen && (
+                <View style={[styles.menu, styles.previewMenu]}>
+                  <Menu.Item
+                    leadingIcon={menuIcon(
+                      wishlistIds.has(selectedCard.id) ? 'heart' : 'heart-outline',
+                    )}
+                    title={
+                      wishlistIds.has(selectedCard.id)
+                        ? 'Remove from wishlist'
+                        : 'Add to wishlist'
+                    }
+                    titleStyle={styles.menuItemText}
+                    onPress={() => toggleWishlist(selectedCard)}
+                  />
+                  <Menu.Item
+                    leadingIcon={menuIcon('pricetag-outline')}
+                    title='Add to my listings'
+                    titleStyle={styles.menuItemText}
+                    onPress={() => openSheet('listing', selectedCard)}
+                  />
+                  <Menu.Item
+                    leadingIcon={menuIcon('albums-outline')}
+                    title='Add to collection'
+                    titleStyle={styles.menuItemText}
+                    onPress={() => openSheet('collection', selectedCard)}
+                  />
+                  <View style={styles.menuDivider} />
+                  <Menu.Item
+                    leadingIcon={menuIcon('layers-outline')}
+                    title='Add to deck'
+                    titleStyle={styles.menuItemText}
+                    onPress={() => setPreviewMenuOpen(false)}
+                  />
+                </View>
+              )}
+            </View>
+
+            {/* Message bar, drawn inside the popup so it isn't hidden behind it */}
+            <Snackbar
+              visible={message !== null}
+              onDismiss={() => setMessage(null)}
+              duration={2500}
+              wrapperStyle={{ bottom: insets.bottom + 110 }}
+            >
+              {message ?? ''}
+            </Snackbar>
+
+            {/* From the fullscreen view: the panel has to be inside this Modal on iOS */}
+            {sheetPanel}
+          </View>
+        )}
       </Modal>
 
-      {sheet && (
-        <AddToSheet
-          type={sheet.type}
-          card={sheet.card}
-          onClose={() => setSheet(null)}
-          onConfirm={handleConfirm}
-        />
-      )}
+      {/* From the grid: show the panel normally */}
+      {!selectedCard && sheetPanel}
 
       {/* Portal = draw at the top level of the app, so it's never cut off */}
       <Portal>
@@ -548,42 +658,98 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     borderColor: '#C9BDA3',
   },
-  previewOverlay: {
+    preview: {
     flex: 1,
-    backgroundColor: 'rgba(0, 0, 0, 0.94)',
-    alignItems: 'center',
-    justifyContent: 'center',
-    paddingHorizontal: 10,
+    paddingHorizontal: 20,
+    backgroundColor: '#171717',
   },
-  previewBackdrop: {
+  menuCatcher: {
     ...StyleSheet.absoluteFill,
   },
-  previewContent: {
-    width: '100%',
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  previewImage: {
-    width: '90%',
-    height: '72%',
-    borderRadius: 35,
-  },
-  previewSetName: {
-    marginTop: 14,
-    fontSize: 14,
-    fontWeight: '600',
-    color: '#E2D7BD',
-    textAlign: 'center',
+  previewTopRow: {
+    flexDirection: 'row',
+    justifyContent: 'flex-end',
   },
   previewClose: {
-    position: 'absolute',
-    top: 55,
-    right: 22,
-    width: 42,
-    height: 42,
-    borderRadius: 21,
-    backgroundColor: 'rgba(255, 255, 255, 0.15)',
+    width: 44,
+    height: 44,
+    borderRadius: 22,
+    backgroundColor: '#2C2A26',
     alignItems: 'center',
     justifyContent: 'center',
+  },
+  previewImageArea: {
+    flex: 1,
+    paddingVertical: 12,
+  },
+  previewImage: {
+    width: '100%',
+    height: '100%',
+  },
+  previewInfo: {
+    paddingHorizontal: 4,
+    marginBottom: 16,
+  },
+  previewName: {
+    fontFamily: 'BarlowCondensed_700Bold',
+    fontSize: 28,
+    letterSpacing: 1,
+    textTransform: 'uppercase',
+    color: '#F4EEDF',
+  },
+  previewSetName: {
+    marginTop: 2,
+    fontSize: 14,
+    color: '#A79E8B',
+  },
+  previewBar: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    gap: 12,
+    paddingVertical: 14,
+    paddingLeft: 18,
+    paddingRight: 14,
+    borderRadius: 18,
+    backgroundColor: '#E2D7BD',
+  },
+  previewPriceLabel: {
+    fontSize: 11,
+    fontWeight: '700',
+    letterSpacing: 1.2,
+    color: '#5A5246',
+  },
+  previewPrice: {
+    fontFamily: 'BarlowCondensed_700Bold',
+    fontSize: 30,
+    color: '#171717',
+  },
+  previewAddButton: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 6,
+    height: 52,
+    paddingLeft: 16,
+    paddingRight: 20,
+    borderRadius: 14,
+    backgroundColor: '#2e7d32',
+  },
+  previewAddButtonActive: {
+    backgroundColor: '#171717',
+  },
+  previewAddText: {
+    fontFamily: 'BarlowCondensed_700Bold',
+    fontSize: 18,
+    letterSpacing: 1.2,
+    color: '#FFFFFF',
+  },
+  previewMenu: {
+    position: 'absolute',
+    right: 0,
+    bottom: '100%',
+    marginBottom: 10,
+    width: 250,
+    paddingVertical: 6,
+    boxShadow: '0 12px 30px rgba(0, 0, 0, 0.4)',
   },
 });

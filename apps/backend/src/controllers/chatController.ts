@@ -1,8 +1,9 @@
-import type {
-  ChatCreationBodyInterface,
-  ChatParamsInterface,
-  ChatPostMessageBodyInterface,
-  ChatUpdateLastReadBodyInterface,
+import {
+  chatCreationBodySchema,
+  type ChatCreationBodyInterface,
+  type ChatParamsInterface,
+  type ChatPostMessageBodyInterface,
+  type ChatUpdateLastReadBodyInterface,
 } from '@/routes/api/v1/routeSchemas.js';
 import Facade from '@/services/facade.js';
 import type { ChatWithMembers, ChatWithMembersCreationInterface } from '@/types/chatObject.js';
@@ -23,12 +24,13 @@ export default class ChatController {
       chats: userWithChats.chats
         .map((x) => {
           const members = x.Chat.members.map((y) => {
-            return y.userId;
+            return y.User;
           });
           return {
             id: x.Chat.id,
-            name: x.Chat.name,
+            ...(x.Chat.name != null && { name: x.Chat.name }),
             type: x.Chat.type,
+            ...(x.Chat.directKey != null && { directKey: x.Chat.directKey }),
             ...(x.Chat.sellerId != null && { sellerId: x.Chat.sellerId }),
             ...(x.Chat.cardId != null && { cardId: x.Chat.cardId }),
             members: members,
@@ -47,11 +49,29 @@ export default class ChatController {
   ) {
     // TODO: handle invalid userId in members
     const { userId } = request.retriveSession(request).session;
-    const chatDetails: ChatWithMembersCreationInterface = request.body;
-    chatDetails.type === 'TRADE' && chatDetails.members.push(chatDetails.sellerId ?? '');
-    chatDetails.members.push(userId);
-    const chat = await facade.createChatWithMembers(chatDetails);
-    return reply.code(201).send({ success: 'Chat created', chatID: chat.id });
+    const chatDetails: ChatCreationBodyInterface = request.body;
+    let processedChatDetails: ChatWithMembersCreationInterface;
+
+    if (chatDetails.type === 'TRADE') {
+      processedChatDetails = {
+        ...chatDetails,
+        members: [],
+        directKey: `${userId}:${chatDetails.sellerId}:${chatDetails.cardId}`,
+      };
+      processedChatDetails.members.push(chatDetails.sellerId);
+      processedChatDetails.members.push(userId);
+    } else if (chatDetails.type === 'DIRECT') {
+      chatDetails.members.push(userId);
+      processedChatDetails = { ...chatDetails, directKey: `${userId}:${chatDetails.members[0]}` };
+    } else if (chatDetails.type === 'GROUP') {
+      chatDetails.members.push(userId);
+      processedChatDetails = chatDetails;
+    } else {
+      return reply.code(400).send({ error: 'invalid chat type' });
+    }
+
+    const chat = await facade.createChatWithMembers(processedChatDetails);
+    return reply.code(201).send({ success: 'Chat created', chatId: chat.id });
   }
 
   async deleteChat(request: FastifyRequest, reply: FastifyReply) {
@@ -78,11 +98,14 @@ export default class ChatController {
 
     return reply.code(200).send({
       id: chat.id,
-      name: chat.name,
+      ...(chat.name != null && { name: chat.name }),
       type: chat.type,
+      ...(chat.directKey != null && { directKey: chat.directKey }),
+      ...(chat.sellerId != null && { sellerId: chat.sellerId }),
+      ...(chat.cardId != null && { cardId: chat.cardId }),
       createdAt: chat.createdAt,
       members: chat.members.map((x) => {
-        return x.userId;
+        return x.User;
       }),
       joinedAt: chat.joinedAt,
       lastReadMessageId: chat.lastReadMessageId,

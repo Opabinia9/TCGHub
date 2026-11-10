@@ -4,7 +4,8 @@ import { fastifySwaggerUi } from '@fastify/swagger-ui';
 import authRoutes from '@/routes/api/v1/auth.js';
 import userRoutes from '@/routes/api/v1/user.js';
 import cardRoutes from '@/routes/api/v1/cards.js';
-import collectionRoutes, { tradeRoutes } from '@/routes/api/v1/userCards.js';
+import collectionRoutes from '@/routes/api/v1/userCards.js';
+import tradeRoutes from './routes/api/v1/trade.js';
 import deckRoutes from '@/routes/api/v1/deck.js';
 import chatRoutes from '@/routes/api/v1/chats.js';
 import specCheckPlugin from '@/decorators/specCheck.js';
@@ -41,11 +42,7 @@ export default async function buildServer(opts = {}, env: Env) {
   server.setSerializerCompiler(serializerCompiler);
 
   server.setErrorHandler(
-    (
-      error: PrismaClientKnownRequestError,
-      request: FastifyRequest,
-      reply: FastifyReply,
-    ) => {
+    (error: PrismaClientKnownRequestError, request: FastifyRequest, reply: FastifyReply) => {
       if (error.code === 'P2025' || error.code === 'P2003') {
         return reply.code(404).send({ error: 'Not found' });
       }

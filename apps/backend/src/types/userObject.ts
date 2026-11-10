@@ -8,7 +8,11 @@ export const userWithChats = {
       include: {
         Chat: {
           include: {
-            members: true,
+            members: {
+              include: {
+                User: true,
+              },
+            },
           },
         },
       },

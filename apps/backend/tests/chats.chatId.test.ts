@@ -35,12 +35,12 @@ describe('GET /api/v1/chats/:chatId', () => {
     const payload = await response.json();
 
     expect(response.statusCode).toBe(200);
-    expect(payload).toEqual({
+    expect(payload).toMatchObject({
       id: chat.id,
       type: chat.type,
       name: chat.name,
       createdAt: chat.createdAt.toISOString(),
-      members: [userOneDetails.user.id, userTwoDetails.user.id],
+      members: [{ id: userOneDetails.user.id }, { id: userTwoDetails.user.id }],
       lastReadMessageId: null,
       joinedAt: expect.any(String),
     });

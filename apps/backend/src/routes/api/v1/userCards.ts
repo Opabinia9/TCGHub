@@ -10,9 +10,7 @@ import type { ZodTypeProvider } from 'fastify-type-provider-zod';
 
 const controller = new userCardsController();
 
-export default async function collectionRoutes(
-  fastify: Fastify.FastifyInstance,
-) {
+export default async function collectionRoutes(fastify: Fastify.FastifyInstance) {
   fastify.get<{ Querystring: CardSearchQuery }>(
     '/',
     {
@@ -47,16 +45,5 @@ export default async function collectionRoutes(
       schema: { querystring: cardSearchQuerySchema },
     },
     controller.getWishlist,
-  );
-}
-
-export async function tradeRoutes(fastify: Fastify.FastifyInstance) {
-  fastify.get<{ Querystring: CardSearchQuery }>(
-    '/',
-    {
-      onRequest: [fastify.authenticate],
-      schema: { querystring: cardSearchQuerySchema },
-    },
-    controller.getTrades,
   );
 }

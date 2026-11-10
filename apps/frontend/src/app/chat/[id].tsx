@@ -9,6 +9,7 @@ import {
   TextInput,
   View,
 } from 'react-native';
+import { Image } from 'expo-image';
 import { Text } from 'react-native-paper';
 import { Ionicons } from '@expo/vector-icons';
 import { router, useLocalSearchParams } from 'expo-router';
@@ -26,11 +27,13 @@ import {
 } from '@/api/chats';
 import { FlatList } from 'react-native-gesture-handler';
 import { useQuery } from '@tanstack/react-query';
+import { fetchTrade } from '@/api/tradeListings';
 
 const QUICK_REPLIES = ['Propose a trade', 'Suggest a meetup', 'Still available?'];
 
 export default function ChatScreen() {
   const { id: chatId } = useLocalSearchParams<{ id: string }>();
+  const selfId = authClient.useSession().data?.user.id;
   const [chat, setChat] = useState<Chat>();
   const [draft, setDraft] = useState('');
   const messagesRef = useRef<FlatList>(null);
@@ -41,8 +44,12 @@ export default function ChatScreen() {
     queryFn: fetchChats,
   });
   const { refetch: messageRefetch, data: messages } = useQuery({
-    queryKey: ['messages'],
+    queryKey: ['messages', chatId],
     queryFn: async () => await fetchMessages(chatId),
+  });
+  const { data: trade } = useQuery({
+    queryKey: ['trade', chat?.sellerId, chat?.cardId],
+    queryFn: () => fetchTrade(chat?.sellerId ?? '', chat?.cardId ?? ''),
   });
   const onViewableItemsChanged = useCallback(
     ({ viewableItems }: { viewableItems: Array<ListViewToken> }) => {
@@ -68,7 +75,7 @@ export default function ChatScreen() {
 
   const viewabilityConfig = useRef({
     itemVisiblePercentThreshold: 50,
-    minimumViewTime: 500,
+    minimumViewTime: 100,
   }).current;
 
   const renderMessage = ({ item }: { item: any }) => {
@@ -118,10 +125,17 @@ export default function ChatScreen() {
           <Ionicons name="chevron-back" size={26} color="#171717" />
         </Pressable>
         <View style={styles.avatar}>
-          <Text style={styles.avatarText}>{chat.name[0]}</Text>
+          <Text style={styles.avatarText}>
+            {
+              (chat.name ??
+                chat.members.reduce((acc, cur) => (cur.id === selfId ? cur : acc)).name)[0]
+            }
+          </Text>
         </View>
         <View style={styles.headerText}>
-          <Text style={styles.name}>{chat.name}</Text>
+          <Text style={styles.name}>
+            {chat.name ?? chat.members.reduce((acc, cur) => (cur.id === selfId ? cur : acc)).name}
+          </Text>
           {chat.type === 'TRADE' ? (
             <Text style={styles.distance}>DISTANCE NOT IMPLEMENTED</Text>
           ) : null}
@@ -149,10 +163,17 @@ export default function ChatScreen() {
             {/* TODO: better background color */}
             <View style={styles.listingThumbFrame}>
               <View style={[styles.listingThumb, { backgroundColor: '#FF0000' }]} />
+              <Image
+                source={{
+                  uri: trade?.Card.imageUris?.small ?? trade?.Card.imageUris?.normal ?? undefined,
+                }}
+                style={styles.cardImage}
+                contentFit="cover"
+              />
             </View>
             <View style={styles.listingText}>
-              <Text style={styles.listingName}>CARD NAME GOES HERE</Text>
-              <Text style={styles.listingDetail}>CONDITION GOES HERE</Text>
+              <Text style={styles.listingName}>{trade?.Card.name}</Text>
+              <Text style={styles.listingDetail}>{trade?.condition}</Text>
             </View>
             <Text style={styles.listingLink}>View listing</Text>
           </Pressable>
@@ -448,5 +469,9 @@ const styles = StyleSheet.create({
   },
   sendButtonDisabled: {
     opacity: 0.4,
+  },
+  cardImage: {
+    width: '100%',
+    height: '100%',
   },
 });

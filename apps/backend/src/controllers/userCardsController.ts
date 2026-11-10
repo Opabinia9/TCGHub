@@ -9,9 +9,7 @@ import NotFoundError from '@/errortypes/NotFoundError.js';
 const facade = new Facade();
 
 export default class UserCardsController {
-  async updateUserCards(
-    request: FastifyRequest<{ Body: CollectionBody }>,
-  ): Promise<UserCard> {
+  async updateUserCards(request: FastifyRequest<{ Body: CollectionBody }>): Promise<UserCard> {
     const { userId } = request.retriveSession(request).session;
     let quantity: number = request.body.quantity;
 
@@ -42,9 +40,7 @@ export default class UserCardsController {
         for_trade: request.body.for_trade,
         wishlist: request.body.wishlist,
       };
-      return await facade.updateCard(
-        user_card,
-      ); /* Primary Key Exists! -> Update */
+      return await facade.updateCard(user_card); /* Primary Key Exists! -> Update */
     } else {
       const user_card = {
         user_id: userId,
@@ -74,28 +70,6 @@ export default class UserCardsController {
           limit: filters.limit,
           total: user_collection.total,
           totalPages: Math.ceil(user_collection.total / filters.limit),
-        },
-      });
-    }
-    return null;
-  }
-
-  async getTrades(
-    request: FastifyRequest<{ Querystring: CardSearchQuery }>,
-    reply: FastifyReply,
-  ): Promise<UserCollection | null> {
-    const { userId } = request.retriveSession(request).session;
-    const filters = request.query;
-    const trades = await facade.getTrades(userId);
-
-    if (trades !== null) {
-      return reply.code(200).send({
-        items: trades.items,
-        pagination: {
-          page: filters.page,
-          limit: filters.limit,
-          total: trades.total,
-          totalPages: Math.ceil(trades.total / filters.limit),
         },
       });
     }

@@ -1,13 +1,14 @@
 import { ChatWithMessages, fetchChats, Message } from '@/api/chats';
+import { fetchTrade } from '@/api/tradeListings';
 import { authClient } from '@/utils/auth-client';
-import { useQuery } from '@tanstack/react-query';
+import { useQueries, useQuery } from '@tanstack/react-query';
 import { router } from 'expo-router';
 import { ReactNode, useEffect, useState } from 'react';
 import { StyleSheet, View } from 'react-native';
 import { FlatList, Pressable, RefreshControl } from 'react-native-gesture-handler';
 import { Text } from 'react-native-paper';
 
-export type Props = { query: string };
+type Props = { query: string };
 export default function ChatList(props: Props): ReactNode {
   const [refreshing, setRefreshing] = useState(false);
   const {
@@ -33,6 +34,7 @@ export default function ChatList(props: Props): ReactNode {
   const renderChats = ({ item }: { item: any }) => {
     return item;
   };
+  const selfId = authClient.useSession().data?.user.id;
 
   if (!chats && chatIsPending) {
     console.log(chatStatus);
@@ -55,7 +57,11 @@ export default function ChatList(props: Props): ReactNode {
     <FlatList
       style={styles.list}
       data={chats
-        .filter((chat) => chat.name.includes(props.query))
+        .filter((chat) => {
+          return (
+            chat.name ?? chat.members.reduce((acc, cur) => (cur.id === selfId ? cur : acc)).name
+          ).includes(props.query.trim() ? props.query : '');
+        })
         .map((chat) => (
           <ChatRow chat={chat} />
         ))}
@@ -95,7 +101,26 @@ export function dateStringToMessageDate(dateString: string | null, type: 'SPECIF
 }
 
 function ChatRow({ chat }: { chat: ChatWithMessages }) {
-  const chatTitle: string = chat.sellerId ? `Trade with ${chat.sellerId}` : chat.name;
+  // let trades: { [key: string]: (UserCard & { Card: MagicCard }) | undefined } = {};
+  // useQueries({
+  //   queries:
+  //     chats
+  //       ?.filter((chat) => chat.type === 'TRADE')
+  //       .map((chat) => {
+  //         return { sellerId: chat.sellerId, cardId: chat.cardId };
+  //       })
+  //       .map((trade) => ({
+  //         queryKey: ['trade', trade.sellerId, trade.cardId],
+  //         queryFn: () => fetchTrade(trade.sellerId ?? '', trade.cardId ?? ''),
+  //       })) ?? [],
+  //   combine: (trades) => trades.map((trade) => trade.data),
+  // }).forEach((trade) => (trades[`${trade?.user_id}:${trade?.card_id}`] = trade));
+  const { data: trade } = useQuery({
+    queryKey: ['trade', chat.sellerId, chat.cardId],
+    queryFn: () => fetchTrade(chat.sellerId ?? '', chat.cardId ?? ''),
+  });
+  const chatTitle: string =
+    chat.name ?? chat.members.reduce((acc, cur) => (cur.id === selfId ? cur : acc)).name;
   const selfId = authClient.useSession().data?.user.id;
   const last = chat.messages.at(-1);
   const lastDateString: string = dateStringToMessageDate(last?.createdAt ?? null, 'GENERAL');
@@ -117,7 +142,7 @@ function ChatRow({ chat }: { chat: ChatWithMessages }) {
     <Pressable
       onPress={() => router.push({ pathname: '/chat/[id]', params: { id: chat.id } })}
       accessibilityRole="button"
-      accessibilityLabel={`${chatTitle}, about ${chat.cardId}${unread ? ', unread' : ''}: ${preview}`}
+      accessibilityLabel={`${chatTitle}, about ${trade?.Card.name}${unread ? ', unread' : ''}: ${preview}`}
       style={styles.row}
     >
       <View style={styles.avatar}>
@@ -129,7 +154,9 @@ function ChatRow({ chat }: { chat: ChatWithMessages }) {
           <Text style={styles.name}>{chatTitle}</Text>
           <Text style={styles.time}>{lastDateString}</Text>
         </View>
-        <Text style={styles.about}>{chat.cardId != null ? `About: ${chat.cardId}` : ''}</Text>
+        <Text style={styles.about}>
+          {chat.type === 'TRADE' ? `About: ${trade?.Card.name}` : ''}
+        </Text>
         <View style={styles.previewRow}>
           <Text style={[styles.preview, chat.type && styles.previewUnread]} numberOfLines={1}>
             {preview}

@@ -39,3 +39,20 @@ export async function fetchTradeListings(
     pagination: data.pagination,
   };
 }
+
+export async function fetchTrade(sellerId: string, cardId: string) {
+  const cookies = await authClient.getCookie();
+  const headers = { Cookie: cookies };
+  const response = await fetch(
+    `http://${ENV.EXPO_PUBLIC_API_URL}/api/v1/trades/${sellerId}/${cardId}`,
+    {
+      headers,
+    },
+  );
+  if (!response.ok) {
+    throw new Error(`Failed to load available listings (${response.status})`);
+  }
+  const payload: { success: string; trade: UserCard & { Card: MagicCard } } = await response.json();
+
+  return payload.trade;
+}

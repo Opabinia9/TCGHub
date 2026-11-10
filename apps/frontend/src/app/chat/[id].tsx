@@ -1,6 +1,5 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
 import {
-  KeyboardAvoidingView,
   ListViewToken,
   Platform,
   Pressable,
@@ -14,6 +13,7 @@ import { Text } from 'react-native-paper';
 import { Ionicons } from '@expo/vector-icons';
 import { router, useLocalSearchParams } from 'expo-router';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
+import { KeyboardAvoidingView } from 'react-native-keyboard-controller';
 import { authClient } from '@/utils/auth-client';
 import { dateStringToMessageDate } from '@/components/ChatList';
 import {
@@ -128,13 +128,14 @@ export default function ChatScreen() {
           <Text style={styles.avatarText}>
             {
               (chat.name ??
-                chat.members.reduce((acc, cur) => (cur.id === selfId ? cur : acc)).name)[0]
+                chat.members.reduce((acc, cur) => (cur.id === selfId ? cur : acc)).username)[0]
             }
           </Text>
         </View>
         <View style={styles.headerText}>
           <Text style={styles.name}>
-            {chat.name ?? chat.members.reduce((acc, cur) => (cur.id === selfId ? cur : acc)).name}
+            {chat.name ??
+              chat.members.reduce((acc, cur) => (cur.id === selfId ? cur : acc)).username}
           </Text>
           {chat.type === 'TRADE' ? (
             <Text style={styles.distance}>DISTANCE NOT IMPLEMENTED</Text>

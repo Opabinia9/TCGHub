@@ -6,7 +6,7 @@ import { Image } from 'expo-image';
 import { Ionicons } from '@expo/vector-icons';
 import { router, useFocusEffect } from 'expo-router';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
-import type { CollectionCard } from '@/api/types';
+import type { CollectionCard, ListingCard } from '@/api/types';
 import { fetchTradeListings } from '@/api/tradeListings';
 import { fetchWishlistIds, updateCollectionCard } from '@/api/collection';
 import { createTradeChat, fetchChats } from '@/api/chats';
@@ -14,7 +14,11 @@ import { useQuery } from '@tanstack/react-query';
 import { authClient } from '@/utils/auth-client';
 
 // Cards other players have listed for trade.
-export default function TradeList() {
+type TradeListProps = {
+  query: string; // search text from the Trades screen
+};
+
+export default function TradeList({ query }: TradeListProps) {
   const insets = useSafeAreaInsets();
   const [listings, setListings] = useState<CollectionCard[]>([]);
   const [loading, setLoading] = useState(true);
@@ -97,8 +101,11 @@ export default function TradeList() {
     const chatId = await createTradeChat(sellerId, cardId);
     router.push({ pathname: '/chat/[id]', params: { id: chatId } });
   };
+  // Only show listings whose card name contains the search text.
+  const searchText = query.trim().toLowerCase();
+  const shownListings = listings.filter((item) => item.name.toLowerCase().includes(searchText));
 
-  const renderItem = ({ item }: { item: CollectionCard }) => {
+  const renderItem = ({ item }: { item: ListingCard }) => {
     const inWishlist = wishlistIds.has(item.id);
     const condition =
       item.condition && item.condition !== 'unmarked' ? item.condition : 'Condition not set';
@@ -123,7 +130,7 @@ export default function TradeList() {
           <View style={styles.sellerRow}>
             <Ionicons name="person-outline" size={13} color="#3A342B" />
             {/* TODO: show the seller's username once the API includes it */}
-            <Text style={styles.sellerText}>Player</Text>
+            <Text style={styles.sellerText}>{item.username}</Text>
           </View>
         </View>
 
@@ -161,7 +168,7 @@ export default function TradeList() {
   return (
     <View style={styles.container}>
       <FlatList
-        data={listings}
+        data={shownListings}
         renderItem={renderItem}
         keyExtractor={(item) => `${item.user_id}-${item.id}`}
         extraData={wishlistIds}
@@ -174,7 +181,26 @@ export default function TradeList() {
           loading ? (
             <ActivityIndicator style={styles.loading} color="#171717" />
           ) : (
-            <Text style={styles.emptyMessage}>{error ?? 'No cards listed right now.'}</Text>
+            <View style={styles.emptyState}>
+              <Ionicons
+                name={error ? 'alert-circle-outline' : 'search-outline'}
+                size={36}
+                color="#77705F"
+              />
+              <Text style={styles.emptyTitle}>
+                {error
+                  ? 'Something went wrong'
+                  : searchText
+                    ? 'No cards found'
+                    : 'No cards listed yet'}
+              </Text>
+              <Text style={styles.emptyText}>
+                {error ??
+                  (searchText
+                    ? 'Try another search.'
+                    : 'Check back soon, or list one of your own.')}
+              </Text>
+            </View>
           )
         }
       />
@@ -273,9 +299,19 @@ const styles = StyleSheet.create({
   loading: {
     marginTop: 40,
   },
-  emptyMessage: {
-    marginTop: 40,
+  emptyState: {
+    alignItems: 'center',
+    paddingVertical: 48,
+    gap: 10,
+  },
+  emptyTitle: {
+    fontSize: 18,
+    fontWeight: '800',
+    color: '#171717',
+  },
+  emptyText: {
+    fontSize: 13,
+    color: '#77705F',
     textAlign: 'center',
-    color: '#5A5246',
   },
 });

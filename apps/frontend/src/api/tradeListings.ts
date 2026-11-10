@@ -1,15 +1,22 @@
 import { ENV } from '@/api/env';
-import { MagicCard, toCollectionCard, UserCard } from './types';
+import {
+  ListedCard,
+  ListingCard,
+  MagicCard,
+  toCollectionCard,
+  toListingCard,
+  UserCard,
+} from './types';
 import { Pagination } from './types';
 import { authClient } from '@/utils/auth-client';
 
 type TradeListingsPage = {
-  items: Array<MagicCard>;
+  items: Array<ListingCard>;
   pagination: Pagination;
 };
 
 type TradeListingsApiResponse = {
-  items: Array<UserCard>;
+  items: Array<ListedCard>;
   pagination: Pagination;
 };
 
@@ -35,7 +42,7 @@ export async function fetchTradeListings(
   }
   const data: TradeListingsApiResponse = await res.json();
   return {
-    items: data.items.map(toCollectionCard),
+    items: data.items.map(toListingCard),
     pagination: data.pagination,
   };
 }

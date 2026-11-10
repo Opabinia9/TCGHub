@@ -59,7 +59,7 @@ export default function ChatList(props: Props): ReactNode {
       data={chats
         .filter((chat) => {
           return (
-            chat.name ?? chat.members.reduce((acc, cur) => (cur.id === selfId ? cur : acc)).name
+            chat.name ?? chat.members.reduce((acc, cur) => (cur.id === selfId ? cur : acc)).username
           ).includes(props.query.trim() ? props.query : '');
         })
         .map((chat) => (
@@ -120,7 +120,7 @@ function ChatRow({ chat }: { chat: ChatWithMessages }) {
     queryFn: () => fetchTrade(chat.sellerId ?? '', chat.cardId ?? ''),
   });
   const chatTitle: string =
-    chat.name ?? chat.members.reduce((acc, cur) => (cur.id === selfId ? cur : acc)).name;
+    chat.name ?? chat.members.reduce((acc, cur) => (cur.id === selfId ? cur : acc)).username;
   const selfId = authClient.useSession().data?.user.id;
   const last = chat.messages.at(-1);
   const lastDateString: string = dateStringToMessageDate(last?.createdAt ?? null, 'GENERAL');

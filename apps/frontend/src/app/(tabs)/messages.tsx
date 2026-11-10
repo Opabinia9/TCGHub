@@ -2,14 +2,14 @@ import { useState } from 'react';
 import { StyleSheet, View } from 'react-native';
 import { Searchbar, Text } from 'react-native-paper';
 import ChatList from '@/components/ChatList';
+import ScreenHeader from '@/components/screen-header';
 
 export default function MessagesScreen() {
   const [searchQuery, setSearchQuery] = useState('');
 
   return (
     <View style={styles.screen}>
-      <Text style={styles.title}>MESSAGES</Text>
-      {/* <Text style={styles.subtitle}>Chats with buyers, sellers and traders.</Text> */}
+      <ScreenHeader title='MESSAGES' subtitle='Chats with buyers, sellers and traders.' />
 
       <Searchbar
         placeholder='Search messages…'
@@ -48,8 +48,9 @@ const styles = StyleSheet.create({
     fontSize: 14,
     color: '#5A5246',
   },
-  searchbar: {
+    searchbar: {
     marginTop: 16,
+    marginHorizontal: 20,
     height: 46,
     borderRadius: 12,
     borderWidth: 1.5,

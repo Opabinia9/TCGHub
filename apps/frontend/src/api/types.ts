@@ -1,10 +1,8 @@
+import { runOnUISync } from 'react-native-worklets';
 import { CardsPage } from './cards';
+import { User } from './userTypes';
 
-type FetchFunc = (
-  search: string,
-  page?: number,
-  limit?: number,
-) => Promise<CardsPage>;
+type FetchFunc = (search: string, page?: number, limit?: number) => Promise<CardsPage>;
 
 export interface CardListProps {
   fetchlist: FetchFunc;
@@ -15,15 +13,7 @@ export interface CardListProps {
   variant?: 'browse' | 'wishlist' | 'listings'; // which buttons each card shows
 }
 
-export const FILTERS = [
-  'All',
-  'Creature',
-  'Sorcery',
-  'Enchantment',
-  'Instant',
-  'Artifact',
-  'Land',
-];
+export const FILTERS = ['All', 'Creature', 'Sorcery', 'Enchantment', 'Instant', 'Artifact', 'Land'];
 
 export type FilterOption = (typeof FILTERS)[number];
 
@@ -41,6 +31,17 @@ export type SearchCard = {
   toughness: string;
 };
 
+export type ListedCard = {
+  user_id: string;
+  card_id: string;
+  condition: string;
+  for_trade: boolean;
+  wishlist: boolean;
+  quantity: number;
+  Card: SearchCard;
+  User: User;
+};
+
 export type UserCard = {
   user_id: string;
   card_id: string;
@@ -50,6 +51,10 @@ export type UserCard = {
   quantity: number;
   Card: SearchCard;
 };
+
+export type ListingCard = Omit<UserCard, 'Card' | 'card_id'> &
+  Omit<User, 'id' | 'createdAt'> &
+  MagicCard;
 
 export type CollectionCard = Omit<UserCard, 'Card' | 'card_id'> & MagicCard;
 
@@ -93,13 +98,7 @@ export type MagicCard = {
 };
 
 export type CardCategory =
-  | 'Creature'
-  | 'Sorcery'
-  | 'Enchantment'
-  | 'Instant'
-  | 'Artifact'
-  | 'Land'
-  | null;
+  'Creature' | 'Sorcery' | 'Enchantment' | 'Instant' | 'Artifact' | 'Land' | null;
 
 export function toCategory(typeLine: string): CardCategory {
   const type = typeLine.toLowerCase();
@@ -165,5 +164,32 @@ export function toDeckCard(card: DeckCard): DeckList {
     finishes: card.Card.finishes,
     power: card.Card.power,
     toughness: card.Card.toughness,
+  };
+}
+
+export function toListingCard(card: ListedCard): ListingCard {
+  const type = card.Card.typeLine ?? 'unknown';
+  return {
+    user_id: card.user_id,
+    condition: card.condition,
+    for_trade: card.for_trade,
+    wishlist: card.wishlist,
+    quantity: card.quantity,
+
+    id: card.Card.id,
+    name: card.Card.name,
+    type,
+    category: toCategory(type),
+    setName: card.Card.setName,
+    imageUris: card.Card.imageUris,
+    prices: card.Card.prices,
+    finishes: card.Card.finishes,
+    power: card.Card.power,
+    toughness: card.Card.toughness,
+
+    username: card.User.username,
+    email: card.User.email,
+    image: card.User.image,
+    email_verified: card.User.email_verified,
   };
 }

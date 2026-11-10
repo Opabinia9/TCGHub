@@ -4,6 +4,7 @@ import { Searchbar, Text } from 'react-native-paper';
 import { Ionicons } from '@expo/vector-icons';
 import { router, useLocalSearchParams } from 'expo-router';
 import CardList from '@/components/card-list';
+import ScreenHeader from '@/components/screen-header';
 import { fetchCollection } from '@/api/collection';
 
 const MANA = {
@@ -80,45 +81,35 @@ export default function Decks() {
 
   const isCollection = tab === 'collection';
   const query = searchQuery.trim().toLowerCase();
-  const decks = MY_DECKS.filter((deck) =>
-    deck.name.toLowerCase().includes(query),
-  );
+  const decks = MY_DECKS.filter((deck) => deck.name.toLowerCase().includes(query));
 
   return (
     <View style={styles.screen}>
-      {/* Top part: title, toggle, search, filters (doesn't scroll) */}
-      <View style={styles.top}>
-        {/* Header */}
-        <View style={styles.header}>
-          <View>
-            <Text style={styles.title}>DECKS</Text>
-            <Text style={styles.subtitle}>
-              Discover, build and share decks.
-            </Text>
-          </View>
-
-          {!isCollection && (
+      <ScreenHeader
+        title="DECKS"
+        subtitle="Discover, build and share decks."
+        right={
+          !isCollection && (
             <Pressable
               onPress={() => console.log('New deck pressed')}
-              accessibilityRole='button'
-              accessibilityLabel='Create a new deck'
+              accessibilityRole="button"
+              accessibilityLabel="Create a new deck"
               style={styles.newButton}
             >
-              <Ionicons name='add' size={18} color='#FFFFFF' />
+              <Ionicons name="add" size={18} color="#FFFFFF" />
               <Text style={styles.newButtonText}>NEW</Text>
             </Pressable>
-          )}
-        </View>
+          )
+        }
+      />
 
+      {/* Top part: toggle, search, filters (doesn't scroll) */}
+      <View style={styles.top}>
         {/* My decks / My collection toggle */}
-        <View style={styles.toggle} accessibilityRole='tablist'>
+        <View style={styles.toggle} accessibilityRole="tablist">
+          <ToggleButton label="MY DECKS" active={tab === 'mine'} onPress={() => setTab('mine')} />
           <ToggleButton
-            label='MY DECKS'
-            active={tab === 'mine'}
-            onPress={() => setTab('mine')}
-          />
-          <ToggleButton
-            label='MY COLLECTION'
+            label="MY COLLECTION"
             active={isCollection}
             onPress={() => setTab('collection')}
           />
@@ -126,17 +117,15 @@ export default function Decks() {
 
         {/* Search */}
         <Searchbar
-          placeholder={
-            isCollection ? 'Search your collection…' : 'Search for a deck…'
-          }
+          placeholder={isCollection ? 'Search your collection…' : 'Search for a deck…'}
           value={searchQuery}
           onChangeText={setSearchQuery}
           style={styles.searchbar}
           inputStyle={styles.searchInput}
-          iconColor='#245f28'
-          placeholderTextColor='#7A705F'
-          selectionColor='#171717'
-          cursorColor='#171717'
+          iconColor="#245f28"
+          placeholderTextColor="#7A705F"
+          selectionColor="#171717"
+          cursorColor="#171717"
           elevation={0}
         />
 
@@ -147,12 +136,12 @@ export default function Decks() {
               key={label}
               onPress={() => console.log(label + ' filter pressed')}
               hitSlop={4}
-              accessibilityRole='button'
+              accessibilityRole="button"
               accessibilityLabel={`Filter by ${label.toLowerCase()}`}
               style={styles.filterChip}
             >
               <Text style={styles.filterText}>{label}</Text>
-              <Ionicons name='chevron-down' size={16} color='#171717' />
+              <Ionicons name="chevron-down" size={16} color="#171717" />
             </Pressable>
           ))}
         </View>
@@ -164,8 +153,8 @@ export default function Decks() {
           <CardList
             fetchlist={fetchCollection}
             query={searchQuery}
-            activeFilter='All'
-            emptyMessage='Unable to load your collection'
+            activeFilter="All"
+            emptyMessage="Unable to load your collection"
             refreshOnFocus
           />
         </View>
@@ -204,13 +193,11 @@ function ToggleButton({ label, active, onPress }: ToggleButtonProps) {
   return (
     <Pressable
       onPress={onPress}
-      accessibilityRole='tab'
+      accessibilityRole="tab"
       accessibilityState={{ selected: active }}
       style={[styles.toggleButton, active && styles.toggleButtonActive]}
     >
-      <Text style={[styles.toggleText, active && styles.toggleTextActive]}>
-        {label}
-      </Text>
+      <Text style={[styles.toggleText, active && styles.toggleTextActive]}>{label}</Text>
     </Pressable>
   );
 }
@@ -221,16 +208,9 @@ function DeckRow({ deck }: { deck: Deck }) {
   return (
     <View style={styles.deckRow}>
       <View style={[styles.deckArt, { backgroundColor: deck.artColor }]}>
-        <View
-          style={styles.pipRow}
-          accessible
-          accessibilityLabel={`Colours: ${colourNames}`}
-        >
+        <View style={styles.pipRow} accessible accessibilityLabel={`Colours: ${colourNames}`}>
           {deck.colors.map((c) => (
-            <View
-              key={c}
-              style={[styles.pip, { backgroundColor: MANA[c].color }]}
-            />
+            <View key={c} style={[styles.pip, { backgroundColor: MANA[c].color }]} />
           ))}
         </View>
       </View>
@@ -246,7 +226,7 @@ function DeckRow({ deck }: { deck: Deck }) {
 
       <Pressable
         onPress={() => console.log('View deck', deck.name)}
-        accessibilityRole='button'
+        accessibilityRole="button"
         accessibilityLabel={`View ${deck.name} deck`}
         style={styles.viewButton}
       >
@@ -265,7 +245,7 @@ const styles = StyleSheet.create({
   },
   top: {
     paddingHorizontal: 20,
-    paddingTop: 20,
+    paddingTop: 16,
   },
   listArea: {
     flex: 1,
@@ -274,7 +254,6 @@ const styles = StyleSheet.create({
     paddingHorizontal: 20,
     paddingBottom: 32,
   },
-
   header: {
     flexDirection: 'row',
     justifyContent: 'space-between',
@@ -306,7 +285,6 @@ const styles = StyleSheet.create({
     letterSpacing: 1.5,
     color: '#FFFFFF',
   },
-
   toggle: {
     flexDirection: 'row',
     padding: 4,

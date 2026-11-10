@@ -40,15 +40,12 @@ export type ChatPostMessageBodyInterface = z.infer<typeof chatPostMessageBodySch
 
 export const chatCreationBodySchema = z.discriminatedUnion('type', [
   z.object({
-    name: z.string(),
     type: z.enum([ChatType.TRADE]),
     sellerId: z.uuid(),
     cardId: z.uuid(),
-    members: z.array(z.uuid()).min(0).max(0),
   }),
   z.object({
     type: z.enum([ChatType.DIRECT]),
-    name: z.string(),
     members: z.array(z.uuid()).min(1).max(1),
   }),
   z.object({
@@ -74,6 +71,13 @@ export const cardIdParamsSchema = z.object({
 });
 
 /** Collections Types & Interfaces */
+
+export const tradeParams = z.object({
+  sellerId: z.uuid(),
+  cardId: z.uuid(),
+});
+
+export type TradeParamsInterface = z.infer<typeof tradeParams>;
 
 export const collectionBodyInterface = z
   .object({

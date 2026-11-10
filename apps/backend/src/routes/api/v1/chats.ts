@@ -31,11 +31,13 @@ export default async function chatRoutes(fastify: Fastify.FastifyInstance, optio
                 z.object({
                   id: z.uuid(),
                   type: z.enum(Object.values(ChatType)),
-                  name: z.string(),
+                  name: z.string().optional(),
+                  directKey: z.string().optional(),
                   sellerId: z.uuid().optional(),
                   cardId: z.uuid().optional(),
                   createdAt: z.date(),
-                  members: z.array(z.uuid()),
+                  // TODO: CHANGE THIS BULLSHIT
+                  members: z.array(z.any()),
                   lastReadMessageId: z.uuid().nullable(),
                   joinedAt: z.date(),
                 }),
@@ -63,7 +65,7 @@ export default async function chatRoutes(fastify: Fastify.FastifyInstance, optio
           201: z
             .object({
               success: z.string(),
-              chatID: z.uuid(),
+              chatId: z.uuid(),
             })
             .meta({ description: 'Created' }),
           401: z
@@ -105,9 +107,13 @@ export default async function chatRoutes(fastify: Fastify.FastifyInstance, optio
             .object({
               id: z.uuid(),
               type: z.enum(Object.values(ChatType)),
-              name: z.string(),
+              name: z.string().optional(),
+              directKey: z.string().optional(),
+              sellerId: z.uuid().optional(),
+              cardId: z.uuid().optional(),
               createdAt: z.date(),
-              members: z.array(z.uuid()),
+              // TODO: CAHNGE THIS BULLSHIT
+              members: z.array(z.any()),
               lastReadMessageId: z.uuid().nullable(),
               joinedAt: z.date(),
             })

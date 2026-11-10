@@ -1,12 +1,32 @@
-import type { Prisma, Chat } from '@prisma/client';
+import { type Prisma, type Chat, ChatType } from '@prisma/client';
+import { z } from 'zod';
 
-export type ChatCreationInterface = Pick<Chat, 'name' | 'type'>;
+export type ChatCreationInterface = Pick<
+  Chat,
+  'name' | 'type' | 'sellerId' | 'cardId' | 'directKey'
+>;
 
-export type ChatWithMembersCreationInterface = ChatCreationInterface & {
-  members: Array<string>;
-  sellerId?: string;
-  cardId?: string;
-};
+const chatWithMembersCreationZod = z.discriminatedUnion('type', [
+  z.object({
+    type: z.enum([ChatType.TRADE]),
+    members: z.array(z.string()).length(2),
+    directKey: z.string(),
+    sellerId: z.string(),
+    cardId: z.string(),
+  }),
+  z.object({
+    type: z.enum([ChatType.DIRECT]),
+    members: z.array(z.string()).length(2),
+    directKey: z.string(),
+  }),
+  z.object({
+    type: z.enum([ChatType.GROUP]),
+    name: z.string(),
+    members: z.array(z.string()).min(2),
+  }),
+]);
+
+export type ChatWithMembersCreationInterface = z.infer<typeof chatWithMembersCreationZod>;
 
 export const chatWithMessages = {
   include: { messages: true },
@@ -15,7 +35,7 @@ export const chatWithMessages = {
 export type ChatWithMessages = Prisma.ChatGetPayload<typeof chatWithMessages>;
 
 export const chatWithMembers = {
-  include: { members: true },
+  include: { members: { include: { User: true } } },
 } satisfies Prisma.ChatDefaultArgs;
 
 export type ChatWithMembers = Prisma.ChatGetPayload<typeof chatWithMembers>;

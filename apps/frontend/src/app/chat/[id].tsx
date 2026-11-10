@@ -9,6 +9,7 @@ import {
   TextInput,
   View,
 } from 'react-native';
+import { Image } from 'expo-image';
 import { Text } from 'react-native-paper';
 import { Ionicons } from '@expo/vector-icons';
 import { router, useLocalSearchParams } from 'expo-router';
@@ -26,15 +27,13 @@ import {
 } from '@/api/chats';
 import { FlatList } from 'react-native-gesture-handler';
 import { useQuery } from '@tanstack/react-query';
+import { fetchTrade } from '@/api/tradeListings';
 
-const QUICK_REPLIES = [
-  'Propose a trade',
-  'Suggest a meetup',
-  'Still available?',
-];
+const QUICK_REPLIES = ['Propose a trade', 'Suggest a meetup', 'Still available?'];
 
 export default function ChatScreen() {
   const { id: chatId } = useLocalSearchParams<{ id: string }>();
+  const selfId = authClient.useSession().data?.user.id;
   const [chat, setChat] = useState<Chat>();
   const [draft, setDraft] = useState('');
   const messagesRef = useRef<FlatList>(null);
@@ -45,16 +44,17 @@ export default function ChatScreen() {
     queryFn: fetchChats,
   });
   const { refetch: messageRefetch, data: messages } = useQuery({
-    queryKey: ['messages'],
+    queryKey: ['messages', chatId],
     queryFn: async () => await fetchMessages(chatId),
+  });
+  const { data: trade } = useQuery({
+    queryKey: ['trade', chat?.sellerId, chat?.cardId],
+    queryFn: () => fetchTrade(chat?.sellerId ?? '', chat?.cardId ?? ''),
   });
   const onViewableItemsChanged = useCallback(
     ({ viewableItems }: { viewableItems: Array<ListViewToken> }) => {
       if (chat != null) {
-        if (
-          !hasViewedLatest.current &&
-          viewableItems.some((v) => v.index === 0 && v.isViewable)
-        ) {
+        if (!hasViewedLatest.current && viewableItems.some((v) => v.index === 0 && v.isViewable)) {
           const message = viewableItems[0].item.props.message;
           if (message != null && message.id != chat.lastReadMessageId) {
             updateLastReadMessage(chat.id, message.id);
@@ -75,7 +75,7 @@ export default function ChatScreen() {
 
   const viewabilityConfig = useRef({
     itemVisiblePercentThreshold: 50,
-    minimumViewTime: 500,
+    minimumViewTime: 100,
   }).current;
 
   const renderMessage = ({ item }: { item: any }) => {
@@ -112,34 +112,42 @@ export default function ChatScreen() {
     <KeyboardAvoidingView
       style={styles.screen}
       behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
-      keyboardVerticalOffset={
-        Platform.OS === 'ios' ? insets.top - insets.bottom : 50
-      }
+      keyboardVerticalOffset={Platform.OS === 'ios' ? insets.top - insets.bottom : 50}
     >
       {/* Header */}
       <View style={styles.header}>
         <Pressable
           onPress={() => router.back()}
-          accessibilityRole='button'
-          accessibilityLabel='Back to messages'
+          accessibilityRole="button"
+          accessibilityLabel="Back to messages"
           style={styles.iconButton}
         >
-          <Ionicons name='chevron-back' size={26} color='#171717' />
+          <Ionicons name="chevron-back" size={26} color="#171717" />
         </Pressable>
         <View style={styles.avatar}>
-          <Text style={styles.avatarText}>{chat.name[0]}</Text>
+          <Text style={styles.avatarText}>
+            {
+              (chat.name ??
+                chat.members.reduce((acc, cur) => (cur.id === selfId ? cur : acc)).name)[0]
+            }
+          </Text>
         </View>
         <View style={styles.headerText}>
-          <Text style={styles.name}>{chat.members[1]}</Text>
+          <Text style={styles.name}>
+            {chat.name ?? chat.members.reduce((acc, cur) => (cur.id === selfId ? cur : acc)).name}
+          </Text>
+          {chat.type === 'TRADE' ? (
+            <Text style={styles.distance}>DISTANCE NOT IMPLEMENTED</Text>
+          ) : null}
         </View>
         {/* NOTE: this currently does nothing */}
         <Pressable
           onPress={() => console.log('More options pressed')}
-          accessibilityRole='button'
-          accessibilityLabel='More options'
+          accessibilityRole="button"
+          accessibilityLabel="More options"
           style={styles.iconButton}
         >
-          <Ionicons name='ellipsis-vertical' size={22} color='#171717' />
+          <Ionicons name="ellipsis-vertical" size={22} color="#171717" />
         </Pressable>
       </View>
 
@@ -148,19 +156,24 @@ export default function ChatScreen() {
         {chat.type === 'TRADE' ? (
           <Pressable
             onPress={() => console.log('View listing', chat.cardId)}
-            accessibilityRole='button'
+            accessibilityRole="button"
             accessibilityLabel={`View listing: ${chat.cardId}`}
             style={styles.listing}
           >
             {/* TODO: better background color */}
             <View style={styles.listingThumbFrame}>
-              <View
-                style={[styles.listingThumb, { backgroundColor: '#FF0000' }]}
+              <View style={[styles.listingThumb, { backgroundColor: '#FF0000' }]} />
+              <Image
+                source={{
+                  uri: trade?.Card.imageUris?.small ?? trade?.Card.imageUris?.normal ?? undefined,
+                }}
+                style={styles.cardImage}
+                contentFit="cover"
               />
             </View>
             <View style={styles.listingText}>
-              <Text style={styles.listingName}>CARD NAME GOES HERE</Text>
-              <Text style={styles.listingDetail}>CONDITION GOES HERE</Text>
+              <Text style={styles.listingName}>{trade?.Card.name}</Text>
+              <Text style={styles.listingDetail}>{trade?.condition}</Text>
             </View>
             <Text style={styles.listingLink}>View listing</Text>
           </Pressable>
@@ -172,9 +185,7 @@ export default function ChatScreen() {
         inverted
         ref={messagesRef}
         style={styles.messageScroll}
-        data={messages
-          .map((message) => <MessageBubble message={message} />)
-          .reverse()}
+        data={messages.map((message) => <MessageBubble message={message} />).reverse()}
         renderItem={renderMessage}
         onViewableItemsChanged={onViewableItemsChanged}
         viewabilityConfig={viewabilityConfig}
@@ -192,7 +203,7 @@ export default function ChatScreen() {
               <Pressable
                 key={reply}
                 onPress={() => setDraft(reply)}
-                accessibilityRole='button'
+                accessibilityRole="button"
                 style={styles.quickReply}
               >
                 <Text style={styles.quickReplyText}>{reply}</Text>
@@ -206,25 +217,22 @@ export default function ChatScreen() {
             value={draft}
             onChangeText={setDraft}
             onSubmitEditing={send}
-            placeholder='Message…'
-            placeholderTextColor='#7A705F'
-            selectionColor='#171717'
-            cursorColor='#171717'
-            returnKeyType='send'
+            placeholder="Message…"
+            placeholderTextColor="#7A705F"
+            selectionColor="#171717"
+            cursorColor="#171717"
+            returnKeyType="send"
             accessibilityLabel={`Message ${chat.name}`}
             style={styles.input}
           />
           <Pressable
             onPress={send}
             disabled={!draft.trim()}
-            accessibilityRole='button'
-            accessibilityLabel='Send message'
-            style={[
-              styles.sendButton,
-              !draft.trim() && styles.sendButtonDisabled,
-            ]}
+            accessibilityRole="button"
+            accessibilityLabel="Send message"
+            style={[styles.sendButton, !draft.trim() && styles.sendButtonDisabled]}
           >
-            <Ionicons name='arrow-up' size={22} color='#FFFFFF' />
+            <Ionicons name="arrow-up" size={22} color="#FFFFFF" />
           </Pressable>
         </View>
       </View>
@@ -234,35 +242,23 @@ export default function ChatScreen() {
 
 function MessageBubble({ message }: { message: Message }) {
   const selfId = authClient.useSession().data?.user.id;
-  const MessageDateString: string = dateStringToMessageDate(
-    message.createdAt ?? null,
-    'SPECIFIC',
-  );
+  const MessageDateString: string = dateStringToMessageDate(message.createdAt ?? null, 'SPECIFIC');
 
   return (
     <View>
       <View
         style={[
           styles.bubbleWrap,
-          message.senderId === selfId
-            ? styles.bubbleWrapMine
-            : styles.bubbleWrapTheirs,
+          message.senderId === selfId ? styles.bubbleWrapMine : styles.bubbleWrapTheirs,
         ]}
       >
         <View
           style={[
             styles.bubble,
-            message.senderId === selfId
-              ? styles.bubbleMine
-              : styles.bubbleTheirs,
+            message.senderId === selfId ? styles.bubbleMine : styles.bubbleTheirs,
           ]}
         >
-          <Text
-            style={[
-              styles.bubbleText,
-              message.senderId === selfId && styles.bubbleTextMine,
-            ]}
-          >
+          <Text style={[styles.bubbleText, message.senderId === selfId && styles.bubbleTextMine]}>
             {message.body}
           </Text>
         </View>
@@ -473,5 +469,9 @@ const styles = StyleSheet.create({
   },
   sendButtonDisabled: {
     opacity: 0.4,
+  },
+  cardImage: {
+    width: '100%',
+    height: '100%',
   },
 });

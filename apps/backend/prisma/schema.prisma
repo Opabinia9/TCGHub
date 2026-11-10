@@ -65,7 +65,8 @@ model Report {
 model Chat {
   id        String       @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
   type      ChatType
-  name      String
+  name      String?
+  directKey String?      @unique
   sellerId  String?      @map("seller_id") @db.Uuid
   cardId    String?      @map("card_id") @db.Uuid
   createdAt DateTime     @default(now()) @map("created_at") @db.Timestamp(6)

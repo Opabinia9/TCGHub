@@ -1,21 +1,17 @@
 import { useCallback, useState } from 'react';
-import {
-  ActivityIndicator,
-  Pressable,
-  StyleSheet,
-  Text,
-  View,
-} from 'react-native';
+import { ActivityIndicator, Pressable, StyleSheet, Text, View } from 'react-native';
 import { FlatList } from 'react-native-gesture-handler';
 import { Portal, Snackbar } from 'react-native-paper';
 import { Image } from 'expo-image';
 import { Ionicons } from '@expo/vector-icons';
-import { useFocusEffect } from 'expo-router';
+import { router, useFocusEffect } from 'expo-router';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import type { CollectionCard } from '@/api/types';
 import { fetchTradeListings } from '@/api/tradeListings';
 import { fetchWishlistIds, updateCollectionCard } from '@/api/collection';
-import { createChat } from '@/api/chats';
+import { createTradeChat, fetchChats } from '@/api/chats';
+import { useQuery } from '@tanstack/react-query';
+import { authClient } from '@/utils/auth-client';
 
 // Cards other players have listed for trade.
 export default function TradeList() {
@@ -25,6 +21,11 @@ export default function TradeList() {
   const [error, setError] = useState<string | null>(null);
   const [wishlistIds, setWishlistIds] = useState<Set<string>>(new Set());
   const [message, setMessage] = useState<string | null>(null);
+  const { data: chats } = useQuery({
+    queryKey: ['chats'],
+    queryFn: fetchChats,
+  });
+  const selfId = authClient.useSession().data?.user.id;
 
   // Load the listings and your wishlist every time the Trades tab comes into view.
   useFocusEffect(
@@ -33,18 +34,14 @@ export default function TradeList() {
       setLoading(true);
       setError(null);
 
-      Promise.all([
-        fetchTradeListings(''),
-        fetchWishlistIds().catch(() => new Set<string>()),
-      ])
+      Promise.all([fetchTradeListings(''), fetchWishlistIds().catch(() => new Set<string>())])
         .then(([page, ids]) => {
           if (cancelled) return;
           setListings(page.items as CollectionCard[]);
           setWishlistIds(ids);
         })
         .catch(() => {
-          if (!cancelled)
-            setError('Unable to load listings. Please try again later.');
+          if (!cancelled) setError('Unable to load listings. Please try again later.');
         })
         .finally(() => {
           if (!cancelled) setLoading(false);
@@ -85,12 +82,26 @@ export default function TradeList() {
     }
   }
 
+  const messageSeller = async (sellerId: string, cardId: string) => {
+    console.log('A');
+    if (chats) {
+      console.log('HERE?');
+      for (const chat of chats) {
+        if (chat.directKey === `${selfId}:${sellerId}:${cardId}`) {
+          console.log('Please');
+          router.push({ pathname: '/chat/[id]', params: { id: chat.id } });
+          return;
+        }
+      }
+    }
+    const chatId = await createTradeChat(sellerId, cardId);
+    router.push({ pathname: '/chat/[id]', params: { id: chatId } });
+  };
+
   const renderItem = ({ item }: { item: CollectionCard }) => {
     const inWishlist = wishlistIds.has(item.id);
     const condition =
-      item.condition && item.condition !== 'unmarked'
-        ? item.condition
-        : 'Condition not set';
+      item.condition && item.condition !== 'unmarked' ? item.condition : 'Condition not set';
 
     return (
       <View style={styles.card}>
@@ -99,7 +110,7 @@ export default function TradeList() {
             uri: item.imageUris?.normal ?? item.imageUris?.grid ?? undefined,
           }}
           style={styles.cardImage}
-          contentFit='cover'
+          contentFit="cover"
         />
 
         <View style={styles.cardInfo}>
@@ -110,7 +121,7 @@ export default function TradeList() {
             {condition} · ×{item.quantity}
           </Text>
           <View style={styles.sellerRow}>
-            <Ionicons name='person-outline' size={13} color='#3A342B' />
+            <Ionicons name="person-outline" size={13} color="#3A342B" />
             {/* TODO: show the seller's username once the API includes it */}
             <Text style={styles.sellerText}>Player</Text>
           </View>
@@ -118,28 +129,23 @@ export default function TradeList() {
 
         <View style={styles.actionRow}>
           <Pressable
-            onPress={() => createChat(item, 'TRADE', item.user_id)}
-            accessibilityRole='button'
+            onPress={async () => await messageSeller(item.user_id, item.id)}
+            accessibilityRole="button"
             accessibilityLabel={`Message the seller about ${item.name}`}
             style={styles.messageButton}
           >
-            <Ionicons name='chatbubble-outline' size={17} color='#171717' />
+            <Ionicons name="chatbubble-outline" size={17} color="#171717" />
             <Text style={styles.messageButtonText}>MESSAGE</Text>
           </Pressable>
 
           <Pressable
             onPress={() => toggleWishlist(item)}
-            accessibilityRole='button'
+            accessibilityRole="button"
             accessibilityState={{ selected: inWishlist }}
             accessibilityLabel={
-              inWishlist
-                ? `Remove ${item.name} from wishlist`
-                : `Add ${item.name} to wishlist`
+              inWishlist ? `Remove ${item.name} from wishlist` : `Add ${item.name} to wishlist`
             }
-            style={[
-              styles.wishlistButton,
-              inWishlist && styles.wishlistButtonActive,
-            ]}
+            style={[styles.wishlistButton, inWishlist && styles.wishlistButtonActive]}
           >
             <Ionicons
               name={inWishlist ? 'heart' : 'heart-outline'}
@@ -166,11 +172,9 @@ export default function TradeList() {
         showsVerticalScrollIndicator={false}
         ListEmptyComponent={
           loading ? (
-            <ActivityIndicator style={styles.loading} color='#171717' />
+            <ActivityIndicator style={styles.loading} color="#171717" />
           ) : (
-            <Text style={styles.emptyMessage}>
-              {error ?? 'No cards listed right now.'}
-            </Text>
+            <Text style={styles.emptyMessage}>{error ?? 'No cards listed right now.'}</Text>
           )
         }
       />

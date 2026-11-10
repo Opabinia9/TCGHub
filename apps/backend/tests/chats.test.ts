@@ -56,12 +56,14 @@ describe('GET /api/v1/chats', () => {
     expect(payload).toHaveProperty('chats');
     expect(payload.chats).toHaveLength(createChatsInput.length);
     payload.chats.reverse().forEach((x, idx) => {
-      expect(x).toEqual({
+      expect(x).toMatchObject({
         id: savedChats[idx].id,
         type: createChatsInput[idx].type,
         name: createChatsInput[idx].name,
         createdAt: savedChats[idx].createdAt.toISOString(),
-        members: createChatsInput[idx].memberIDs,
+        members: createChatsInput[idx].memberIDs.map((id) => {
+          return { id };
+        }),
         lastReadMessageId: null,
         joinedAt: expect.any(String),
       });
@@ -106,7 +108,7 @@ describe('POST /api/v1/chats', () => {
     });
     const payload = await response.json();
     expect(response.statusCode).toBe(201);
-    expect(payload).toHaveProperty('chatID');
+    expect(payload).toHaveProperty('chatId');
     expect(payload).toMatchObject({
       success: 'Chat created',
     });

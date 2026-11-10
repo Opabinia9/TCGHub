@@ -25,10 +25,11 @@ export default class ChatRepository extends Repository<Chat> {
   async addChatWithMembers(chat: ChatWithMembersCreationInterface): Promise<Chat> {
     return this.db.chat.create({
       data: {
-        name: chat.name,
+        name: chat.type === 'GROUP' ? chat.name : null,
         type: chat.type,
-        sellerId: chat.sellerId ?? null,
-        cardId: chat.cardId ?? null,
+        directKey: chat.type !== 'GROUP' ? chat.directKey : null,
+        sellerId: chat.type === 'TRADE' ? chat.sellerId : null,
+        cardId: chat.type === 'TRADE' ? chat.cardId : null,
         members: {
           create: chat.members.map((memberId) => {
             return {

@@ -1,12 +1,14 @@
 import { authClient } from '@/utils/auth-client';
+import { User } from './userTypes';
 export interface Chat {
   id: string;
-  name: string;
+  name?: string;
   type: 'DIRECT' | 'GROUP' | 'TRADE';
+  directKey?: string;
   sellerId?: string;
   cardId?: string;
   createdAt: Date;
-  members: Array<string>;
+  members: Array<User>;
   lastReadMessageId: string;
   joinedAt: string;
 }
@@ -153,4 +155,22 @@ export async function updateLastReadMessage(chatId: string, messageId: string) {
     console.error(response);
     throw new Error(`Failed to load chats (${response.status})`);
   }
+}
+
+export async function createTradeChat(sellerId: string, cardId: string) {
+  const cookies = await authClient.getCookie();
+  const headers = {
+    Cookie: cookies,
+    'Content-Type': 'application/json',
+  };
+  const response = await fetch(`http://${process.env.EXPO_PUBLIC_API_URL}/api/v1/chats`, {
+    method: 'POST',
+    headers,
+    body: JSON.stringify({ type: 'TRADE', sellerId, cardId }),
+  });
+  if (!response.ok) {
+    throw new Error(`Failed to load chats (${response.status})`);
+  }
+  const payload: { success: string; chatId: string } = await response.json();
+  return payload.chatId;
 }

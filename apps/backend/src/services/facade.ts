@@ -151,6 +151,10 @@ export default class Facade {
     return await this.userCardsRepo.getTrades(user_id);
   }
 
+  async getTrade(sellerId: string, cardId: string) {
+    return await this.userCardsRepo.getTrade(sellerId, cardId);
+  }
+
   async getUserTrades(user_id: string): Promise<UserCollection> {
     return await this.userCardsRepo.getUserTrades(user_id);
   }

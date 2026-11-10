@@ -14,17 +14,30 @@ export default function CardsScreen() {
   return (
     <>
       <View style={styles.filterSection}>
-        <ScreenHeader title="EXPLORE CARDS" subtitle="Find cards to collect and trade." />
+        <ScreenHeader
+          title='EXPLORE CARDS'
+          subtitle='Find cards to collect and trade.'
+        />
         <View style={styles.filterList}>
-          <ScrollView horizontal showsHorizontalScrollIndicator={false} style={{ gap: 10 }}>
+          <ScrollView
+            horizontal
+            showsHorizontalScrollIndicator={false}
+            style={{ gap: 10 }}
+          >
             {FILTERS.map((filter) => (
               <Pressable
                 key={filter}
                 onPress={() => setActiveFilter(filter)}
-                style={[styles.filterButton, activeFilter === filter && styles.activeFilterButton]}
+                style={[
+                  styles.filterButton,
+                  activeFilter === filter && styles.activeFilterButton,
+                ]}
               >
                 <Text
-                  style={[styles.filterText, activeFilter === filter && styles.activeFilterText]}
+                  style={[
+                    styles.filterText,
+                    activeFilter === filter && styles.activeFilterText,
+                  ]}
                 >
                   {filter}
                 </Text>
@@ -34,25 +47,25 @@ export default function CardsScreen() {
         </View>
 
         <View style={styles.searchBar}>
-          <Ionicons name="search-outline" size={20} color="#77705F" />
+          <Ionicons name='search-outline' size={20} color='#77705F' />
 
           <TextInput
-            placeholder="Search your cards..."
+            placeholder='Search your cards...'
             value={searchQuery}
             onChangeText={setSearchQuery}
-            mode="flat"
-            underlineColor="transparent"
-            activeUnderlineColor="transparent"
+            mode='flat'
+            underlineColor='transparent'
+            activeUnderlineColor='transparent'
             style={styles.searchInput}
             contentStyle={styles.searchInputContent}
-            placeholderTextColor="#77705F"
-            textColor="#171717"
-            selectionColor="#171717"
-            cursorColor="#171717"
+            placeholderTextColor='#77705F'
+            textColor='#171717'
+            selectionColor='#171717'
+            cursorColor='#171717'
           />
           {searchQuery.length > 0 && (
             <Pressable onPress={() => setSearchQuery('')}>
-              <Ionicons name="close-circle" size={20} color="#77705F" />
+              <Ionicons name='close-circle' size={20} color='#77705F' />
             </Pressable>
           )}
         </View>
@@ -60,7 +73,7 @@ export default function CardsScreen() {
           fetchlist={fetchCards}
           query={searchQuery}
           activeFilter={activeFilter}
-          emptyMessage="Unable to load cards"
+          emptyMessage='Unable to load cards'
         />
       </View>
     </>

@@ -36,7 +36,7 @@ export default class CardRepository extends Repository<CardSummary> {
       };
     }
     if (filters.rarity) {
-      where.rarity = filters.rarity.toLowerCase();
+      where.rarity = { contains: filters.rarity, mode: 'insensitive' };
     }
     if (filters.colors) {
       where.colors = { has: filters.colors.toUpperCase() };
@@ -45,10 +45,10 @@ export default class CardRepository extends Repository<CardSummary> {
       where.oracleText = { contains: filters.oracleText, mode: 'insensitive' };
     }
     if (filters.typeLine) {
-      where.typeLine = filters.typeLine.toLowerCase();
+      where.typeLine = { contains: filters.typeLine, mode: 'insensitive' };
     }
     if (filters.manaCost) {
-      where.manaCost = filters.manaCost.toLowerCase();
+      where.manaCost = { contains: filters.manaCost, mode: 'insensitive' };
     }
     if (filters.cmc) {
       where.cmc = filters.cmc;

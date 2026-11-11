@@ -1,13 +1,13 @@
 import { ENV } from '@/api/env';
 import {
+  Pagination,
+  FilterOption,
   ListedCard,
   ListingCard,
   MagicCard,
-  toCollectionCard,
   toListingCard,
   UserCard,
 } from './types';
-import { Pagination } from './types';
 import { authClient } from '@/utils/auth-client';
 
 type TradeListingsPage = {
@@ -22,6 +22,7 @@ type TradeListingsApiResponse = {
 
 export async function fetchTradeListings(
   search: string,
+  filter: FilterOption = 'all',
   page = 1,
   limit = 20,
 ): Promise<TradeListingsPage> {
@@ -30,7 +31,7 @@ export async function fetchTradeListings(
     limit: String(limit),
   });
   if (search) {
-    params.set('name', search);
+    params.set(filter, search);
   }
   const cookies = await authClient.getCookie();
   const headers = { Cookie: cookies };

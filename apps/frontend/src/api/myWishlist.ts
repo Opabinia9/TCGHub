@@ -1,5 +1,5 @@
 import { ENV } from '@/api/env';
-import { MagicCard, toCollectionCard, UserCard } from './types';
+import { FilterOption, MagicCard, toCollectionCard, UserCard } from './types';
 import { Pagination } from './types';
 import { authClient } from '@/utils/auth-client';
 
@@ -15,6 +15,7 @@ type WishlistApiResponse = {
 
 export async function fetchWishlist(
   search: string,
+  filter: FilterOption = 'all',
   page = 1,
   limit = 20,
 ): Promise<WishlistPage> {
@@ -23,14 +24,13 @@ export async function fetchWishlist(
     limit: String(limit),
   });
   if (search) {
-    params.set('name', search);
+    params.set(filter, search);
   }
   const cookies = await authClient.getCookie();
   const headers = { Cookie: cookies };
-  const res = await fetch(
-    `http://${ENV.EXPO_PUBLIC_API_URL}/api/v1/collection/wishlist`,
-    { headers },
-  );
+  const res = await fetch(`http://${ENV.EXPO_PUBLIC_API_URL}/api/v1/collection/wishlist`, {
+    headers,
+  });
   if (!res.ok) {
     throw new Error(`Failed to load Wishlist (${res.status})`);
   }

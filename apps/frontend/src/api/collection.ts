@@ -1,6 +1,5 @@
 import { ENV } from '@/api/env';
-import { MagicCard, toCollectionCard, UserCard } from './types';
-import { Pagination } from './types';
+import { Pagination, FilterOption, MagicCard, toCollectionCard, UserCard } from '@/api/types';
 import { authClient } from '@/utils/auth-client';
 
 type CollectionPage = {
@@ -15,6 +14,7 @@ type CollectionApiResponse = {
 
 export async function fetchCollection(
   search: string,
+  filter: FilterOption = 'all',
   page = 1,
   limit = 20,
 ): Promise<CollectionPage> {
@@ -27,10 +27,10 @@ export async function fetchCollection(
   }
   const cookies = await authClient.getCookie();
   const headers = { Cookie: cookies };
-  const res = await fetch(
-    `http://${ENV.EXPO_PUBLIC_API_URL}/api/v1/collection`,
-    { headers },
-  );
+  if (search.length >= 1) {
+    params.set(filter, search);
+  }
+  const res = await fetch(`http://${ENV.EXPO_PUBLIC_API_URL}/api/v1/collection`, { headers });
   if (!res.ok) {
     throw new Error(`Failed to load collection (${res.status})`);
   }
@@ -43,7 +43,7 @@ export async function fetchCollection(
 
 export type CollectionUpdate = {
   card_id: string;
-  quantity: number; 
+  quantity: number;
   for_trade: boolean;
   wishlist: boolean;
   condition?: string;
@@ -62,14 +62,12 @@ export async function updateCollectionCard(body: CollectionUpdate): Promise<void
   }
 }
 
-
 // The ids of the cards on your wishlist.
 export async function fetchWishlistIds(): Promise<Set<string>> {
   const cookies = await authClient.getCookie();
-  const res = await fetch(
-    `http://${ENV.EXPO_PUBLIC_API_URL}/api/v1/collection/wishlist`,
-    { headers: { Cookie: cookies } },
-  );
+  const res = await fetch(`http://${ENV.EXPO_PUBLIC_API_URL}/api/v1/collection/wishlist`, {
+    headers: { Cookie: cookies },
+  });
   if (!res.ok) {
     throw new Error(`Failed to load wishlist (${res.status})`);
   }

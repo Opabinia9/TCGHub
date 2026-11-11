@@ -6,6 +6,9 @@ import { router, useLocalSearchParams } from 'expo-router';
 import CardList from '@/components/card-list';
 import ScreenHeader from '@/components/screen-header';
 import { fetchCollection } from '@/api/collection';
+import { layout } from '@/constants/theme';
+import { searchStyles } from '@/constants/search-filter-styles';
+import { buttonStyles, ToggleButton } from '@/components/toggle-button';
 
 const MANA = {
   G: { color: '#2e7d32', name: 'green' },
@@ -84,7 +87,7 @@ export default function Decks() {
   const decks = MY_DECKS.filter((deck) => deck.name.toLowerCase().includes(query));
 
   return (
-    <View style={styles.screen}>
+    <View style={layout.screen}>
       <ScreenHeader
         title="DECKS"
         subtitle="Discover, build and share decks."
@@ -104,9 +107,9 @@ export default function Decks() {
       />
 
       {/* Top part: toggle, search, filters (doesn't scroll) */}
-      <View style={styles.top}>
+      <View style={layout.top}>
         {/* My decks / My collection toggle */}
-        <View style={styles.toggle} accessibilityRole="tablist">
+        <View style={buttonStyles.toggle} accessibilityRole="tablist">
           <ToggleButton label="MY DECKS" active={tab === 'mine'} onPress={() => setTab('mine')} />
           <ToggleButton
             label="MY COLLECTION"
@@ -115,13 +118,12 @@ export default function Decks() {
           />
         </View>
 
-        {/* Search */}
         <Searchbar
           placeholder={isCollection ? 'Search your collection…' : 'Search for a deck…'}
           value={searchQuery}
           onChangeText={setSearchQuery}
-          style={styles.searchbar}
-          inputStyle={styles.searchInput}
+          style={searchStyles.searchbar}
+          inputStyle={searchStyles.searchInput}
           iconColor="#245f28"
           placeholderTextColor="#7A705F"
           selectionColor="#171717"
@@ -129,7 +131,6 @@ export default function Decks() {
           elevation={0}
         />
 
-        {/* Filters */}
         <View style={styles.filterRow}>
           {FILTERS.map((label) => (
             <Pressable
@@ -145,63 +146,40 @@ export default function Decks() {
             </Pressable>
           ))}
         </View>
-      </View>
-
-      {/* Bottom part: scrolls by itself */}
-      {isCollection ? (
-        <View style={styles.listArea}>
+        {/* Bottom part: scrolls by itself */}
+        {isCollection ? (
           <CardList
             fetchlist={fetchCollection}
             query={searchQuery}
-            activeFilter="All"
+            activeFilter="all"
             emptyMessage="Unable to load your collection"
             refreshOnFocus
           />
-        </View>
-      ) : (
-        <ScrollView
-          style={styles.listArea}
-          contentContainerStyle={styles.deckScroll}
-          showsVerticalScrollIndicator={false}
-        >
-          <View style={styles.deckList}>
-            {decks.map((deck) => (
-              <DeckRow key={deck.id} deck={deck} />
-            ))}
-          </View>
+        ) : (
+          <ScrollView
+            style={styles.listArea}
+            contentContainerStyle={styles.deckScroll}
+            showsVerticalScrollIndicator={false}
+          >
+            <View style={styles.deckList}>
+              {decks.map((deck) => (
+                <DeckRow key={deck.id} deck={deck} />
+              ))}
+            </View>
 
-          {decks.length === 0 && (
-            <Text style={styles.emptyMessage}>
-              {query ? `No decks match "${searchQuery}".` : 'No decks yet.'}
-            </Text>
-          )}
-        </ScrollView>
-      )}
+            {decks.length === 0 && (
+              <Text style={styles.emptyMessage}>
+                {query ? `No decks match "${searchQuery}".` : 'No decks yet.'}
+              </Text>
+            )}
+          </ScrollView>
+        )}
+      </View>
     </View>
   );
 }
 
 // ─── Pieces ──────────────────────────────────────────────────────────────────
-
-type ToggleButtonProps = {
-  label: string;
-  active: boolean;
-  onPress: () => void;
-};
-
-function ToggleButton({ label, active, onPress }: ToggleButtonProps) {
-  return (
-    <Pressable
-      onPress={onPress}
-      accessibilityRole="tab"
-      accessibilityState={{ selected: active }}
-      style={[styles.toggleButton, active && styles.toggleButtonActive]}
-    >
-      <Text style={[styles.toggleText, active && styles.toggleTextActive]}>{label}</Text>
-    </Pressable>
-  );
-}
-
 function DeckRow({ deck }: { deck: Deck }) {
   const colourNames = deck.colors.map((c) => MANA[c].name).join(' and ');
 
@@ -239,14 +217,6 @@ function DeckRow({ deck }: { deck: Deck }) {
 // ─── Styles ──────────────────────────────────────────────────────────────────
 
 const styles = StyleSheet.create({
-  screen: {
-    flex: 1,
-    backgroundColor: '#E2D7BD',
-  },
-  top: {
-    paddingHorizontal: 20,
-    paddingTop: 16,
-  },
   listArea: {
     flex: 1,
   },
@@ -285,46 +255,6 @@ const styles = StyleSheet.create({
     letterSpacing: 1.5,
     color: '#FFFFFF',
   },
-  toggle: {
-    flexDirection: 'row',
-    padding: 4,
-    borderRadius: 12,
-    backgroundColor: '#D8C9A8',
-  },
-  toggleButton: {
-    flex: 1,
-    height: 38,
-    borderRadius: 9,
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  toggleButtonActive: {
-    backgroundColor: '#171717',
-  },
-  toggleText: {
-    fontFamily: 'BarlowCondensed_700Bold',
-    fontSize: 14,
-    letterSpacing: 1.4,
-    color: '#3A342B',
-  },
-  toggleTextActive: {
-    color: '#E2D7BD',
-  },
-
-  searchbar: {
-    marginTop: 14,
-    height: 46,
-    borderRadius: 12,
-    borderWidth: 1.5,
-    borderColor: '#B9A985',
-    backgroundColor: '#EFE7D4',
-  },
-  searchInput: {
-    minHeight: 0,
-    fontSize: 15,
-    color: '#171717',
-  },
-
   filterRow: {
     flexDirection: 'row',
     gap: 8,
@@ -347,7 +277,6 @@ const styles = StyleSheet.create({
     letterSpacing: 1.1,
     color: '#171717',
   },
-
   deckList: {
     marginTop: 16,
     borderTopWidth: 1,

@@ -1,10 +1,9 @@
-import { runOnUISync } from 'react-native-worklets';
 import { CardsPage } from './cards';
 import { User } from './userTypes';
 
 type FetchFunc = (
   search: string,
-  filter: FilterOption,
+  filter?: FilterOption,
   page?: number,
   limit?: number,
 ) => Promise<CardsPage>;
@@ -15,7 +14,7 @@ export interface CardListProps {
   activeFilter: FilterOption;
   emptyMessage: string;
   refreshOnFocus?: boolean; // reload every time the screen comes into view
-  variant?: 'browse' | 'wishlist' | 'listings'; // which buttons each card shows
+  variant?: 'browse' | 'wishlist' | 'trades'; // which buttons each card shows
 }
 
 export const FILTERS = [
@@ -114,13 +113,7 @@ export type MagicCard = {
 };
 
 export type CardCategory =
-  | 'Creature'
-  | 'Sorcery'
-  | 'Enchantment'
-  | 'Instant'
-  | 'Artifact'
-  | 'Land'
-  | null;
+  'Creature' | 'Sorcery' | 'Enchantment' | 'Instant' | 'Artifact' | 'Land' | null;
 
 export function toCategory(typeLine: string): CardCategory {
   const type = typeLine.toLowerCase();

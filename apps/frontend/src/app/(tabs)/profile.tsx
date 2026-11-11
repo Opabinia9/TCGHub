@@ -46,7 +46,7 @@ export default function Profile() {
         <View style={styles.profileHeader}>
           <Avatar.Icon size={76} icon="account" color="#E2D7BD" style={styles.avatar} />
 
-          <View style={styles.userInfo}>
+          <View style={{ flex: 1, gap: 4 }}>
             <Text style={styles.name}>{session?.user.name}</Text>
             <Text style={styles.username}>@{session?.user.username}</Text>
           </View>
@@ -78,7 +78,7 @@ export default function Profile() {
                 onChangeText={setEditedBio}
                 multiline
                 maxLength={150}
-                style={styles.bioInput}
+                style={{ backgroundColor: '#F4EBDD' }}
                 textColor="#171717"
                 placeholderTextColor="#655d50"
                 outlineColor="#655D50"
@@ -147,10 +147,6 @@ const styles = StyleSheet.create({
   avatar: {
     backgroundColor: '#171717',
   },
-  userInfo: {
-    flex: 1,
-    gap: 4,
-  },
   name: {
     color: '#171717',
     fontSize: 20,
@@ -171,9 +167,6 @@ const styles = StyleSheet.create({
     color: '#171717',
     fontSize: 15,
     lineHeight: 22,
-  },
-  bioInput: {
-    backgroundColor: '#F4EBDD',
   },
   saveButton: {
     marginTop: 12,

@@ -15,6 +15,7 @@ type MyTradesApiResponse = {
 
 export async function fetchMyTrades(
   search: string,
+  filter = 'name',
   page = 1,
   limit = 20,
 ): Promise<MyTradesPage> {
@@ -23,14 +24,13 @@ export async function fetchMyTrades(
     limit: String(limit),
   });
   if (search) {
-    params.set('name', search);
+    params.set(filter, search);
   }
   const cookies = await authClient.getCookie();
   const headers = { Cookie: cookies };
-  const res = await fetch(
-    `http://${ENV.EXPO_PUBLIC_API_URL}/api/v1/collection/trades`,
-    { headers },
-  );
+  const res = await fetch(`http://${ENV.EXPO_PUBLIC_API_URL}/api/v1/collection/trades`, {
+    headers,
+  });
   if (!res.ok) {
     throw new Error(`Failed to load trades (${res.status})`);
   }

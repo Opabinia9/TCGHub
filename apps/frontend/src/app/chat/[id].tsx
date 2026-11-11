@@ -1,12 +1,5 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
-import {
-  KeyboardAvoidingView,
-  ListViewToken,
-  Platform,
-  Pressable,
-  TextInput,
-  View,
-} from 'react-native';
+import { ListViewToken, Platform, Pressable, TextInput, View } from 'react-native';
 import { Text } from 'react-native-paper';
 import { FlatList } from 'react-native-gesture-handler';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
@@ -17,6 +10,7 @@ import MessageListing from '@/components/message-listing';
 import QuickReply from '@/components/quick-reply';
 import BackArrrow from '@/components/back-arrow';
 import { chatStyles } from '@/constants/chatStyles';
+import { KeyboardAvoidingView } from 'react-native-keyboard-controller';
 import { authClient } from '@/utils/auth-client';
 import { dateStringToMessageDate } from '@/utils/dateStringToMessageDate';
 import {
@@ -142,7 +136,7 @@ export default function ChatScreen() {
     <KeyboardAvoidingView
       style={chatStyles.screen}
       behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
-      keyboardVerticalOffset={Platform.OS === 'ios' ? insets.top - insets.bottom : 0}
+      keyboardVerticalOffset={Platform.OS === 'ios' ? insets.top - insets.bottom : 50}
     >
       {/* Header */}
       <View style={chatStyles.header}>

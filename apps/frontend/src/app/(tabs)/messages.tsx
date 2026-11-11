@@ -1,30 +1,32 @@
 import { useState } from 'react';
-import { StyleSheet, View } from 'react-native';
-import { Searchbar, Text } from 'react-native-paper';
+import { View } from 'react-native';
+import { Searchbar } from 'react-native-paper';
 import ChatList from '@/components/ChatList';
-import { chatStyles } from '@/constants/chatStyles';
+import ScreenHeader from '@/components/screen-header';
+import { layout } from '@/constants/theme';
+import { searchStyles } from '@/constants/search-filter-styles';
 
 export default function MessagesScreen() {
   const [searchQuery, setSearchQuery] = useState('');
 
   return (
-    <View style={chatStyles.screen}>
-      <Text style={chatStyles.title}>MESSAGES</Text>
-      {/* <Text style={chatStyles.subtitle}>Chats with buyers, sellers and traders.</Text> */}
-
-      <Searchbar
-        placeholder="Search messages…"
-        value={searchQuery}
-        onChangeText={setSearchQuery}
-        style={chatStyles.searchbar}
-        inputStyle={chatStyles.searchInput}
-        iconColor="#245f28"
-        placeholderTextColor="#7A705F"
-        selectionColor="#171717"
-        cursorColor="#171717"
-        elevation={0}
-      />
-      <ChatList query={searchQuery} />
+    <View style={layout.screen}>
+      <ScreenHeader title="MESSAGES" subtitle="Chats with buyers, sellers and traders." />
+      <View style={layout.top}>
+        <Searchbar
+          placeholder="Search messages…"
+          value={searchQuery}
+          onChangeText={setSearchQuery}
+          style={searchStyles.searchbar}
+          inputStyle={searchStyles.searchInput}
+          iconColor="#245f28"
+          placeholderTextColor="#7A705F"
+          selectionColor="#171717"
+          cursorColor="#171717"
+          elevation={0}
+        />
+        <ChatList query={searchQuery} />
+      </View>
     </View>
   );
 }

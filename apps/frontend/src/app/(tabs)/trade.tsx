@@ -1,66 +1,54 @@
+import { useState } from 'react';
 import { Pressable, StyleSheet, View } from 'react-native';
-import { Text } from 'react-native-paper';
+import { Searchbar, Text } from 'react-native-paper';
 import { Ionicons } from '@expo/vector-icons';
 import { router } from 'expo-router';
 import TradeList from '@/components/trade-list';
+import ScreenHeader from '@/components/screen-header';
+import { layout } from '@/constants/theme';
+import { searchStyles } from '@/constants/search-filter-styles';
 
 export default function TradeScreen() {
+  const [searchQuery, setSearchQuery] = useState('');
   return (
-    <View style={styles.screen}>
-      {/* Header (doesn't scroll) */}
-      <View style={styles.top}>
-        <View style={styles.header}>
-          <Text style={styles.title} numberOfLines={1}>
-            LISTED CARDS
-          </Text>
-
+    <View style={layout.screen}>
+      <ScreenHeader
+        title="LISTED CARDS"
+        subtitle="Buy, sell and trade with players near you."
+        right={
           <Pressable
             onPress={() =>
               router.navigate({ pathname: '/(tabs)/decks', params: { tab: 'collection' } })
             }
-            accessibilityRole='button'
-            accessibilityLabel='List a card'
+            accessibilityRole="button"
+            accessibilityLabel="List a card"
             style={styles.listButton}
           >
-            <Ionicons name='add' size={18} color='#FFFFFF' />
+            <Ionicons name="add" size={18} color="#FFFFFF" />
             <Text style={styles.listButtonText}>LIST A CARD</Text>
           </Pressable>
-        </View>
-        <Text style={styles.subtitle}>Buy, sell and trade with players near you.</Text>
+        }
+      />
+      <View style={layout.top}>
+        <Searchbar
+          placeholder="Search listed cards…"
+          value={searchQuery}
+          onChangeText={setSearchQuery}
+          style={searchStyles.searchbar}
+          inputStyle={searchStyles.searchInput}
+          iconColor="#245f28"
+          placeholderTextColor="#7A705F"
+          selectionColor="#171717"
+          cursorColor="#171717"
+          elevation={0}
+        />
       </View>
-
-      {/* Real listings from other players (scrolls by itself) */}
-      <TradeList />
+      <TradeList query={searchQuery} />
     </View>
   );
 }
 
 const styles = StyleSheet.create({
-  screen: {
-    flex: 1,
-    backgroundColor: '#E2D7BD',
-  },
-  top: {
-    paddingHorizontal: 20,
-    paddingTop: 20,
-  },
-  header: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 10,
-  },
-  title: {
-    flex: 1,
-    fontFamily: 'BarlowCondensed_700Bold',
-    fontSize: 40,
-    lineHeight: 44,
-    color: '#171717',
-  },
-  subtitle: {
-    fontSize: 14,
-    color: '#5A5246',
-    marginTop: 2,
-  },
   listButton: {
     flexDirection: 'row',
     alignItems: 'center',

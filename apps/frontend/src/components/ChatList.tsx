@@ -134,7 +134,7 @@ export default function ChatList(props: Props): ReactNode {
       style={chatStyles.list}
       data={chats.filter((chat) => {
         return (
-          chat.name ?? chat.members.reduce((acc, cur) => (cur.id === selfId ? cur : acc)).name
+          chat.name ?? chat.members.reduce((acc, cur) => (cur.id === selfId ? cur : acc)).username
         ).includes(props.query.trim() ? props.query : '');
       })}
       renderItem={renderChat}

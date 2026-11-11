@@ -7,7 +7,9 @@ type WishlistContextType = {
   toggleWishlist: (card: MagicCard) => void;
 };
 
-const WishlistContext = createContext<WishlistContextType | undefined>(undefined);
+const WishlistContext = createContext<WishlistContextType | undefined>(
+  undefined,
+);
 
 export function WishlistProvider({ children }: { children: ReactNode }) {
   const [wishlistCards, setWishlistCards] = useState<MagicCard[]>([]);

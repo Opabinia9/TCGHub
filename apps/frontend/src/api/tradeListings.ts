@@ -1,20 +1,28 @@
 import { ENV } from '@/api/env';
-import { MagicCard, toCollectionCard, UserCard } from './types';
-import { Pagination } from './types';
+import {
+  Pagination,
+  FilterOption,
+  ListedCard,
+  ListingCard,
+  MagicCard,
+  toListingCard,
+  UserCard,
+} from './types';
 import { authClient } from '@/utils/auth-client';
 
 type TradeListingsPage = {
-  items: Array<MagicCard>;
+  items: Array<ListingCard>;
   pagination: Pagination;
 };
 
 type TradeListingsApiResponse = {
-  items: Array<UserCard>;
+  items: Array<ListedCard>;
   pagination: Pagination;
 };
 
 export async function fetchTradeListings(
   search: string,
+  filter: FilterOption = 'all',
   page = 1,
   limit = 20,
 ): Promise<TradeListingsPage> {
@@ -23,7 +31,7 @@ export async function fetchTradeListings(
     limit: String(limit),
   });
   if (search) {
-    params.set('name', search);
+    params.set(filter, search);
   }
   const cookies = await authClient.getCookie();
   const headers = { Cookie: cookies };
@@ -35,7 +43,7 @@ export async function fetchTradeListings(
   }
   const data: TradeListingsApiResponse = await res.json();
   return {
-    items: data.items.map(toCollectionCard),
+    items: data.items.map(toListingCard),
     pagination: data.pagination,
   };
 }

@@ -14,6 +14,7 @@ import { Menu, Portal, Snackbar } from 'react-native-paper';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import AddToSheet, { type Condition, type SheetType } from '@/components/add-to-sheet';
 import { fetchOwnedQuantities, fetchWishlistIds, updateCollectionCard } from '@/api/collection';
+import { fetchCards } from '@/api/cards';
 
 // Draws an Ionicons icon in our green, for a menu item.
 function menuIcon(name: keyof typeof Ionicons.glyphMap) {
@@ -437,10 +438,14 @@ export default function CardList(props: CardListProps) {
       </View>
     </View>
   );
+  const filteredCards =
+    props.fetchlist === fetchCards
+      ? cards
+      : cards.filter((item) => item.name.toLowerCase().includes(searchText));
   return (
     <View style={{ height: '90%' }}>
       <FlatList
-        data={cards}
+        data={filteredCards}
         renderItem={renderItem}
         keyExtractor={(item) => item.id}
         extraData={[menuCardId, wishlistIds, ownedQuantities]}

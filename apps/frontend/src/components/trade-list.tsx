@@ -87,12 +87,9 @@ export default function TradeList({ query }: TradeListProps) {
   }
 
   const messageSeller = async (sellerId: string, cardId: string) => {
-    console.log('A');
     if (chats) {
-      console.log('HERE?');
       for (const chat of chats) {
         if (chat.directKey === `${selfId}:${sellerId}:${cardId}`) {
-          console.log('Please');
           router.push({ pathname: '/chat/[id]', params: { id: chat.id } });
           return;
         }

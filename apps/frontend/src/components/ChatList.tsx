@@ -1,25 +1,43 @@
-import { ChatWithMessages, fetchChats, Message } from '@/api/chats';
-import { fetchTrade } from '@/api/tradeListings';
-import { authClient } from '@/utils/auth-client';
+import { ReactNode, useEffect, useState } from 'react';
+import { View } from 'react-native';
+import { Text } from 'react-native-paper';
+import { FlatList, Pressable, RefreshControl } from 'react-native-gesture-handler';
 import { useQueries, useQuery } from '@tanstack/react-query';
 import { router } from 'expo-router';
-import { ReactNode, useEffect, useState } from 'react';
-import { StyleSheet, View } from 'react-native';
-import { FlatList, Pressable, RefreshControl } from 'react-native-gesture-handler';
-import { Text } from 'react-native-paper';
+import { chatStyles } from '@/constants/chatStyles';
+import { authClient } from '@/utils/auth-client';
+import { dateStringToMessageDate } from '@/utils/dateStringToMessageDate';
+import { ChatWithMessages, fetchChats } from '@/api/chats';
+import { fetchTrade } from '@/api/tradeListings';
+import { MagicCard, UserCard } from '@/api/types';
 
 type Props = { query: string };
 export default function ChatList(props: Props): ReactNode {
+  const selfId = authClient.useSession().data?.user.id;
+  const trades: { [key: string]: (UserCard & { Card: MagicCard }) | undefined } = {};
   const [refreshing, setRefreshing] = useState(false);
   const {
     refetch: chatRefetch,
     data: chats,
     isPending: chatIsPending,
-    status: chatStatus,
   } = useQuery({
-    queryKey: ['chats'],
+    queryKey: ['chats', selfId],
     queryFn: fetchChats,
   });
+
+  useQueries({
+    queries:
+      chats
+        ?.filter((chat) => chat.type === 'TRADE')
+        .map((chat) => {
+          return { sellerId: chat.sellerId, cardId: chat.cardId };
+        })
+        .map((trade) => ({
+          queryKey: ['trade', trade.sellerId, trade.cardId],
+          queryFn: () => fetchTrade(trade.sellerId ?? '', trade.cardId ?? ''),
+        })) ?? [],
+    combine: (trades) => trades.map((trade) => trade.data),
+  }).forEach((trade) => (trades[`${trade?.user_id}:${trade?.card_id}`] = trade));
 
   useEffect(() => {
     refreshChats();
@@ -31,13 +49,71 @@ export default function ChatList(props: Props): ReactNode {
     await chatRefetch();
     setRefreshing(false);
   };
-  const renderChats = ({ item }: { item: any }) => {
-    return item;
+  const renderChat = ({ item: chat }: { item: ChatWithMessages }) => {
+    const cardId = chat.cardId;
+    const sellerId = chat.sellerId;
+    const selfIsSeller = selfId === sellerId;
+    const cardName = `${trades[`${sellerId}:${cardId}`]?.Card.name}`;
+    const chatTitle: string =
+      chat.name ?? chat.members.reduce((acc, cur) => (cur.id !== selfId ? cur : acc)).username;
+    const last = chat.messages.at(-1);
+    const lastDateString: string = dateStringToMessageDate(last?.createdAt ?? null, 'GENERAL');
+    const unread =
+      chat.messages.length -
+      (chat.messages
+        .map((message) => {
+          return message.id;
+        })
+        .indexOf(chat.lastReadMessageId) +
+        1);
+    const preview = last
+      ? last.senderId === selfId
+        ? `You: ${last.body}`
+        : `${last.body}`
+      : 'No messages yet';
+
+    return (
+      <Pressable
+        onPress={() => router.push({ pathname: '/chat/[id]', params: { id: chat.id } })}
+        accessibilityRole="button"
+        accessibilityLabel={`${chatTitle}, about ${cardName}${unread ? ', unread' : ''}: ${preview}`}
+        style={chatStyles.row}
+      >
+        <View
+          style={
+            chat.type === 'TRADE'
+              ? selfIsSeller
+                ? chatStyles.avatarBuyer
+                : chatStyles.avatarSeller
+              : chatStyles.avatar
+          }
+        >
+          <Text style={chatStyles.avatarText}>{chatTitle[0].toUpperCase()}</Text>
+        </View>
+
+        <View style={chatStyles.rowText}>
+          <View style={chatStyles.rowTop}>
+            <Text style={chatStyles.name}>{chatTitle}</Text>
+            <Text style={chatStyles.time}>{lastDateString}</Text>
+          </View>
+          <Text style={chatStyles.about}>
+            {chat.type === 'TRADE' ? `About: ${cardName}` : null}
+          </Text>
+          <View style={chatStyles.previewRow}>
+            <Text
+              style={[chatStyles.preview, chat.type && chatStyles.previewUnread]}
+              numberOfLines={1}
+            >
+              {preview}
+            </Text>
+            {unread > 0 && <View style={chatStyles.unreadDot} />}
+          </View>
+        </View>
+      </Pressable>
+    );
   };
-  const selfId = authClient.useSession().data?.user.id;
 
   if (!chats && chatIsPending) {
-    console.log(chatStatus);
     return (
       <View>
         <Text>Loading...</Text>
@@ -55,225 +131,14 @@ export default function ChatList(props: Props): ReactNode {
 
   return (
     <FlatList
-      style={styles.list}
-      data={chats
-        .filter((chat) => {
-          return (
-            chat.name ?? chat.members.reduce((acc, cur) => (cur.id === selfId ? cur : acc)).username
-          ).includes(props.query.trim() ? props.query : '');
-        })
-        .map((chat) => (
-          <ChatRow chat={chat} />
-        ))}
-      renderItem={renderChats}
+      style={chatStyles.list}
+      data={chats.filter((chat) => {
+        return (
+          chat.name ?? chat.members.reduce((acc, cur) => (cur.id === selfId ? cur : acc)).username
+        ).includes(props.query.trim() ? props.query : '');
+      })}
+      renderItem={renderChat}
       refreshControl={<RefreshControl refreshing={refreshing} onRefresh={refreshChats} />}
     />
   );
 }
-
-export function dateStringToMessageDate(dateString: string | null, type: 'SPECIFIC' | 'GENERAL') {
-  if (dateString == null) {
-    return '';
-  }
-  const date = new Date(dateString);
-  const now = new Date();
-  if (
-    date.getFullYear() == now.getFullYear() &&
-    date.getMonth() == now.getMonth() &&
-    date.getDate() >= now.getDate()
-  ) {
-    const minute = date.getMinutes();
-    return `${date.getHours()}:${minute < 10 ? `0${minute}` : minute}`;
-  } else if (
-    date.getTime() > new Date(now.getFullYear(), now.getMonth(), now.getDate() - 7).getTime()
-  ) {
-    if (type === 'GENERAL') {
-      return `${date.toLocaleDateString('en-au', { weekday: 'short' })}`;
-    } else if (type === 'SPECIFIC') {
-      const minute = date.getMinutes();
-      return `${date.toLocaleDateString('en-au', { weekday: 'short' })} ${date.getHours()}:${minute < 10 ? `0${minute}` : minute}`;
-    } else {
-      return "FIX ME, I'M IN dateStringToMessageDate";
-    }
-  } else {
-    return "FIX ME, I'M IN dateStringToMessageDate";
-  }
-}
-
-function ChatRow({ chat }: { chat: ChatWithMessages }) {
-  // let trades: { [key: string]: (UserCard & { Card: MagicCard }) | undefined } = {};
-  // useQueries({
-  //   queries:
-  //     chats
-  //       ?.filter((chat) => chat.type === 'TRADE')
-  //       .map((chat) => {
-  //         return { sellerId: chat.sellerId, cardId: chat.cardId };
-  //       })
-  //       .map((trade) => ({
-  //         queryKey: ['trade', trade.sellerId, trade.cardId],
-  //         queryFn: () => fetchTrade(trade.sellerId ?? '', trade.cardId ?? ''),
-  //       })) ?? [],
-  //   combine: (trades) => trades.map((trade) => trade.data),
-  // }).forEach((trade) => (trades[`${trade?.user_id}:${trade?.card_id}`] = trade));
-  const { data: trade } = useQuery({
-    queryKey: ['trade', chat.sellerId, chat.cardId],
-    queryFn: () => fetchTrade(chat.sellerId ?? '', chat.cardId ?? ''),
-  });
-  const chatTitle: string =
-    chat.name ?? chat.members.reduce((acc, cur) => (cur.id === selfId ? cur : acc)).username;
-  const selfId = authClient.useSession().data?.user.id;
-  const last = chat.messages.at(-1);
-  const lastDateString: string = dateStringToMessageDate(last?.createdAt ?? null, 'GENERAL');
-  const unread =
-    chat.messages.length -
-    (chat.messages
-      .map((message) => {
-        return message.id;
-      })
-      .indexOf(chat.lastReadMessageId) +
-      1);
-  const preview = last
-    ? last.senderId === selfId
-      ? `You: ${last.body}`
-      : `${last.body}`
-    : 'No messages yet';
-
-  return (
-    <Pressable
-      onPress={() => router.push({ pathname: '/chat/[id]', params: { id: chat.id } })}
-      accessibilityRole="button"
-      accessibilityLabel={`${chatTitle}, about ${trade?.Card.name}${unread ? ', unread' : ''}: ${preview}`}
-      style={styles.row}
-    >
-      <View style={styles.avatar}>
-        <Text style={styles.avatarText}>{chatTitle[0]}</Text>
-      </View>
-
-      <View style={styles.rowText}>
-        <View style={styles.rowTop}>
-          <Text style={styles.name}>{chatTitle}</Text>
-          <Text style={styles.time}>{lastDateString}</Text>
-        </View>
-        <Text style={styles.about}>
-          {chat.type === 'TRADE' ? `About: ${trade?.Card.name}` : ''}
-        </Text>
-        <View style={styles.previewRow}>
-          <Text style={[styles.preview, chat.type && styles.previewUnread]} numberOfLines={1}>
-            {preview}
-          </Text>
-          {unread > 0 && <View style={styles.unreadDot} />}
-        </View>
-      </View>
-    </Pressable>
-  );
-}
-
-const styles = StyleSheet.create({
-  screen: {
-    flex: 1,
-    backgroundColor: '#E2D7BD',
-  },
-  content: {
-    padding: 20,
-    paddingBottom: 32,
-  },
-  title: {
-    fontFamily: 'BarlowCondensed_700Bold',
-    fontSize: 48,
-    lineHeight: 50,
-    color: '#171717',
-  },
-  subtitle: {
-    fontSize: 14,
-    color: '#5A5246',
-  },
-  searchbar: {
-    marginTop: 16,
-    height: 46,
-    borderRadius: 12,
-    borderWidth: 1.5,
-    borderColor: '#B9A985',
-    backgroundColor: '#EFE7D4',
-  },
-  searchInput: {
-    minHeight: 0,
-    fontSize: 15,
-    color: '#171717',
-  },
-
-  // List
-  list: {
-    marginTop: 16,
-    borderTopWidth: 1,
-    borderTopColor: '#C9BB98',
-  },
-  row: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 12,
-    paddingVertical: 12,
-    borderBottomWidth: 1,
-    borderBottomColor: '#C9BB98',
-  },
-  avatar: {
-    width: 48,
-    height: 48,
-    borderRadius: 24,
-    backgroundColor: '#171717',
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  avatarText: {
-    fontFamily: 'BarlowCondensed_700Bold',
-    fontSize: 17,
-    color: '#E2D7BD',
-  },
-  rowText: {
-    flex: 1,
-    minWidth: 0,
-  },
-  rowTop: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    gap: 8,
-  },
-  name: {
-    fontSize: 16,
-    fontWeight: '600',
-    color: '#171717',
-  },
-  time: {
-    fontSize: 12,
-    color: '#5A5246',
-  },
-  about: {
-    fontSize: 12,
-    fontWeight: '600',
-    color: '#245f28',
-  },
-  previewRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 8,
-  },
-  preview: {
-    flex: 1,
-    fontSize: 14,
-    color: '#5A5246',
-  },
-  previewUnread: {
-    fontWeight: '600',
-    color: '#171717',
-  },
-  unreadDot: {
-    width: 10,
-    height: 10,
-    borderRadius: 5,
-    backgroundColor: '#2e7d32',
-  },
-  emptyMessage: {
-    marginTop: 24,
-    textAlign: 'center',
-    color: '#5A5246',
-  },
-});

@@ -4,6 +4,7 @@
  */
 
 import '@/global.css';
+import { StyleSheet } from 'react-native';
 
 import { Platform } from 'react-native';
 
@@ -63,3 +64,13 @@ export const Spacing = {
 
 export const BottomTabInset = Platform.select({ ios: 50, android: 80 }) ?? 0;
 export const MaxContentWidth = 800;
+
+export const layout = StyleSheet.create({
+  screen: {
+    flex: 1,
+    backgroundColor: '#E2D7BD',
+  },
+  top: {
+    paddingHorizontal: 20,
+  },
+});

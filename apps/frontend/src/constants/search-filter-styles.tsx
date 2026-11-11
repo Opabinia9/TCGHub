@@ -29,7 +29,7 @@ export const searchStyles = StyleSheet.create({
     color: '#E2D7BD',
   },
   searchbar: {
-    marginTop: 10,
+    marginTop: 14,
     height: 46,
     borderRadius: 12,
     borderWidth: 1.5,

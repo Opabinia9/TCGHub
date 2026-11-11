@@ -14,7 +14,7 @@ export interface CardListProps {
   activeFilter: FilterOption;
   emptyMessage: string;
   refreshOnFocus?: boolean; // reload every time the screen comes into view
-  variant?: 'browse' | 'wishlist' | 'listings'; // which buttons each card shows
+  variant?: 'browse' | 'wishlist' | 'trades'; // which buttons each card shows
 }
 
 export const FILTERS = [

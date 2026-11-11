@@ -6,7 +6,7 @@ import { Image } from 'expo-image';
 import { Ionicons } from '@expo/vector-icons';
 import { router, useFocusEffect } from 'expo-router';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
-import type { CollectionCard, ListingCard } from '@/api/types';
+import type { ListingCard } from '@/api/types';
 import { fetchTradeListings } from '@/api/tradeListings';
 import { fetchWishlistIds, updateCollectionCard } from '@/api/collection';
 import { createTradeChat, fetchChats } from '@/api/chats';
@@ -20,7 +20,7 @@ type TradeListProps = {
 
 export default function TradeList({ query }: TradeListProps) {
   const insets = useSafeAreaInsets();
-  const [listings, setListings] = useState<CollectionCard[]>([]);
+  const [listings, setListings] = useState<ListingCard[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [wishlistIds, setWishlistIds] = useState<Set<string>>(new Set());
@@ -41,7 +41,7 @@ export default function TradeList({ query }: TradeListProps) {
       Promise.all([fetchTradeListings(''), fetchWishlistIds().catch(() => new Set<string>())])
         .then(([page, ids]) => {
           if (cancelled) return;
-          setListings(page.items as CollectionCard[]);
+          setListings(page.items as ListingCard[]);
           setWishlistIds(ids);
         })
         .catch(() => {
@@ -58,7 +58,7 @@ export default function TradeList({ query }: TradeListProps) {
     }, []),
   );
 
-  async function toggleWishlist(card: CollectionCard) {
+  async function toggleWishlist(card: ListingCard) {
     const inWishlist = wishlistIds.has(card.id);
     try {
       await updateCollectionCard({

@@ -1,82 +1,65 @@
 import { act, useState } from 'react';
 import { Modal, Pressable, ScrollView, StyleSheet, View } from 'react-native';
-import { Text, TextInput } from 'react-native-paper';
+import { Searchbar, Text, TextInput } from 'react-native-paper';
 import { Ionicons } from '@expo/vector-icons';
 import { FilterOption, FILTERS } from '@/api/types';
 import CardList from '@/components/card-list';
 import { fetchCards } from '@/api/cards';
 import ScreenHeader from '@/components/screen-header';
+import { searchStyles } from '@/constants/search-filter-styles';
 
 export default function CardsScreen() {
   const [searchQuery, setSearchQuery] = useState('');
-  const [activeFilter, setActiveFilter] = useState<FilterOption>('All');
+  const [activeFilter, setActiveFilter] = useState<FilterOption>('all');
 
   return (
-    <>
-      <View style={styles.filterSection}>
-        <ScreenHeader
-          title='EXPLORE CARDS'
-          subtitle='Find cards to collect and trade.'
+    <View style={styles.screen}>
+      <ScreenHeader title="EXPLORE CARDS" subtitle="Find cards to collect and trade." />
+      <View style={styles.top}>
+        <Searchbar
+          placeholder="Search your cards..."
+          value={searchQuery}
+          onChangeText={setSearchQuery}
+          style={searchStyles.searchbar}
+          inputStyle={searchStyles.searchInput}
+          iconColor="#245f28"
+          placeholderTextColor="#7A705F"
+          selectionColor="#171717"
+          cursorColor="#171717"
+          elevation={0}
         />
-        <View style={styles.filterList}>
-          <ScrollView
-            horizontal
-            showsHorizontalScrollIndicator={false}
-            style={{ gap: 10 }}
-          >
-            {FILTERS.map((filter) => (
-              <Pressable
-                key={filter}
-                onPress={() => setActiveFilter(filter)}
-                style={[
-                  styles.filterButton,
-                  activeFilter === filter && styles.activeFilterButton,
-                ]}
-              >
-                <Text
+
+        <View style={styles.filterSection}>
+          <View style={styles.filterList}>
+            <ScrollView horizontal showsHorizontalScrollIndicator={false} style={{ gap: 10 }}>
+              {FILTERS.map((filter) => (
+                <Pressable
+                  key={filter}
+                  onPress={() => setActiveFilter(filter)}
                   style={[
-                    styles.filterText,
-                    activeFilter === filter && styles.activeFilterText,
+                    styles.filterButton,
+                    activeFilter === filter && styles.activeFilterButton,
                   ]}
                 >
-                  {filter}
-                </Text>
-              </Pressable>
-            ))}
-          </ScrollView>
+                  <Text
+                    style={[styles.filterText, activeFilter === filter && styles.activeFilterText]}
+                  >
+                    {filter}
+                  </Text>
+                </Pressable>
+              ))}
+            </ScrollView>
+          </View>
         </View>
 
-        <View style={styles.searchBar}>
-          <Ionicons name='search-outline' size={20} color='#77705F' />
-
-          <TextInput
-            placeholder='Search your cards...'
-            value={searchQuery}
-            onChangeText={setSearchQuery}
-            mode='flat'
-            underlineColor='transparent'
-            activeUnderlineColor='transparent'
-            style={styles.searchInput}
-            contentStyle={styles.searchInputContent}
-            placeholderTextColor='#77705F'
-            textColor='#171717'
-            selectionColor='#171717'
-            cursorColor='#171717'
-          />
-          {searchQuery.length > 0 && (
-            <Pressable onPress={() => setSearchQuery('')}>
-              <Ionicons name='close-circle' size={20} color='#77705F' />
-            </Pressable>
-          )}
-        </View>
         <CardList
           fetchlist={fetchCards}
           query={searchQuery}
           activeFilter={activeFilter}
-          emptyMessage='Unable to load cards'
+          emptyMessage="Unable to load cards"
         />
       </View>
-    </>
+    </View>
   );
 }
 
@@ -85,6 +68,13 @@ const styles = StyleSheet.create({
     backgroundColor: '#E2D7BD',
   },
   header: {},
+  screen: {
+    backgroundColor: '#E2D7BD',
+  },
+
+  top: {
+    paddingHorizontal: 20,
+  },
   eyebrow: {
     fontSize: 11,
     fontWeight: '700',

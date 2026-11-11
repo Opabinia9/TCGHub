@@ -1,15 +1,15 @@
 import { useState } from 'react';
-import { ScrollView, StyleSheet, View, Pressable } from 'react-native';
-import { Avatar, Text, Button, TextInput } from 'react-native-paper';
+import { StyleSheet, View, Pressable } from 'react-native';
+import { Avatar, Text, Button, TextInput, Searchbar } from 'react-native-paper';
 import { Ionicons } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
-import { FilterOption, FILTERS } from '@/api/types';
 import CardList from '@/components/card-list';
 import { authClient } from '@/utils/auth-client';
 import { QueryCache, QueryClient } from '@tanstack/react-query';
 import { fetchMyTrades } from '@/api/myTrades';
 import { fetchWishlist } from '@/api/myWishlist';
 import ScreenHeader from '@/components/screen-header';
+import { searchStyles } from '@/constants/search-filter-styles';
 
 export default function Profile() {
   const router = useRouter();
@@ -21,7 +21,6 @@ export default function Profile() {
   const [activeSection, setActiveSection] = useState<'listings' | 'wishlist'>('listings');
 
   const [searchQuery, setSearchQuery] = useState('');
-  const [activeFilter, setActiveFilter] = useState<FilterOption>('All');
 
   const queryClient = new QueryClient();
 
@@ -129,32 +128,25 @@ export default function Profile() {
             </Text>
           </Pressable>
         </View>
-        <View style={styles.filterSection}>
-          <ScrollView
-            horizontal
-            showsHorizontalScrollIndicator={false}
-            contentContainerStyle={styles.filterList}
-          >
-            {FILTERS.map((filter) => (
-              <Pressable
-                key={filter}
-                onPress={() => setActiveFilter(filter)}
-                style={[styles.filterButton, activeFilter === filter && styles.activeFilterButton]}
-              >
-                <Text
-                  style={[styles.filterText, activeFilter === filter && styles.activeFilterText]}
-                >
-                  {filter}
-                </Text>
-              </Pressable>
-            ))}
-          </ScrollView>
-        </View>
+        <View>
+          <Searchbar
+            placeholder="Search your cards..."
+            value={searchQuery}
+            onChangeText={setSearchQuery}
+            style={searchStyles.searchbar}
+            inputStyle={searchStyles.searchInput}
+            iconColor="#245f28"
+            placeholderTextColor="#7A705F"
+            selectionColor="#171717"
+            cursorColor="#171717"
+            elevation={0}
+          />
+        </View>{' '}
       </View>
       <CardList
         fetchlist={activeSection === 'listings' ? fetchMyTrades : fetchWishlist}
         query={searchQuery}
-        activeFilter={activeFilter}
+        activeFilter="all"
         emptyMessage={
           activeSection === 'listings'
             ? 'Unable to load your listings'
@@ -342,58 +334,5 @@ const styles = StyleSheet.create({
     color: '#A12626',
     fontWeight: 'bold',
     letterSpacing: 1,
-  },
-  loadMoreButton: {
-    alignSelf: 'center',
-    marginTop: 28,
-    paddingHorizontal: 24,
-    paddingVertical: 12,
-    borderRadius: 20,
-    backgroundColor: '#171717',
-  },
-  loadMoreText: {
-    color: '#E2D7BD',
-    fontSize: 13,
-    fontWeight: '700',
-  },
-  emptyState: {
-    alignItems: 'center',
-    paddingVertical: 48,
-    gap: 10,
-  },
-  emptyTitle: {
-    fontSize: 18,
-    fontWeight: '800',
-    color: '#171717',
-  },
-  emptyText: {
-    fontSize: 13,
-    color: '#77705F',
-  },
-  filterSection: {
-    marginBottom: 22,
-  },
-  filterList: {
-    gap: 10,
-  },
-  filterButton: {
-    paddingHorizontal: 18,
-    paddingVertical: 10,
-    borderRadius: 20,
-    backgroundColor: '#F4ECDD',
-    borderWidth: 1,
-    borderColor: '#C9BDA3',
-  },
-  activeFilterButton: {
-    backgroundColor: '#171717',
-    borderColor: '#171717',
-  },
-  filterText: {
-    fontSize: 13,
-    fontWeight: '600',
-    color: '#514B40',
-  },
-  activeFilterText: {
-    color: '#E2D7BD',
   },
 });

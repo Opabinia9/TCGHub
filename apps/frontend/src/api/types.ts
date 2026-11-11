@@ -1,10 +1,9 @@
-import { runOnUISync } from 'react-native-worklets';
 import { CardsPage } from './cards';
 import { User } from './userTypes';
 
 type FetchFunc = (
   search: string,
-  filter: FilterOption,
+  filter?: FilterOption,
   page?: number,
   limit?: number,
 ) => Promise<CardsPage>;
@@ -114,13 +113,7 @@ export type MagicCard = {
 };
 
 export type CardCategory =
-  | 'Creature'
-  | 'Sorcery'
-  | 'Enchantment'
-  | 'Instant'
-  | 'Artifact'
-  | 'Land'
-  | null;
+  'Creature' | 'Sorcery' | 'Enchantment' | 'Instant' | 'Artifact' | 'Land' | null;
 
 export function toCategory(typeLine: string): CardCategory {
   const type = typeLine.toLowerCase();

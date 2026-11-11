@@ -153,7 +153,7 @@ export default function Decks() {
           <CardList
             fetchlist={fetchCollection}
             query={searchQuery}
-            activeFilter="All"
+            activeFilter="all"
             emptyMessage="Unable to load your collection"
             refreshOnFocus
           />

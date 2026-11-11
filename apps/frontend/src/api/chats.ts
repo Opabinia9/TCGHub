@@ -28,15 +28,19 @@ export async function fetchChats() {
   const headers = {
     Cookie: cookies,
   };
-  const response = await fetch(`http://${process.env.EXPO_PUBLIC_API_URL}/api/v1/chats`, {
-    method: 'GET',
-    headers,
-  });
+  const response = await fetch(
+    `http://${process.env.EXPO_PUBLIC_API_URL}/api/v1/chats`,
+    {
+      method: 'GET',
+      headers,
+    },
+  );
   if (!response.ok) {
     throw new Error(`Failed to load chats (${response.status})`);
   }
 
-  const chats: { error?: string; success?: string; chats: Array<Chat> } = await response.json();
+  const chats: { error?: string; success?: string; chats: Array<Chat> } =
+    await response.json();
   if (chats.error) {
     throw new Error(chats.error);
   }
@@ -53,8 +57,11 @@ export async function fetchChats() {
       if (!response.ok) {
         throw new Error(`Failed to load chats (${response.status})`);
       }
-      const payload: { error?: string; success?: string; messages: Array<Message> } =
-        await response.json();
+      const payload: {
+        error?: string;
+        success?: string;
+        messages: Array<Message>;
+      } = await response.json();
       return {
         ...chat,
         messages: payload.messages,
@@ -74,11 +81,14 @@ export async function fetchChat(chatId: string) {
   const headers = {
     Cookie: cookies,
   };
-  const response = await fetch(`http://${process.env.EXPO_PUBLIC_API_URL}/api/v1/chats/${chatId}`, {
-    method: 'GET',
-    headers,
-    signal: AbortSignal.timeout(10000),
-  });
+  const response = await fetch(
+    `http://${process.env.EXPO_PUBLIC_API_URL}/api/v1/chats/${chatId}`,
+    {
+      method: 'GET',
+      headers,
+      signal: AbortSignal.timeout(10000),
+    },
+  );
   if (!response.ok) {
     console.error(response);
     throw new Error(`Failed to load chats (${response.status})`);
@@ -109,8 +119,11 @@ export async function fetchMessages(chatId: string) {
     throw new Error(`Failed to load chats (${response.status})`);
   }
 
-  const messages: { error?: string; success?: string; messages: Array<Message> } =
-    await response.json();
+  const messages: {
+    error?: string;
+    success?: string;
+    messages: Array<Message>;
+  } = await response.json();
   if (messages.error) {
     throw new Error(messages.error);
   }
@@ -146,11 +159,14 @@ export async function updateLastReadMessage(chatId: string, messageId: string) {
     Cookie: cookies,
     'Content-Type': 'application/json',
   };
-  const response = await fetch(`http://${process.env.EXPO_PUBLIC_API_URL}/api/v1/chats/${chatId}`, {
-    method: 'PUT',
-    headers,
-    body: JSON.stringify({ messageId }),
-  });
+  const response = await fetch(
+    `http://${process.env.EXPO_PUBLIC_API_URL}/api/v1/chats/${chatId}`,
+    {
+      method: 'PUT',
+      headers,
+      body: JSON.stringify({ messageId }),
+    },
+  );
   if (!response.ok) {
     console.error(response);
     throw new Error(`Failed to load chats (${response.status})`);
@@ -163,11 +179,19 @@ export async function createTradeChat(sellerId: string, cardId: string) {
     Cookie: cookies,
     'Content-Type': 'application/json',
   };
-  const response = await fetch(`http://${process.env.EXPO_PUBLIC_API_URL}/api/v1/chats`, {
-    method: 'POST',
-    headers,
-    body: JSON.stringify({ type: 'TRADE', sellerId, cardId }),
-  });
+  const response = await fetch(
+    `http://${process.env.EXPO_PUBLIC_API_URL}/api/v1/chats`,
+    {
+      method: 'POST',
+      headers,
+      body: JSON.stringify({
+        type: 'TRADE',
+        sellerId: sellerId,
+        cardId: cardId,
+      }),
+    },
+  );
+  console.log(response);
   if (!response.ok) {
     throw new Error(`Failed to load chats (${response.status})`);
   }

@@ -2,25 +2,25 @@ import { useState } from 'react';
 import { StyleSheet, View } from 'react-native';
 import { Searchbar, Text } from 'react-native-paper';
 import ChatList from '@/components/ChatList';
+import ScreenHeader from '@/components/screen-header';
 
 export default function MessagesScreen() {
   const [searchQuery, setSearchQuery] = useState('');
 
   return (
     <View style={styles.screen}>
-      <Text style={styles.title}>MESSAGES</Text>
-      {/* <Text style={styles.subtitle}>Chats with buyers, sellers and traders.</Text> */}
+      <ScreenHeader title='MESSAGES' subtitle='Chats with buyers, sellers and traders.' />
 
       <Searchbar
-        placeholder="Search messages…"
+        placeholder='Search messages…'
         value={searchQuery}
         onChangeText={setSearchQuery}
         style={styles.searchbar}
         inputStyle={styles.searchInput}
-        iconColor="#245f28"
-        placeholderTextColor="#7A705F"
-        selectionColor="#171717"
-        cursorColor="#171717"
+        iconColor='#245f28'
+        placeholderTextColor='#7A705F'
+        selectionColor='#171717'
+        cursorColor='#171717'
         elevation={0}
       />
       <ChatList query={searchQuery} />
@@ -32,6 +32,7 @@ const styles = StyleSheet.create({
   screen: {
     flex: 1,
     backgroundColor: '#E2D7BD',
+    paddingHorizontal: 6,
   },
   content: {
     padding: 20,
@@ -47,8 +48,9 @@ const styles = StyleSheet.create({
     fontSize: 14,
     color: '#5A5246',
   },
-  searchbar: {
+    searchbar: {
     marginTop: 16,
+    marginHorizontal: 20,
     height: 46,
     borderRadius: 12,
     borderWidth: 1.5,

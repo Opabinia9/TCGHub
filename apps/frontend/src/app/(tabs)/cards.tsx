@@ -5,6 +5,7 @@ import { Ionicons } from '@expo/vector-icons';
 import { FilterOption, FILTERS } from '@/api/types';
 import CardList from '@/components/card-list';
 import { fetchCards } from '@/api/cards';
+import ScreenHeader from '@/components/screen-header';
 
 export default function CardsScreen() {
   const [searchQuery, setSearchQuery] = useState('');
@@ -13,11 +14,11 @@ export default function CardsScreen() {
   return (
     <>
       <View style={styles.filterSection}>
-        <View style={styles.header}>
-          <Text style={styles.title}>EXPLORE CARDS</Text>
-        </View>
-
-        <View style={[styles.header, styles.filterList]}>
+        <ScreenHeader
+          title='EXPLORE CARDS'
+          subtitle='Find cards to collect and trade.'
+        />
+        <View style={styles.filterList}>
           <ScrollView
             horizontal
             showsHorizontalScrollIndicator={false}
@@ -59,6 +60,8 @@ export default function CardsScreen() {
             contentStyle={styles.searchInputContent}
             placeholderTextColor='#77705F'
             textColor='#171717'
+            selectionColor='#171717'
+            cursorColor='#171717'
           />
           {searchQuery.length > 0 && (
             <Pressable onPress={() => setSearchQuery('')}>
@@ -81,14 +84,7 @@ const styles = StyleSheet.create({
   container: {
     backgroundColor: '#E2D7BD',
   },
-  content: {
-    paddingHorizontal: 20,
-    paddingTop: 24,
-    paddingBottom: 32,
-  },
-  header: {
-    paddingHorizontal: 20,
-  },
+  header: {},
   eyebrow: {
     fontSize: 11,
     fontWeight: '700',
@@ -118,8 +114,6 @@ const styles = StyleSheet.create({
     paddingHorizontal: 14,
     gap: 10,
     marginBottom: 10,
-    marginLeft: 15,
-    marginRight: 15,
   },
   searchInput: {
     flex: 1,
@@ -127,10 +121,10 @@ const styles = StyleSheet.create({
     backgroundColor: 'transparent',
   },
   searchInputContent: {
-    paddingHorizontal: 0,
     fontSize: 14,
   },
   filterSection: {
+    paddingHorizontal: 6,
     backgroundColor: '#E2D7BD',
   },
   filterList: {
@@ -191,10 +185,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
   },
-  cardInfo: {
-    paddingHorizontal: 11,
-    paddingVertical: 12,
-  },
+  cardInfo: {},
   cardNameRow: {
     flexDirection: 'row',
     alignItems: 'center',

@@ -124,6 +124,10 @@ model Card {
   imageUris     Json?
   legalities    Json?
   prices        Json?
+  finishes      Json?
+  power         String?
+  toughness     String?
+  keywords      String[]
   rawData       Json
   createdAt     DateTime   @default(now())
   UserCard      UserCard[]

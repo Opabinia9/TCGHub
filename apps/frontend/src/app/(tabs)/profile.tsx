@@ -3,12 +3,13 @@ import { ScrollView, StyleSheet, View, Pressable } from 'react-native';
 import { Avatar, Text, Button, TextInput } from 'react-native-paper';
 import { Ionicons } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
-import { fetchMyTrades } from '@/api/myTrades';
-import { fetchWishlist } from '@/api/myWishlist';
 import { FilterOption, FILTERS } from '@/api/types';
 import CardList from '@/components/card-list';
 import { authClient } from '@/utils/auth-client';
 import { QueryCache, QueryClient } from '@tanstack/react-query';
+import { fetchMyTrades } from '@/api/myTrades';
+import { fetchWishlist } from '@/api/myWishlist';
+import ScreenHeader from '@/components/screen-header';
 
 export default function Profile() {
   const router = useRouter();
@@ -42,6 +43,7 @@ export default function Profile() {
 
   return (
     <View style={styles.screen}>
+      <ScreenHeader title="PROFILE" />
       <View style={styles.profileHeader}>
         <Avatar.Icon size={76} icon="account" color="#E2D7BD" style={styles.avatar} />
 
@@ -169,6 +171,7 @@ const styles = StyleSheet.create({
   screen: {
     flex: 1,
     backgroundColor: '#E2D7BD',
+    paddingHorizontal: 6,
   },
   container: {
     padding: 20,
@@ -243,28 +246,28 @@ const styles = StyleSheet.create({
   activeMainTabText: {
     color: '#E2D7BD',
   },
-  collectionTabs: {
+  tradesTabs: {
     flexDirection: 'row',
     gap: 20,
     borderBottomWidth: 1,
     borderBottomColor: '#C9BB98',
     marginBottom: 15,
   },
-  collectionTab: {
+  tradesTab: {
     paddingVertical: 10,
     paddingHorizontal: 12,
     borderBottomWidth: 3,
     borderBottomColor: 'transparent',
   },
-  activeCollectionTab: {
+  activetradesTab: {
     borderBottomColor: '#171717',
   },
-  collectionTabText: {
+  tradesTabText: {
     fontSize: 14,
     fontWeight: '600',
     color: '#655D50',
   },
-  activeCollectionTabText: {
+  activetradesTabText: {
     color: '#171717',
   },
   sectionHeader: {

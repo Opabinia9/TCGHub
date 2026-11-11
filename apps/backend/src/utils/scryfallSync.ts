@@ -14,7 +14,7 @@ function transformCard(card: ScryfallCard) {
     lang: card.lang,
     releasedAt: card.released_at ? new Date(card.released_at) : null,
     manaCost: card.mana_cost || null,
-    cmc: card.cmc || null,
+    cmc: card.cmc ?? null,
     typeLine: card.type_line || null,
     oracleText: card.oracle_text || null,
     colors: card.colors || [],
@@ -28,6 +28,10 @@ function transformCard(card: ScryfallCard) {
     imageUris: card.image_uris || null,
     legalities: card.legalities || null,
     prices: card.prices || null,
+    finishes: card.finishes ?? false,
+    power: card.power ?? card.card_faces?.[0]?.power ?? null,
+    toughness: card.toughness ?? card.card_faces?.[0]?.toughness ?? null,
+    keywords: card.keywords,
     rawData: card,
   };
 }
@@ -52,7 +56,9 @@ async function insertBatch(batch: any[], batchNumber: number) {
     });
     console.log(`  ✓ Batch ${batchNumber}: Inserted ${batch.length} cards`);
   } catch (error) {
-    console.warn(`  ⚠ Batch ${batchNumber} failed with createMany, trying individual inserts...`);
+    console.warn(
+      `  ⚠ Batch ${batchNumber} failed with createMany, trying individual inserts...`,
+    );
     let successCount = 0;
     for (const item of batch) {
       try {
@@ -66,7 +72,9 @@ async function insertBatch(batch: any[], batchNumber: number) {
         console.error(`    ✗ Failed to insert ${item.scryfallId}:`, e);
       }
     }
-    console.log(`  ✓ Batch ${batchNumber}: Inserted ${successCount}/${batch.length} cards`);
+    console.log(
+      `  ✓ Batch ${batchNumber}: Inserted ${successCount}/${batch.length} cards`,
+    );
   }
 }
 
@@ -128,7 +136,9 @@ async function loadCards() {
         batch = [];
 
         const elapsed = ((Date.now() - startTime) / 1000).toFixed(1);
-        console.log(`📈 Progress: ${insertedCount.toLocaleString()} in ${elapsed}s`);
+        console.log(
+          `📈 Progress: ${insertedCount.toLocaleString()} in ${elapsed}s`,
+        );
       }
     } catch (error) {
       console.error(`❌ Error parsing line ${lineCount}:`, error);

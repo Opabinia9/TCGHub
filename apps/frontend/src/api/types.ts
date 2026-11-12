@@ -75,6 +75,12 @@ export type ListingCard = Omit<UserCard, 'Card' | 'card_id'> &
 
 export type CollectionCard = Omit<UserCard, 'Card' | 'card_id'> & MagicCard;
 
+export type Deck = {
+  id: string;
+  owner_id: string;
+  name: string;
+};
+
 export type DeckCard = {
   deck_id: string;
   card_id: string;

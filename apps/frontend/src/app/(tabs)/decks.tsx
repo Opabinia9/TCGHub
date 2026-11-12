@@ -9,6 +9,8 @@ import { fetchCollection } from '@/api/collection';
 import { layout } from '@/constants/theme';
 import { searchStyles } from '@/constants/search-filter-styles';
 import { buttonStyles, ToggleButton } from '@/components/toggle-button';
+import { createDeck, fetchDecks } from '@/api/decks';
+import { Deck, Pagination } from '@/api/types';
 
 const MANA = {
   G: { color: '#2e7d32', name: 'green' },
@@ -18,55 +20,7 @@ const MANA = {
   B: { color: '#2B2B2B', name: 'black' },
 };
 
-type ManaColor = keyof typeof MANA;
-
-type Deck = {
-  id: string;
-  name: string;
-  format: string;
-  cardCount: number;
-  artColor: string;
-  colors: ManaColor[];
-};
-
 type Tab = 'mine' | 'collection';
-
-const MY_DECKS: Deck[] = [
-  {
-    id: '1',
-    name: 'Green Stompy',
-    format: 'Modern',
-    cardCount: 60,
-    artColor: '#3F6B3A',
-    colors: ['G'],
-  },
-  {
-    id: '2',
-    name: 'Blue Control',
-    format: 'Commander',
-    cardCount: 100,
-    artColor: '#34506E',
-    colors: ['U'],
-  },
-  {
-    id: '3',
-    name: 'Boros Aggro',
-    format: 'Standard',
-    cardCount: 60,
-    artColor: '#8A3B2E',
-    colors: ['R', 'W'],
-  },
-  {
-    id: '4',
-    name: 'Dimir Midrange',
-    format: 'Pioneer',
-    cardCount: 60,
-    artColor: '#3B3550',
-    colors: ['U', 'B'],
-  },
-];
-
-const FILTERS = ['GAME', 'FORMAT', 'COLOUR'];
 
 // ─── Screen ──────────────────────────────────────────────────────────────────
 
@@ -74,6 +28,9 @@ export default function Decks() {
   const params = useLocalSearchParams<{ tab?: string }>();
   const [tab, setTab] = useState<Tab>('mine');
   const [searchQuery, setSearchQuery] = useState('');
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+  const [decks, setDecks] = useState<Deck[]>([]);
 
   useEffect(() => {
     if (params.tab === 'collection') {
@@ -84,7 +41,53 @@ export default function Decks() {
 
   const isCollection = tab === 'collection';
   const query = searchQuery.trim().toLowerCase();
-  const decks = MY_DECKS.filter((deck) => deck.name.toLowerCase().includes(query));
+
+  useEffect(() => {
+    let cancelled = false;
+    let timeoutId: ReturnType<typeof setTimeout> | undefined;
+
+    setLoading(true);
+    setError(null);
+
+    const timer = setTimeout(async () => {
+      try {
+        const result = await Promise.race([
+          fetchDecks(),
+          new Promise<never>((_, reject) => {
+            timeoutId = setTimeout(() => {
+              reject(new Error('Request timeout'));
+            }, 5000);
+          }),
+        ]);
+
+        if (!cancelled) {
+          setDecks(result.filter((deck: Deck) => deck.name.toLowerCase().includes(query)));
+        }
+      } catch {
+        if (!cancelled) {
+          setDecks([]);
+          setError('Unable to load cards. Please try again later.');
+        }
+      } finally {
+        if (timeoutId) {
+          clearTimeout(timeoutId);
+        }
+
+        if (!cancelled) {
+          setLoading(false);
+        }
+      }
+    }, 300);
+
+    return () => {
+      cancelled = true;
+      clearTimeout(timer);
+
+      if (timeoutId) {
+        clearTimeout(timeoutId);
+      }
+    };
+  }, [searchQuery]);
 
   return (
     <View style={layout.screen}>
@@ -94,7 +97,7 @@ export default function Decks() {
         right={
           !isCollection && (
             <Pressable
-              onPress={() => console.log('New deck pressed')}
+              onPress={() => createDeck(query)}
               accessibilityRole="button"
               accessibilityLabel="Create a new deck"
               style={styles.newButton}
@@ -183,24 +186,14 @@ export default function Decks() {
 
 // ─── Pieces ──────────────────────────────────────────────────────────────────
 function DeckRow({ deck }: { deck: Deck }) {
-  const colourNames = deck.colors.map((c) => MANA[c].name).join(' and ');
+  // const colourNames = deck.colors.map((c) => MANA[c].name).join(' and ');
+  console.log(deck);
 
   return (
     <View style={styles.deckRow}>
-      <View style={[styles.deckArt, { backgroundColor: deck.artColor }]}>
-        <View style={styles.pipRow} accessible accessibilityLabel={`Colours: ${colourNames}`}>
-          {deck.colors.map((c) => (
-            <View key={c} style={[styles.pip, { backgroundColor: MANA[c].color }]} />
-          ))}
-        </View>
-      </View>
-
       <View style={styles.deckInfo}>
         <Text style={styles.deckName} numberOfLines={1}>
           {deck.name}
-        </Text>
-        <Text style={styles.deckMeta}>
-          {deck.format} · {deck.cardCount} cards
         </Text>
       </View>
 

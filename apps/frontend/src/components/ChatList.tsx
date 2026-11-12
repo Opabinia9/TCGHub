@@ -1,6 +1,6 @@
 import { ReactNode, useEffect, useState } from 'react';
 import { View } from 'react-native';
-import { Text } from 'react-native-paper';
+import { ActivityIndicator, Text } from 'react-native-paper';
 import { FlatList, Pressable, RefreshControl } from 'react-native-gesture-handler';
 import { useQueries, useQuery } from '@tanstack/react-query';
 import { router } from 'expo-router';
@@ -10,6 +10,8 @@ import { dateStringToMessageDate } from '@/utils/dateStringToMessageDate';
 import { ChatWithMessages, fetchChats } from '@/api/chats';
 import { fetchTrade } from '@/api/tradeListings';
 import { MagicCard, UserCard } from '@/api/types';
+import { layout } from '@/constants/theme';
+import { cardListStyles } from '@/constants/card-list-styles';
 
 type Props = { query: string };
 export default function ChatList(props: Props): ReactNode {
@@ -131,7 +133,7 @@ export default function ChatList(props: Props): ReactNode {
 
   return (
     <FlatList
-      style={chatStyles.list}
+      style={{ paddingHorizontal: 5, height: '83%' }}
       data={chats.filter((chat) => {
         return (
           chat.name ?? chat.members.reduce((acc, cur) => (cur.id === selfId ? cur : acc)).username
@@ -139,6 +141,12 @@ export default function ChatList(props: Props): ReactNode {
       })}
       renderItem={renderChat}
       refreshControl={<RefreshControl refreshing={refreshing} onRefresh={refreshChats} />}
+      ListFooterComponent={
+        <View style={cardListStyles.footer}>
+          {refreshing && <ActivityIndicator style={{ marginBottom: 20 }} color="#171717" />}
+          <Text style={cardListStyles.footerText}>TCG HUB · YOUR NEXT TRADE STARTS HERE</Text>
+        </View>
+      }
     />
   );
 }

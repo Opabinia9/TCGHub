@@ -43,86 +43,24 @@ export default function Profile() {
   return (
     <View style={layout.screen}>
       <View style={layout.top}>
-        <View style={styles.profileHeader}>
-          <Avatar.Icon size={76} icon="account" color="#E2D7BD" style={styles.avatar} />
-
-          <View style={{ flex: 1, gap: 4 }}>
-            <Text style={styles.name}>{session?.user.name}</Text>
-            <Text style={styles.username}>@{session?.user.username}</Text>
+        <View style={{ paddingVertical: 5 }}>
+          <View style={buttonStyles.toggle} accessibilityRole="tablist">
+            <ToggleButton label="MY TRADES" active={isTrades} onPress={() => setTab('trades')} />
+            <ToggleButton label="WISHLIST" active={!isTrades} onPress={() => setTab('wishlist')} />
           </View>
-
-          <Button
-            mode="outlined"
-            onPress={() => {
-              if (isEditing) {
-                handleCancel();
-              } else {
-                setEditedBio(bio);
-                setIsEditing(true);
-              }
-            }}
-            textColor="#171717"
-            style={styles.editButton}
-            compact
-          >
-            {isEditing ? 'CANCEL' : 'EDIT'}
-          </Button>
+          <Searchbar
+            placeholder="Search your cards..."
+            value={searchQuery}
+            onChangeText={setSearchQuery}
+            style={searchStyles.searchbar}
+            inputStyle={searchStyles.searchInput}
+            iconColor="#245f28"
+            placeholderTextColor="#7A705F"
+            selectionColor="#171717"
+            cursorColor="#171717"
+            elevation={0}
+          />
         </View>
-        <View style={styles.bioContainer}>
-          {isEditing ? (
-            <>
-              <TextInput
-                mode="outlined"
-                label="Your bio"
-                value={editedBio}
-                onChangeText={setEditedBio}
-                multiline
-                maxLength={150}
-                style={{ backgroundColor: '#F4EBDD' }}
-                textColor="#171717"
-                placeholderTextColor="#655d50"
-                outlineColor="#655D50"
-                activeOutlineColor="#171717"
-              />
-              <Button
-                mode="contained"
-                onPress={handleSave}
-                buttonColor="#171717"
-                textColor="#E2D7BD"
-                style={styles.saveButton}
-              >
-                SAVE BIO
-              </Button>
-            </>
-          ) : (
-            <Text style={styles.bio}>{bio}</Text>
-          )}
-        </View>
-
-        <View style={styles.logoutContainer}>
-          <Pressable onPress={handleLogout} style={styles.logoutButton}>
-            <Ionicons name="log-out-outline" size={20} color="#A12626" />
-            <Text style={styles.logoutText}>LOG OUT</Text>
-          </Pressable>
-        </View>
-
-        <View style={buttonStyles.toggle} accessibilityRole="tablist">
-          <ToggleButton label="MY TRADES" active={isTrades} onPress={() => setTab('trades')} />
-          <ToggleButton label="WISHLIST" active={!isTrades} onPress={() => setTab('wishlist')} />
-        </View>
-
-        <Searchbar
-          placeholder="Search your cards..."
-          value={searchQuery}
-          onChangeText={setSearchQuery}
-          style={searchStyles.searchbar}
-          inputStyle={searchStyles.searchInput}
-          iconColor="#245f28"
-          placeholderTextColor="#7A705F"
-          selectionColor="#171717"
-          cursorColor="#171717"
-          elevation={0}
-        />
 
         <CardList
           fetchlist={isTrades ? fetchMyTrades : fetchWishlist}
@@ -130,6 +68,71 @@ export default function Profile() {
           activeFilter="all"
           emptyMessage={isTrades ? 'Unable to load your listings' : 'Unable to load your wishlist'}
           refreshOnFocus
+          header={
+            <View style={{ marginTop: -15 }}>
+              <View style={styles.profileHeader}>
+                <Avatar.Icon size={76} icon="account" color="#E2D7BD" style={styles.avatar} />
+
+                <View style={{ paddingBottom: 10, gap: 4 }}>
+                  <Text style={styles.name}>{session?.user.name}</Text>
+                  <Text style={styles.username}>@{session?.user.username}</Text>
+                </View>
+
+                <Button
+                  mode="outlined"
+                  onPress={() => {
+                    if (isEditing) {
+                      handleCancel();
+                    } else {
+                      setEditedBio(bio);
+                      setIsEditing(true);
+                    }
+                  }}
+                  textColor="#171717"
+                  style={styles.editButton}
+                  compact
+                >
+                  {isEditing ? 'CANCEL' : 'EDIT'}
+                </Button>
+                <View style={{ flex: 1 }} />
+                <View style={styles.editButton}>
+                  <Pressable onPress={handleLogout} style={styles.editButton}>
+                    <Ionicons name="log-out-outline" size={30} color="#A12626" />
+                  </Pressable>
+                </View>
+              </View>
+              <View style={styles.bioContainer}>
+                {isEditing ? (
+                  <>
+                    <TextInput
+                      mode="outlined"
+                      label="Your bio"
+                      value={editedBio}
+                      onChangeText={setEditedBio}
+                      multiline
+                      maxLength={150}
+                      style={{ backgroundColor: '#F4EBDD' }}
+                      textColor="#171717"
+                      placeholderTextColor="#655d50"
+                      outlineColor="#655D50"
+                      activeOutlineColor="#171717"
+                    />
+                    <Button
+                      mode="contained"
+                      onPress={handleSave}
+                      buttonColor="#171717"
+                      textColor="#E2D7BD"
+                      style={styles.saveButton}
+                    >
+                      SAVE BIO
+                    </Button>
+                  </>
+                ) : (
+                  <Text style={styles.bio}>{bio}</Text>
+                )}
+              </View>
+            </View>
+          }
           variant={isTrades ? 'trades' : 'wishlist'}
         />
       </View>
@@ -141,8 +144,7 @@ const styles = StyleSheet.create({
   profileHeader: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: 14,
-    marginTop: 15,
+    gap: 8,
   },
   avatar: {
     backgroundColor: '#171717',
@@ -161,7 +163,8 @@ const styles = StyleSheet.create({
     borderRadius: 8,
   },
   bioContainer: {
-    marginTop: 22,
+    paddingVertical: 10,
+    marginTop: -10,
   },
   bio: {
     color: '#171717',

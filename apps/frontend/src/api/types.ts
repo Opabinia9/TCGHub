@@ -1,3 +1,4 @@
+import { ReactElement } from 'react';
 import { CardsPage } from './cards';
 import { User } from './userTypes';
 
@@ -13,6 +14,7 @@ export interface CardListProps {
   query: string;
   activeFilter: FilterOption;
   emptyMessage: string;
+  header?: ReactElement;
   refreshOnFocus?: boolean; // reload every time the screen comes into view
   variant?: 'browse' | 'wishlist' | 'trades'; // which buttons each card shows
 }

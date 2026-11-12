@@ -13,18 +13,20 @@ export default function MessagesScreen() {
     <View style={layout.screen}>
       <ScreenHeader title="MESSAGES" subtitle="Chats with buyers, sellers and traders." />
       <View style={layout.top}>
-        <Searchbar
-          placeholder="Search messages…"
-          value={searchQuery}
-          onChangeText={setSearchQuery}
-          style={searchStyles.searchbar}
-          inputStyle={searchStyles.searchInput}
-          iconColor="#245f28"
-          placeholderTextColor="#7A705F"
-          selectionColor="#171717"
-          cursorColor="#171717"
-          elevation={0}
-        />
+        <View style={{ paddingVertical: 5 }}>
+          <Searchbar
+            placeholder="Search messages…"
+            value={searchQuery}
+            onChangeText={setSearchQuery}
+            style={searchStyles.searchbar}
+            inputStyle={searchStyles.searchInput}
+            iconColor="#245f28"
+            placeholderTextColor="#7A705F"
+            selectionColor="#171717"
+            cursorColor="#171717"
+            elevation={0}
+          />
+        </View>
         <ChatList query={searchQuery} />
       </View>
     </View>

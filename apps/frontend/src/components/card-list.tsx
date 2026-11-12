@@ -15,6 +15,8 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import AddToSheet, { type Condition, type SheetType } from '@/components/add-to-sheet';
 import { fetchOwnedQuantities, fetchWishlistIds, updateCollectionCard } from '@/api/collection';
 import { fetchCards } from '@/api/cards';
+import { cardStyles } from '@/constants/card-container';
+import { cardListStyles } from '@/constants/card-list-styles';
 
 // Draws an Ionicons icon in our green, for a menu item.
 function menuIcon(name: keyof typeof Ionicons.glyphMap) {
@@ -290,63 +292,65 @@ export default function CardList(props: CardListProps) {
   );
 
   const renderItem = ({ item: card }: { item: MagicCard }) => (
-    <View key={card.id} style={styles.card}>
+    <View key={card.id} style={cardStyles.card}>
       <Pressable
         onPress={() => setSelectedCard(card)}
         accessibilityRole="button"
         accessibilityLabel={`View ${card.name}${
           (ownedQuantities.get(card.id) ?? 0) > 0 ? `, you own ${ownedQuantities.get(card.id)}` : ''
         }${wishlistIds.has(card.id) ? ', on your wishlist' : ''}`}
-        style={styles.imageContainer}
+        style={cardStyles.imageContainer}
       >
         <Image
           source={{
             uri: card.imageUris?.grid ?? card.imageUris?.normal ?? undefined,
           }}
-          style={styles.cardImage}
+          style={cardStyles.cardImage}
           contentFit="cover"
         />
 
-        <View style={styles.expandIcon}>
+        <View style={cardStyles.expandIcon}>
           <Ionicons name="expand-outline" size={18} color="#FFFFFF" />
         </View>
       </Pressable>
 
-      <View style={styles.cardInfo}>
-        <Text style={styles.cardPriceLabel} numberOfLines={1}>
+      <View style={cardStyles.cardInfo}>
+        <Text style={cardStyles.cardPriceLabel} numberOfLines={1}>
           {card.setName || ' '}
         </Text>
 
         {/* Tags: how many you own, and whether it's on your wishlist */}
         {((ownedQuantities.get(card.id) ?? 0) > 0 || wishlistIds.has(card.id)) && (
-          <View style={styles.tagRow}>
+          <View style={cardStyles.tagRow}>
             {(ownedQuantities.get(card.id) ?? 0) > 0 && (
-              <View style={styles.tag}>
-                <Text style={styles.tagText}>OWNED ×{ownedQuantities.get(card.id)}</Text>
+              <View style={cardStyles.tag}>
+                <Text style={cardStyles.tagText}>OWNED ×{ownedQuantities.get(card.id)}</Text>
               </View>
             )}
             {wishlistIds.has(card.id) && (
-              <View style={[styles.tag, styles.tagWishlist]}>
+              <View style={[cardStyles.tag, cardStyles.tagWishlist]}>
                 <Ionicons name="heart" size={11} color="#FFFFFF" />
-                <Text style={[styles.tagText, styles.tagTextLight]}>WISHLIST</Text>
+                <Text style={[cardStyles.tagText, cardStyles.tagTextLight]}>WISHLIST</Text>
               </View>
             )}
           </View>
         )}
         {variant === 'trades' && (
-          <Text style={styles.listedInfo}>
+          <Text style={cardStyles.listedInfo}>
             Listed ×{(card as CollectionCard).quantity} ·{' '}
             {conditionLabel((card as CollectionCard).condition)}
           </Text>
         )}
 
         {/* Price on the left, + on the right */}
-        <View style={styles.cardPriceRow}>
+        <View style={cardStyles.cardPriceRow}>
           <View>
-            <Text style={styles.cardPriceLabel}>
+            <Text style={cardStyles.cardPriceLabel}>
               {card.finishes.includes('nonfoil') ? '' : 'foil'}
             </Text>
-            <Text style={styles.cardPrice}>{card.prices.usd ? `$${card.prices.usd}` : '—'}</Text>
+            <Text style={cardStyles.cardPrice}>
+              {card.prices.usd ? `$${card.prices.usd}` : '—'}
+            </Text>
           </View>
           {variant === 'trades' ? (
             // My Listings: ✕ removes the card from your listings
@@ -355,7 +359,7 @@ export default function CardList(props: CardListProps) {
               accessibilityRole="button"
               accessibilityLabel={`Remove ${card.name} from your listings`}
               hitSlop={4}
-              style={styles.removeButton}
+              style={cardStyles.removeButton}
             >
               <Ionicons name="close" size={22} color="#7A2E22" />
             </Pressable>
@@ -365,14 +369,14 @@ export default function CardList(props: CardListProps) {
               visible={menuCardId === card.id}
               onDismiss={closeMenu}
               anchorPosition="bottom"
-              contentStyle={styles.menu}
+              contentStyle={cardStyles.menu}
               anchor={
                 <Pressable
                   onPress={() => setMenuCardId(card.id)}
                   accessibilityRole="button"
                   accessibilityLabel={`${card.name} is on your wishlist. Show options`}
                   hitSlop={4}
-                  style={styles.heartButton}
+                  style={cardStyles.heartButton}
                 >
                   <Ionicons name="heart" size={20} color="#FFFFFF" />
                 </Pressable>
@@ -381,7 +385,7 @@ export default function CardList(props: CardListProps) {
               <Menu.Item
                 leadingIcon={menuIcon('heart-dislike-outline')}
                 title="Remove from wishlist"
-                titleStyle={styles.menuItemText}
+                titleStyle={cardStyles.menuItemText}
                 onPress={() => removeFromWishlist(card)}
               />
             </Menu>
@@ -390,14 +394,17 @@ export default function CardList(props: CardListProps) {
               visible={menuCardId === card.id}
               onDismiss={closeMenu}
               anchorPosition="bottom"
-              contentStyle={styles.menu}
+              contentStyle={cardStyles.menu}
               anchor={
                 <Pressable
                   onPress={() => setMenuCardId(card.id)}
                   accessibilityRole="button"
                   accessibilityLabel={`Add ${card.name} to…`}
                   hitSlop={4}
-                  style={[styles.addButton, menuCardId === card.id && styles.addButtonActive]}
+                  style={[
+                    cardStyles.addButton,
+                    menuCardId === card.id && cardStyles.addButtonActive,
+                  ]}
                 >
                   <Ionicons
                     name="add"
@@ -410,26 +417,26 @@ export default function CardList(props: CardListProps) {
               <Menu.Item
                 leadingIcon={menuIcon(wishlistIds.has(card.id) ? 'heart' : 'heart-outline')}
                 title={wishlistIds.has(card.id) ? 'Remove from wishlist' : 'Add to wishlist'}
-                titleStyle={styles.menuItemText}
+                titleStyle={cardStyles.menuItemText}
                 onPress={() => toggleWishlist(card)}
               />
               <Menu.Item
                 leadingIcon={menuIcon('pricetag-outline')}
                 title="Add to my listings"
-                titleStyle={styles.menuItemText}
+                titleStyle={cardStyles.menuItemText}
                 onPress={() => openSheet('listing', card)}
               />
               <Menu.Item
                 leadingIcon={menuIcon('albums-outline')}
                 title="Add to collection"
-                titleStyle={styles.menuItemText}
+                titleStyle={cardStyles.menuItemText}
                 onPress={() => openSheet('collection', card)}
               />
-              <View style={styles.menuDivider} />
+              <View style={cardStyles.menuDivider} />
               <Menu.Item
                 leadingIcon={menuIcon('layers-outline')}
                 title="Add to deck"
-                titleStyle={styles.menuItemText}
+                titleStyle={cardStyles.menuItemText}
                 onPress={closeMenu}
               />
             </Menu>
@@ -443,42 +450,43 @@ export default function CardList(props: CardListProps) {
       ? cards
       : cards.filter((item) => item.name.toLowerCase().includes(searchText));
   return (
-    <View style={{ height: '90%' }}>
+    <View>
       <FlatList
         data={filteredCards}
         renderItem={renderItem}
         keyExtractor={(item) => item.id}
         extraData={[menuCardId, wishlistIds, ownedQuantities]}
         numColumns={2}
-        columnWrapperStyle={styles.cardNameRow}
-        style={styles.container}
-        contentContainerStyle={styles.content}
+        columnWrapperStyle={cardListStyles.cardNameRow}
+        style={cardListStyles.container}
+        contentContainerStyle={cardListStyles.content}
         showsVerticalScrollIndicator={false}
         keyboardShouldPersistTaps="handled"
         onEndReached={loadMore}
         onEndReachedThreshold={0.5}
         ItemSeparatorComponent={() => <View style={{ height: 16 }} />}
+        ListHeaderComponent={props.header ?? <View />}
         ListEmptyComponent={
           loading ? (
-            <ActivityIndicator style={styles.emptyState} color="#171717" />
+            <ActivityIndicator style={cardListStyles.emptyState} color="#171717" />
           ) : error ? (
-            <View style={styles.emptyState}>
+            <View style={cardListStyles.emptyState}>
               <Ionicons name="alert-circle-outline" size={36} color="#77705F" />
-              <Text style={styles.emptyTitle}>Something went wrong</Text>
-              <Text style={styles.emptyText}>{error}</Text>
+              <Text style={cardListStyles.emptyTitle}>Something went wrong</Text>
+              <Text style={cardListStyles.emptyText}>{error}</Text>
             </View>
           ) : (
-            <View style={styles.emptyState}>
+            <View style={cardListStyles.emptyState}>
               <Ionicons name="search-outline" size={36} color="#77705F" />
-              <Text style={styles.emptyTitle}>No cards found</Text>
-              <Text style={styles.emptyText}>Try another search or category.</Text>
+              <Text style={cardListStyles.emptyTitle}>No cards found</Text>
+              <Text style={cardListStyles.emptyText}>Try another search or category.</Text>
             </View>
           )
         }
         ListFooterComponent={
-          <View style={styles.footer}>
+          <View style={cardListStyles.footer}>
             {loadingMore && <ActivityIndicator style={{ marginBottom: 20 }} color="#171717" />}
-            <Text style={styles.footerText}>TCG HUB · YOUR NEXT TRADE STARTS HERE</Text>
+            <Text style={cardListStyles.footerText}>TCG HUB · YOUR NEXT TRADE STARTS HERE</Text>
           </View>
         }
       />
@@ -494,14 +502,14 @@ export default function CardList(props: CardListProps) {
         {selectedCard && (
           <View
             style={[
-              styles.preview,
+              cardListStyles.preview,
               { paddingTop: insets.top + 8, paddingBottom: insets.bottom + 16 },
             ]}
           >
             {/* While the menu is open, tapping anywhere else closes it */}
             {previewMenuOpen && (
               <Pressable
-                style={styles.menuCatcher}
+                style={cardListStyles.menuCatcher}
                 onPress={() => setPreviewMenuOpen(false)}
                 accessibilityRole="button"
                 accessibilityLabel="Close menu"
@@ -509,9 +517,9 @@ export default function CardList(props: CardListProps) {
             )}
 
             {/* Top: close button on the right */}
-            <View style={styles.previewTopRow}>
+            <View style={cardListStyles.previewTopRow}>
               <Pressable
-                style={styles.previewClose}
+                style={cardListStyles.previewClose}
                 onPress={closePreview}
                 accessibilityRole="button"
                 accessibilityLabel="Close preview"
@@ -521,7 +529,7 @@ export default function CardList(props: CardListProps) {
             </View>
 
             {/* Middle: the card, as big as fits */}
-            <View style={styles.previewImageArea}>
+            <View style={cardListStyles.previewImageArea}>
               <Image
                 source={{
                   uri:
@@ -530,26 +538,26 @@ export default function CardList(props: CardListProps) {
                     selectedCard.imageUris?.grid ??
                     undefined,
                 }}
-                style={styles.previewImage}
+                style={cardListStyles.previewImage}
                 contentFit="contain"
               />
             </View>
 
             {/* Name and set */}
-            <View style={styles.previewInfo}>
-              <Text style={styles.previewName} numberOfLines={2}>
+            <View style={cardListStyles.previewInfo}>
+              <Text style={cardListStyles.previewName} numberOfLines={2}>
                 {selectedCard.name}
               </Text>
-              <Text style={styles.previewSetName} numberOfLines={1}>
+              <Text style={cardListStyles.previewSetName} numberOfLines={1}>
                 {selectedCard.setName || 'Set information unavailable'}
               </Text>
             </View>
 
             {/* Bottom bar: price on the left, ADD TO on the right */}
-            <View style={styles.previewBar}>
+            <View style={cardListStyles.previewBar}>
               <View>
-                <Text style={styles.previewPriceLabel}>MARKET PRICE</Text>
-                <Text style={styles.previewPrice}>
+                <Text style={cardListStyles.previewPriceLabel}>MARKET PRICE</Text>
+                <Text style={cardListStyles.previewPrice}>
                   {selectedCard.prices.usd ? `$${selectedCard.prices.usd}` : '—'}
                 </Text>
               </View>
@@ -559,15 +567,18 @@ export default function CardList(props: CardListProps) {
                 accessibilityRole="button"
                 accessibilityLabel={`Add ${selectedCard.name} to…`}
                 accessibilityState={{ expanded: previewMenuOpen }}
-                style={[styles.previewAddButton, previewMenuOpen && styles.previewAddButtonActive]}
+                style={[
+                  cardListStyles.previewAddButton,
+                  previewMenuOpen && cardListStyles.previewAddButtonActive,
+                ]}
               >
                 <Ionicons name="add" size={20} color="#FFFFFF" />
-                <Text style={styles.previewAddText}>ADD TO</Text>
+                <Text style={cardListStyles.previewAddText}>ADD TO</Text>
               </Pressable>
 
               {/* Same items as the grid menu, drawn ourselves because Paper's <Menu> can't show inside a Modal */}
               {previewMenuOpen && (
-                <View style={[styles.menu, styles.previewMenu]}>
+                <View style={[cardStyles.menu, cardListStyles.previewMenu]}>
                   <Menu.Item
                     leadingIcon={menuIcon(
                       wishlistIds.has(selectedCard.id) ? 'heart' : 'heart-outline',
@@ -575,26 +586,26 @@ export default function CardList(props: CardListProps) {
                     title={
                       wishlistIds.has(selectedCard.id) ? 'Remove from wishlist' : 'Add to wishlist'
                     }
-                    titleStyle={styles.menuItemText}
+                    titleStyle={cardStyles.menuItemText}
                     onPress={() => toggleWishlist(selectedCard)}
                   />
                   <Menu.Item
                     leadingIcon={menuIcon('pricetag-outline')}
                     title="Add to my listings"
-                    titleStyle={styles.menuItemText}
+                    titleStyle={cardStyles.menuItemText}
                     onPress={() => openSheet('listing', selectedCard)}
                   />
                   <Menu.Item
                     leadingIcon={menuIcon('albums-outline')}
                     title="Add to collection"
-                    titleStyle={styles.menuItemText}
+                    titleStyle={cardStyles.menuItemText}
                     onPress={() => openSheet('collection', selectedCard)}
                   />
-                  <View style={styles.menuDivider} />
+                  <View style={cardStyles.menuDivider} />
                   <Menu.Item
                     leadingIcon={menuIcon('layers-outline')}
                     title="Add to deck"
-                    titleStyle={styles.menuItemText}
+                    titleStyle={cardStyles.menuItemText}
                     onPress={() => setPreviewMenuOpen(false)}
                   />
                 </View>
@@ -634,306 +645,3 @@ export default function CardList(props: CardListProps) {
     </View>
   );
 }
-
-const styles = StyleSheet.create({
-  container: {
-    backgroundColor: '#E2D7BD',
-  },
-  footer: {
-    marginTop: 30,
-    alignItems: 'center',
-  },
-  footerText: {
-    fontSize: 10,
-    fontWeight: '700',
-    letterSpacing: 1.3,
-    color: '#77705F',
-    textAlign: 'center',
-  },
-  loadMoreButton: {
-    alignSelf: 'center',
-    marginTop: 28,
-    paddingHorizontal: 24,
-    paddingVertical: 12,
-    borderRadius: 20,
-    backgroundColor: '#171717',
-  },
-  loadMoreText: {
-    color: '#E2D7BD',
-    fontSize: 13,
-    fontWeight: '700',
-  },
-  emptyState: {
-    alignItems: 'center',
-    paddingVertical: 48,
-    gap: 10,
-  },
-  emptyTitle: {
-    fontSize: 18,
-    fontWeight: '800',
-    color: '#171717',
-  },
-  emptyText: {
-    fontSize: 13,
-    color: '#77705F',
-  },
-  content: {
-    paddingTop: 24,
-    paddingBottom: 400,
-  },
-  cardsGrid: {
-    flexDirection: 'row',
-    flexWrap: 'wrap',
-    justifyContent: 'space-between',
-    rowGap: 22,
-  },
-  imageContainer: {
-    position: 'relative',
-    width: '100%',
-    aspectRatio: 0.72,
-    backgroundColor: '#D1C4A8',
-  },
-  tagRow: {
-    flexDirection: 'row',
-    flexWrap: 'wrap',
-    gap: 6,
-    marginBottom: 10,
-  },
-  tag: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 3,
-    height: 22,
-    paddingHorizontal: 8,
-    borderRadius: 11,
-    backgroundColor: '#E2D7BD',
-  },
-  tagWishlist: {
-    backgroundColor: '#2e7d32',
-  },
-  tagText: {
-    fontFamily: 'BarlowCondensed_700Bold',
-    fontSize: 12,
-    letterSpacing: 0.8,
-    color: '#3A342B',
-  },
-  tagTextLight: {
-    color: '#FFFFFF',
-  },
-  expandIcon: {
-    position: 'absolute',
-    right: 8,
-    bottom: 8,
-    width: 32,
-    height: 32,
-    borderRadius: 16,
-    backgroundColor: 'rgba(23, 23, 23, 0.8)',
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  cardImage: {
-    width: '100%',
-    height: '100%',
-  },
-  cardInfo: {
-    flex: 1,
-    paddingHorizontal: 11,
-    paddingVertical: 12,
-  },
-  cardNameRow: {
-    flexDirection: 'row',
-    alignItems: 'stretch',
-    justifyContent: 'space-between',
-    gap: 6,
-  },
-  cardName: {
-    fontSize: 15,
-    fontWeight: '800',
-    color: '#171717',
-  },
-  cardSetName: {
-    textAlign: 'center',
-    fontSize: 11,
-    color: '#77705F',
-    marginTop: 5,
-    marginBottom: 10,
-  },
-  cardPriceRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-    gap: 6,
-    marginTop: 'auto',
-    paddingTop: 10,
-    borderTopWidth: 1,
-    borderTopColor: '#DCCFB3',
-  },
-  cardPriceLabel: {
-    fontSize: 10,
-    fontWeight: '700',
-    letterSpacing: 1,
-    color: '#77705F',
-  },
-  cardPrice: {
-    fontFamily: 'BarlowCondensed_700Bold',
-    fontSize: 19,
-    color: '#171717',
-  },
-  addButton: {
-    width: 36,
-    height: 36,
-    borderRadius: 10,
-    backgroundColor: '#E2D7BD',
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  addButtonActive: {
-    backgroundColor: '#171717',
-  },
-  heartButton: {
-    width: 36,
-    height: 36,
-    borderRadius: 10,
-    backgroundColor: '#2e7d32',
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  removeButton: {
-    width: 36,
-    height: 36,
-    borderRadius: 10,
-    borderWidth: 1.5,
-    borderColor: '#7A2E22',
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  listedInfo: {
-    marginTop: -4,
-    marginBottom: 10,
-    fontSize: 12,
-    fontWeight: '600',
-    color: '#3A342B',
-  },
-  menu: {
-    backgroundColor: '#FBF7EE',
-    borderRadius: 14,
-  },
-  menuItemText: {
-    fontSize: 15,
-    color: '#171717',
-  },
-  menuDivider: {
-    height: 1,
-    marginHorizontal: 12,
-    marginVertical: 4,
-    backgroundColor: '#DCCFB3',
-  },
-  wishlistButton: {
-    width: 30,
-    height: 30,
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  card: {
-    width: '48%',
-    overflow: 'hidden',
-    borderRadius: 14,
-    backgroundColor: '#F4ECDD',
-    borderWidth: 1,
-    borderColor: '#C9BDA3',
-  },
-  preview: {
-    flex: 1,
-    paddingHorizontal: 20,
-    backgroundColor: '#171717',
-  },
-  menuCatcher: {
-    ...StyleSheet.absoluteFill,
-  },
-  previewTopRow: {
-    flexDirection: 'row',
-    justifyContent: 'flex-end',
-  },
-  previewClose: {
-    width: 44,
-    height: 44,
-    borderRadius: 22,
-    backgroundColor: '#2C2A26',
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  previewImageArea: {
-    flex: 1,
-    paddingVertical: 12,
-  },
-  previewImage: {
-    width: '100%',
-    height: '100%',
-  },
-  previewInfo: {
-    paddingHorizontal: 4,
-    marginBottom: 16,
-  },
-  previewName: {
-    fontFamily: 'BarlowCondensed_700Bold',
-    fontSize: 28,
-    letterSpacing: 1,
-    textTransform: 'uppercase',
-    color: '#F4EEDF',
-  },
-  previewSetName: {
-    marginTop: 2,
-    fontSize: 14,
-    color: '#A79E8B',
-  },
-  previewBar: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-    gap: 12,
-    paddingVertical: 14,
-    paddingLeft: 18,
-    paddingRight: 14,
-    borderRadius: 18,
-    backgroundColor: '#E2D7BD',
-  },
-  previewPriceLabel: {
-    fontSize: 11,
-    fontWeight: '700',
-    letterSpacing: 1.2,
-    color: '#5A5246',
-  },
-  previewPrice: {
-    fontFamily: 'BarlowCondensed_700Bold',
-    fontSize: 30,
-    color: '#171717',
-  },
-  previewAddButton: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 6,
-    height: 52,
-    paddingLeft: 16,
-    paddingRight: 20,
-    borderRadius: 14,
-    backgroundColor: '#2e7d32',
-  },
-  previewAddButtonActive: {
-    backgroundColor: '#171717',
-  },
-  previewAddText: {
-    fontFamily: 'BarlowCondensed_700Bold',
-    fontSize: 18,
-    letterSpacing: 1.2,
-    color: '#FFFFFF',
-  },
-  previewMenu: {
-    position: 'absolute',
-    right: 0,
-    bottom: '100%',
-    marginBottom: 10,
-    width: 250,
-    paddingVertical: 6,
-    boxShadow: '0 12px 30px rgba(0, 0, 0, 0.4)',
-  },
-});

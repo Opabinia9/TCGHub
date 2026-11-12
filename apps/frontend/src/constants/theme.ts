@@ -71,6 +71,11 @@ export const layout = StyleSheet.create({
     backgroundColor: '#E2D7BD',
   },
   top: {
-    paddingHorizontal: 20,
+    paddingHorizontal: 5,
+    paddingVertical: 5,
+  },
+  content: {
+    paddingTop: 16,
+    paddingBottom: 32,
   },
 });

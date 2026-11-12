@@ -108,44 +108,46 @@ export default function Decks() {
 
       {/* Top part: toggle, search, filters (doesn't scroll) */}
       <View style={layout.top}>
-        {/* My decks / My collection toggle */}
-        <View style={buttonStyles.toggle} accessibilityRole="tablist">
-          <ToggleButton label="MY DECKS" active={tab === 'mine'} onPress={() => setTab('mine')} />
-          <ToggleButton
-            label="MY COLLECTION"
-            active={isCollection}
-            onPress={() => setTab('collection')}
+        <View style={{ paddingVertical: 5 }}>
+          {/* My decks / My collection toggle */}
+          <View style={buttonStyles.toggle} accessibilityRole="tablist">
+            <ToggleButton label="MY DECKS" active={tab === 'mine'} onPress={() => setTab('mine')} />
+            <ToggleButton
+              label="MY COLLECTION"
+              active={isCollection}
+              onPress={() => setTab('collection')}
+            />
+          </View>
+
+          <Searchbar
+            placeholder={isCollection ? 'Search your collection…' : 'Search for a deck…'}
+            value={searchQuery}
+            onChangeText={setSearchQuery}
+            style={searchStyles.searchbar}
+            inputStyle={searchStyles.searchInput}
+            iconColor="#245f28"
+            placeholderTextColor="#7A705F"
+            selectionColor="#171717"
+            cursorColor="#171717"
+            elevation={0}
           />
         </View>
 
-        <Searchbar
-          placeholder={isCollection ? 'Search your collection…' : 'Search for a deck…'}
-          value={searchQuery}
-          onChangeText={setSearchQuery}
-          style={searchStyles.searchbar}
-          inputStyle={searchStyles.searchInput}
-          iconColor="#245f28"
-          placeholderTextColor="#7A705F"
-          selectionColor="#171717"
-          cursorColor="#171717"
-          elevation={0}
-        />
-
-        <View style={styles.filterRow}>
-          {FILTERS.map((label) => (
-            <Pressable
-              key={label}
-              onPress={() => console.log(label + ' filter pressed')}
-              hitSlop={4}
-              accessibilityRole="button"
-              accessibilityLabel={`Filter by ${label.toLowerCase()}`}
-              style={styles.filterChip}
-            >
-              <Text style={styles.filterText}>{label}</Text>
-              <Ionicons name="chevron-down" size={16} color="#171717" />
-            </Pressable>
-          ))}
-        </View>
+        {/* <View style={styles.filterRow}> */}
+        {/*   {FILTERS.map((label) => ( */}
+        {/*     <Pressable */}
+        {/*       key={label} */}
+        {/*       onPress={() => console.log(label + ' filter pressed')} */}
+        {/*       hitSlop={4} */}
+        {/*       accessibilityRole="button" */}
+        {/*       accessibilityLabel={`Filter by ${label.toLowerCase()}`} */}
+        {/*       style={styles.filterChip} */}
+        {/*     > */}
+        {/*       <Text style={styles.filterText}>{label}</Text> */}
+        {/*       <Ionicons name="chevron-down" size={16} color="#171717" /> */}
+        {/*     </Pressable> */}
+        {/*   ))} */}
+        {/* </View> */}
         {/* Bottom part: scrolls by itself */}
         {isCollection ? (
           <CardList

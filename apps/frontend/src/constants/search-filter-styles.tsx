@@ -2,7 +2,6 @@ import { StyleSheet } from 'react-native';
 
 export const searchStyles = StyleSheet.create({
   filterSection: {
-    paddingHorizontal: 6,
     backgroundColor: '#E2D7BD',
   },
   filterList: {

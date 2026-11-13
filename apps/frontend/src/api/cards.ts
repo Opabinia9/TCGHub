@@ -2,6 +2,8 @@ import { ENV } from '@/api/env';
 import type { SearchCard, Pagination, MagicCard, FilterOption } from '@/api/types';
 import { toMagicCard } from '@/api/types';
 
+export type { MagicCard } from '@/api/types';
+
 export type CardsPage = {
   items: Array<MagicCard>;
   pagination: Pagination;

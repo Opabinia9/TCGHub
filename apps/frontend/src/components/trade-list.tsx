@@ -1,3 +1,4 @@
+
 import { useCallback, useState } from 'react';
 import { ActivityIndicator, Pressable, StyleSheet, Text, View } from 'react-native';
 import { FlatList } from 'react-native-gesture-handler';
@@ -12,10 +13,11 @@ import { fetchWishlistIds, updateCollectionCard } from '@/api/collection';
 import { createTradeChat, fetchChats } from '@/api/chats';
 import { useQuery } from '@tanstack/react-query';
 import { authClient } from '@/utils/auth-client';
+import { Palette } from '@/constants/theme';
 
 // Cards other players have listed for trade.
 type TradeListProps = {
-  query: string; // search text from the Trades screen
+  query: string;
 };
 
 export default function TradeList({ query }: TradeListProps) {
@@ -25,10 +27,12 @@ export default function TradeList({ query }: TradeListProps) {
   const [error, setError] = useState<string | null>(null);
   const [wishlistIds, setWishlistIds] = useState<Set<string>>(new Set());
   const [message, setMessage] = useState<string | null>(null);
+
   const { data: chats } = useQuery({
     queryKey: ['chats'],
     queryFn: fetchChats,
   });
+
   const selfId = authClient.useSession().data?.user.id;
 
   // Load the listings and your wishlist every time the Trades tab comes into view.
@@ -38,7 +42,10 @@ export default function TradeList({ query }: TradeListProps) {
       setLoading(true);
       setError(null);
 
-      Promise.all([fetchTradeListings(''), fetchWishlistIds().catch(() => new Set<string>())])
+      Promise.all([
+        fetchTradeListings(''),
+        fetchWishlistIds().catch(() => new Set<string>()),
+      ])
         .then(([page, ids]) => {
           if (cancelled) return;
           setListings(page.items as ListingCard[]);
@@ -51,7 +58,6 @@ export default function TradeList({ query }: TradeListProps) {
           if (!cancelled) setLoading(false);
         });
 
-      // If you leave the tab before it finishes loading, ignore the result.
       return () => {
         cancelled = true;
       };
@@ -60,6 +66,7 @@ export default function TradeList({ query }: TradeListProps) {
 
   async function toggleWishlist(card: ListingCard) {
     const inWishlist = wishlistIds.has(card.id);
+
     try {
       await updateCollectionCard({
         card_id: card.id,
@@ -67,15 +74,19 @@ export default function TradeList({ query }: TradeListProps) {
         for_trade: false,
         wishlist: !inWishlist,
       });
+
       setWishlistIds((current) => {
         const next = new Set(current);
+
         if (inWishlist) {
           next.delete(card.id);
         } else {
           next.add(card.id);
         }
+
         return next;
       });
+
       setMessage(
         inWishlist
           ? `${card.name} removed from your wishlist`
@@ -95,17 +106,23 @@ export default function TradeList({ query }: TradeListProps) {
         }
       }
     }
+
     const chatId = await createTradeChat(sellerId, cardId);
     router.push({ pathname: '/chat/[id]', params: { id: chatId } });
   };
+
   // Only show listings whose card name contains the search text.
   const searchText = query.trim().toLowerCase();
-  const shownListings = listings.filter((item) => item.name.toLowerCase().includes(searchText));
+  const shownListings = listings.filter((item) =>
+    item.name.toLowerCase().includes(searchText),
+  );
 
   const renderItem = ({ item }: { item: ListingCard }) => {
     const inWishlist = wishlistIds.has(item.id);
     const condition =
-      item.condition && item.condition !== 'unmarked' ? item.condition : 'Condition not set';
+      item.condition && item.condition !== 'unmarked'
+        ? item.condition
+        : 'Condition not set';
 
     return (
       <View style={styles.card}>
@@ -121,12 +138,17 @@ export default function TradeList({ query }: TradeListProps) {
           <Text style={styles.cardName} numberOfLines={1}>
             {item.name}
           </Text>
+
           <Text style={styles.cardCondition}>
             {condition} · ×{item.quantity}
           </Text>
+
           <View style={styles.sellerRow}>
-            <Ionicons name="person-outline" size={13} color="#3A342B" />
-            {/* TODO: show the seller's username once the API includes it */}
+            <Ionicons
+              name="person-outline"
+              size={13}
+              color={Palette.gold}
+            />
             <Text style={styles.sellerText}>{item.username}</Text>
           </View>
         </View>
@@ -138,7 +160,11 @@ export default function TradeList({ query }: TradeListProps) {
             accessibilityLabel={`Message the seller about ${item.name}`}
             style={styles.messageButton}
           >
-            <Ionicons name="chatbubble-outline" size={17} color="#171717" />
+            <Ionicons
+              name="chatbubble-outline"
+              size={17}
+              color={Palette.gold}
+            />
             <Text style={styles.messageButtonText}>MESSAGE</Text>
           </Pressable>
 
@@ -147,14 +173,19 @@ export default function TradeList({ query }: TradeListProps) {
             accessibilityRole="button"
             accessibilityState={{ selected: inWishlist }}
             accessibilityLabel={
-              inWishlist ? `Remove ${item.name} from wishlist` : `Add ${item.name} to wishlist`
+              inWishlist
+                ? `Remove ${item.name} from wishlist`
+                : `Add ${item.name} to wishlist`
             }
-            style={[styles.wishlistButton, inWishlist && styles.wishlistButtonActive]}
+            style={[
+              styles.wishlistButton,
+              inWishlist && styles.wishlistButtonActive,
+            ]}
           >
             <Ionicons
               name={inWishlist ? 'heart' : 'heart-outline'}
               size={20}
-              color={inWishlist ? '#FFFFFF' : '#171717'}
+              color={inWishlist ? Palette.white : Palette.gold}
             />
           </Pressable>
         </View>
@@ -176,14 +207,15 @@ export default function TradeList({ query }: TradeListProps) {
         showsVerticalScrollIndicator={false}
         ListEmptyComponent={
           loading ? (
-            <ActivityIndicator style={styles.loading} color="#171717" />
+            <ActivityIndicator style={styles.loading} color={Palette.gold} />
           ) : (
             <View style={styles.emptyState}>
               <Ionicons
                 name={error ? 'alert-circle-outline' : 'search-outline'}
                 size={36}
-                color="#77705F"
+                color={Palette.gold}
               />
+
               <Text style={styles.emptyTitle}>
                 {error
                   ? 'Something went wrong'
@@ -191,6 +223,7 @@ export default function TradeList({ query }: TradeListProps) {
                     ? 'No cards found'
                     : 'No cards listed yet'}
               </Text>
+
               <Text style={styles.emptyText}>
                 {error ??
                   (searchText
@@ -208,6 +241,7 @@ export default function TradeList({ query }: TradeListProps) {
           onDismiss={() => setMessage(null)}
           duration={2500}
           wrapperStyle={{ bottom: insets.bottom + 64 }}
+          style={styles.snackbar}
         >
           {message ?? ''}
         </Snackbar>
@@ -219,6 +253,7 @@ export default function TradeList({ query }: TradeListProps) {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
+    backgroundColor: Palette.background,
   },
   content: {
     paddingHorizontal: 20,
@@ -231,37 +266,45 @@ const styles = StyleSheet.create({
   card: {
     width: '48%',
     gap: 8,
+    padding: 8,
+    borderRadius: 14,
+    backgroundColor: Palette.surface,
+    borderWidth: 1,
+    borderColor: Palette.border,
   },
   cardImage: {
     width: '100%',
     aspectRatio: 63 / 88,
-    borderRadius: 10,
-    backgroundColor: '#D1C4A8',
+    borderRadius: 9,
+    backgroundColor: Palette.surfaceElevated,
   },
   cardInfo: {
     paddingHorizontal: 2,
+    gap: 3,
   },
   cardName: {
     fontSize: 15,
     fontWeight: '600',
-    color: '#171717',
+    color: Palette.text,
   },
   cardCondition: {
     fontSize: 13,
-    color: '#5A5246',
+    color: Palette.textSecondary,
   },
   sellerRow: {
     flexDirection: 'row',
     alignItems: 'center',
     gap: 4,
+    marginTop: 2,
   },
   sellerText: {
     fontSize: 13,
-    color: '#3A342B',
+    color: Palette.textSecondary,
   },
   actionRow: {
     flexDirection: 'row',
     gap: 8,
+    marginTop: 2,
   },
   messageButton: {
     flex: 1,
@@ -269,29 +312,31 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
     gap: 6,
-    height: 44,
+    height: 42,
     borderRadius: 10,
-    borderWidth: 1.5,
-    borderColor: '#171717',
+    borderWidth: 1,
+    borderColor: Palette.gold,
+    backgroundColor: Palette.surfaceElevated,
   },
   messageButtonText: {
     fontFamily: 'BarlowCondensed_700Bold',
     fontSize: 14,
-    letterSpacing: 1.4,
-    color: '#171717',
+    letterSpacing: 1.2,
+    color: Palette.gold,
   },
   wishlistButton: {
-    width: 44,
-    height: 44,
+    width: 42,
+    height: 42,
     borderRadius: 10,
-    borderWidth: 1.5,
-    borderColor: '#171717',
+    borderWidth: 1,
+    borderColor: Palette.border,
+    backgroundColor: Palette.surfaceElevated,
     alignItems: 'center',
     justifyContent: 'center',
   },
   wishlistButtonActive: {
-    backgroundColor: '#2e7d32',
-    borderColor: '#2e7d32',
+    backgroundColor: Palette.green,
+    borderColor: Palette.greenAccent,
   },
   loading: {
     marginTop: 40,
@@ -304,11 +349,14 @@ const styles = StyleSheet.create({
   emptyTitle: {
     fontSize: 18,
     fontWeight: '800',
-    color: '#171717',
+    color: Palette.text,
   },
   emptyText: {
     fontSize: 13,
-    color: '#77705F',
+    color: Palette.textSecondary,
     textAlign: 'center',
+  },
+  snackbar: {
+    backgroundColor: Palette.surfaceElevated,
   },
 });

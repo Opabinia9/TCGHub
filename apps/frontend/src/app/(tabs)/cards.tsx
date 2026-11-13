@@ -6,32 +6,40 @@ import CardList from '@/components/card-list';
 import { fetchCards } from '@/api/cards';
 import ScreenHeader from '@/components/screen-header';
 import { searchStyles } from '@/constants/search-filter-styles';
-import { layout } from '@/constants/theme';
+import { Palette } from '@/constants/theme';
 
 export default function CardsScreen() {
   const [searchQuery, setSearchQuery] = useState('');
   const [activeFilter, setActiveFilter] = useState<FilterOption>('all');
 
   return (
-    <View style={layout.screen}>
-      <ScreenHeader title="EXPLORE CARDS" subtitle="Find cards to collect and trade." />
-      <View style={layout.top}>
+    <View style={styles.screen}>
+      <ScreenHeader
+        title="EXPLORE CARDS"
+        subtitle="Find cards to collect and trade."
+      />
+
+      <View style={styles.top}>
         <Searchbar
           placeholder="Search your cards..."
           value={searchQuery}
           onChangeText={setSearchQuery}
           style={searchStyles.searchbar}
           inputStyle={searchStyles.searchInput}
-          iconColor="#245f28"
-          placeholderTextColor="#7A705F"
-          selectionColor="#171717"
-          cursorColor="#171717"
+          iconColor={Palette.gold}
+          placeholderTextColor={Palette.textSecondary}
+          selectionColor={Palette.gold}
+          cursorColor={Palette.gold}
           elevation={0}
         />
 
         <View style={searchStyles.filterSection}>
           <View style={searchStyles.filterList}>
-            <ScrollView horizontal showsHorizontalScrollIndicator={false} style={{ gap: 10 }}>
+            <ScrollView
+              horizontal
+              showsHorizontalScrollIndicator={false}
+              style={{ gap: 10 }}
+            >
               {FILTERS.map((filter) => (
                 <Pressable
                   key={filter}
@@ -65,3 +73,14 @@ export default function CardsScreen() {
     </View>
   );
 }
+
+const styles = StyleSheet.create({
+  screen: {
+    flex: 1,
+    backgroundColor: Palette.background,
+  },
+  top: {
+    paddingHorizontal: 20,
+    flex: 1,
+  },
+});

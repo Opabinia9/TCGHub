@@ -1,5 +1,6 @@
 import { CardsPage } from './cards';
 import { User } from './userTypes';
+import type { ReactNode } from 'react';
 
 type FetchFunc = (
   search: string,
@@ -15,6 +16,7 @@ export interface CardListProps {
   emptyMessage: string;
   refreshOnFocus?: boolean; // reload every time the screen comes into view
   variant?: 'browse' | 'wishlist' | 'trades'; // which buttons each card shows
+  footer?: ReactNode;
 }
 
 export const FILTERS = [

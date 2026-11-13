@@ -1,3 +1,4 @@
+
 import { useState, useRef, useEffect, useCallback } from 'react';
 import { useFocusEffect } from 'expo-router';
 import {
@@ -15,15 +16,19 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import AddToSheet, { type Condition, type SheetType } from '@/components/add-to-sheet';
 import { fetchOwnedQuantities, fetchWishlistIds, updateCollectionCard } from '@/api/collection';
 import { fetchCards } from '@/api/cards';
+import { Palette } from '@/constants/theme';
 
 // Draws an Ionicons icon in our green, for a menu item.
 function menuIcon(name: keyof typeof Ionicons.glyphMap) {
-  return ({ size }: { size: number }) => <Ionicons name={name} size={size} color="#245f28" />;
+  return ({ size }: { size: number }) => (
+    <Ionicons name={name} size={size} color={Palette.gold} />
+  );
 }
 
 function conditionLabel(condition: string) {
   return condition && condition !== 'unmarked' ? condition : 'Condition not set';
 }
+
 export default function CardList(props: CardListProps) {
   const [cards, setCards] = useState<MagicCard[]>([]);
   const [loading, setLoading] = useState(true);
@@ -35,6 +40,7 @@ export default function CardList(props: CardListProps) {
   const cardsRef = useRef<MagicCard[]>([]);
   cardsRef.current = cards;
   const [selectedCard, setSelectedCard] = useState<MagicCard | null>(null);
+
   // Filter by category and by the search text. Some lists (collection, wishlist)
   // ignore the search on the backend, so we also filter here.
   const searchText = props.query.trim().toLowerCase();
@@ -53,16 +59,19 @@ export default function CardList(props: CardListProps) {
 
   // Which card's + menu is open (null = none).
   const [menuCardId, setMenuCardId] = useState<string | null>(null);
+
   // The listing / collection panel that's open (null = none).
   const [sheet, setSheet] = useState<{
     type: SheetType;
     card: MagicCard;
   } | null>(null);
+
   // The message in the bar at the bottom (null = hidden).
   const [message, setMessage] = useState<string | null>(null);
 
   // Ids of the cards on your wishlist, so the menu knows Add or Remove.
   const [wishlistIds, setWishlistIds] = useState<Set<string>>(new Set());
+
   // How many of each card you own (card id → quantity).
   const [ownedQuantities, setOwnedQuantities] = useState<Map<string, number>>(new Map());
   const insets = useSafeAreaInsets();
@@ -208,6 +217,7 @@ export default function CardList(props: CardListProps) {
       }
     };
   }, [searchText, props.activeFilter, props.fetchlist, refreshCount]);
+
   async function loadMore() {
     if (loading || !pagination || loadingMoreRef.current) return;
     if (pagination.page >= pagination.totalPages) return;
@@ -243,6 +253,7 @@ export default function CardList(props: CardListProps) {
       setLoadingMore(false);
     }
   }
+
   const variant = props.variant ?? 'browse';
 
   // Profile → My Wishlist: take it off the wishlist and out of this list.
@@ -333,6 +344,7 @@ export default function CardList(props: CardListProps) {
             )}
           </View>
         )}
+
         {variant === 'trades' && (
           <Text style={styles.listedInfo}>
             Listed ×{(card as CollectionCard).quantity} ·{' '}
@@ -348,6 +360,7 @@ export default function CardList(props: CardListProps) {
             </Text>
             <Text style={styles.cardPrice}>{card.prices.usd ? `$${card.prices.usd}` : '—'}</Text>
           </View>
+
           {variant === 'trades' ? (
             // My Listings: ✕ removes the card from your listings
             <Pressable
@@ -402,7 +415,7 @@ export default function CardList(props: CardListProps) {
                   <Ionicons
                     name="add"
                     size={22}
-                    color={menuCardId === card.id ? '#E2D7BD' : '#171717'}
+                    color={menuCardId === card.id ? Palette.text : Palette.gold}
                   />
                 </Pressable>
               }
@@ -438,10 +451,12 @@ export default function CardList(props: CardListProps) {
       </View>
     </View>
   );
+
   const filteredCards =
     props.fetchlist === fetchCards
       ? cards
       : cards.filter((item) => item.name.toLowerCase().includes(searchText));
+
   return (
     <View style={{ height: '90%' }}>
       <FlatList
@@ -460,26 +475,37 @@ export default function CardList(props: CardListProps) {
         ItemSeparatorComponent={() => <View style={{ height: 16 }} />}
         ListEmptyComponent={
           loading ? (
-            <ActivityIndicator style={styles.emptyState} color="#171717" />
+            <ActivityIndicator style={styles.emptyState} color={Palette.gold} />
           ) : error ? (
             <View style={styles.emptyState}>
-              <Ionicons name="alert-circle-outline" size={36} color="#77705F" />
+              <Ionicons name="alert-circle-outline" size={36} color={Palette.gold} />
               <Text style={styles.emptyTitle}>Something went wrong</Text>
               <Text style={styles.emptyText}>{error}</Text>
             </View>
           ) : (
             <View style={styles.emptyState}>
-              <Ionicons name="search-outline" size={36} color="#77705F" />
+              <Ionicons name="search-outline" size={36} color={Palette.gold} />
               <Text style={styles.emptyTitle}>No cards found</Text>
               <Text style={styles.emptyText}>Try another search or category.</Text>
             </View>
           )
         }
         ListFooterComponent={
-          <View style={styles.footer}>
-            {loadingMore && <ActivityIndicator style={{ marginBottom: 20 }} color="#171717" />}
-            <Text style={styles.footerText}>TCG HUB · YOUR NEXT TRADE STARTS HERE</Text>
-          </View>
+          <>
+            {props.footer}
+
+            <View style={styles.footer}>
+              {loadingMore && (
+                <ActivityIndicator
+                  style={{ marginBottom: 20 }}
+                  color={Palette.gold}
+                />
+              )}
+              <Text style={styles.footerText}>
+                TCG HUB · YOUR NEXT TRADE STARTS HERE
+              </Text>
+            </View>
+          </>
         }
       />
 
@@ -516,7 +542,7 @@ export default function CardList(props: CardListProps) {
                 accessibilityRole="button"
                 accessibilityLabel="Close preview"
               >
-                <Ionicons name="close" size={22} color="#E2D7BD" />
+                <Ionicons name="close" size={22} color={Palette.text} />
               </Pressable>
             </View>
 
@@ -635,9 +661,10 @@ export default function CardList(props: CardListProps) {
   );
 }
 
+
 const styles = StyleSheet.create({
   container: {
-    backgroundColor: '#E2D7BD',
+    backgroundColor: Palette.background,
   },
   footer: {
     marginTop: 30,
@@ -647,7 +674,7 @@ const styles = StyleSheet.create({
     fontSize: 10,
     fontWeight: '700',
     letterSpacing: 1.3,
-    color: '#77705F',
+    color: Palette.textSecondary,
     textAlign: 'center',
   },
   loadMoreButton: {
@@ -656,10 +683,10 @@ const styles = StyleSheet.create({
     paddingHorizontal: 24,
     paddingVertical: 12,
     borderRadius: 20,
-    backgroundColor: '#171717',
+    backgroundColor: Palette.green,
   },
   loadMoreText: {
-    color: '#E2D7BD',
+    color: Palette.text,
     fontSize: 13,
     fontWeight: '700',
   },
@@ -671,11 +698,11 @@ const styles = StyleSheet.create({
   emptyTitle: {
     fontSize: 18,
     fontWeight: '800',
-    color: '#171717',
+    color: Palette.text,
   },
   emptyText: {
     fontSize: 13,
-    color: '#77705F',
+    color: Palette.textSecondary,
   },
   content: {
     paddingTop: 24,
@@ -691,7 +718,7 @@ const styles = StyleSheet.create({
     position: 'relative',
     width: '100%',
     aspectRatio: 0.72,
-    backgroundColor: '#D1C4A8',
+    backgroundColor: Palette.surfaceElevated,
   },
   tagRow: {
     flexDirection: 'row',
@@ -706,19 +733,19 @@ const styles = StyleSheet.create({
     height: 22,
     paddingHorizontal: 8,
     borderRadius: 11,
-    backgroundColor: '#E2D7BD',
+    backgroundColor: Palette.surfaceElevated,
   },
   tagWishlist: {
-    backgroundColor: '#2e7d32',
+    backgroundColor: Palette.greenAccent,
   },
   tagText: {
     fontFamily: 'BarlowCondensed_700Bold',
     fontSize: 12,
     letterSpacing: 0.8,
-    color: '#3A342B',
+    color: Palette.gold,
   },
   tagTextLight: {
-    color: '#FFFFFF',
+    color: Palette.white,
   },
   expandIcon: {
     position: 'absolute',
@@ -727,7 +754,7 @@ const styles = StyleSheet.create({
     width: 32,
     height: 32,
     borderRadius: 16,
-    backgroundColor: 'rgba(23, 23, 23, 0.8)',
+    backgroundColor: 'rgba(16, 23, 19, 0.85)',
     alignItems: 'center',
     justifyContent: 'center',
   },
@@ -749,12 +776,12 @@ const styles = StyleSheet.create({
   cardName: {
     fontSize: 15,
     fontWeight: '800',
-    color: '#171717',
+    color: Palette.text,
   },
   cardSetName: {
     textAlign: 'center',
     fontSize: 11,
-    color: '#77705F',
+    color: Palette.textSecondary,
     marginTop: 5,
     marginBottom: 10,
   },
@@ -766,35 +793,35 @@ const styles = StyleSheet.create({
     marginTop: 'auto',
     paddingTop: 10,
     borderTopWidth: 1,
-    borderTopColor: '#DCCFB3',
+    borderTopColor: Palette.border,
   },
   cardPriceLabel: {
     fontSize: 10,
     fontWeight: '700',
     letterSpacing: 1,
-    color: '#77705F',
+    color: Palette.textSecondary,
   },
   cardPrice: {
     fontFamily: 'BarlowCondensed_700Bold',
     fontSize: 19,
-    color: '#171717',
+    color: Palette.gold,
   },
   addButton: {
     width: 36,
     height: 36,
     borderRadius: 10,
-    backgroundColor: '#E2D7BD',
+    backgroundColor: Palette.green,
     alignItems: 'center',
     justifyContent: 'center',
   },
   addButtonActive: {
-    backgroundColor: '#171717',
+    backgroundColor: Palette.greenAccent,
   },
   heartButton: {
     width: 36,
     height: 36,
     borderRadius: 10,
-    backgroundColor: '#2e7d32',
+    backgroundColor: Palette.greenAccent,
     alignItems: 'center',
     justifyContent: 'center',
   },
@@ -802,8 +829,8 @@ const styles = StyleSheet.create({
     width: 36,
     height: 36,
     borderRadius: 10,
-    borderWidth: 1.5,
-    borderColor: '#7A2E22',
+    borderWidth: 1,
+    borderColor: '#8B5148',
     alignItems: 'center',
     justifyContent: 'center',
   },
@@ -812,21 +839,21 @@ const styles = StyleSheet.create({
     marginBottom: 10,
     fontSize: 12,
     fontWeight: '600',
-    color: '#3A342B',
+    color: Palette.textSecondary,
   },
   menu: {
-    backgroundColor: '#FBF7EE',
+    backgroundColor: Palette.surfaceElevated,
     borderRadius: 14,
   },
   menuItemText: {
     fontSize: 15,
-    color: '#171717',
+    color: Palette.text,
   },
   menuDivider: {
     height: 1,
     marginHorizontal: 12,
     marginVertical: 4,
-    backgroundColor: '#DCCFB3',
+    backgroundColor: Palette.border,
   },
   wishlistButton: {
     width: 30,
@@ -838,14 +865,14 @@ const styles = StyleSheet.create({
     width: '48%',
     overflow: 'hidden',
     borderRadius: 14,
-    backgroundColor: '#F4ECDD',
+    backgroundColor: Palette.surface,
     borderWidth: 1,
-    borderColor: '#C9BDA3',
+    borderColor: Palette.border,
   },
   preview: {
     flex: 1,
     paddingHorizontal: 20,
-    backgroundColor: '#171717',
+    backgroundColor: Palette.background,
   },
   menuCatcher: {
     ...StyleSheet.absoluteFill,
@@ -858,7 +885,7 @@ const styles = StyleSheet.create({
     width: 44,
     height: 44,
     borderRadius: 22,
-    backgroundColor: '#2C2A26',
+    backgroundColor: Palette.surfaceElevated,
     alignItems: 'center',
     justifyContent: 'center',
   },
@@ -879,12 +906,12 @@ const styles = StyleSheet.create({
     fontSize: 28,
     letterSpacing: 1,
     textTransform: 'uppercase',
-    color: '#F4EEDF',
+    color: Palette.text,
   },
   previewSetName: {
     marginTop: 2,
     fontSize: 14,
-    color: '#A79E8B',
+    color: Palette.textSecondary,
   },
   previewBar: {
     flexDirection: 'row',
@@ -895,18 +922,20 @@ const styles = StyleSheet.create({
     paddingLeft: 18,
     paddingRight: 14,
     borderRadius: 18,
-    backgroundColor: '#E2D7BD',
+    backgroundColor: Palette.surface,
+    borderWidth: 1,
+    borderColor: Palette.border,
   },
   previewPriceLabel: {
     fontSize: 11,
     fontWeight: '700',
     letterSpacing: 1.2,
-    color: '#5A5246',
+    color: Palette.textSecondary,
   },
   previewPrice: {
     fontFamily: 'BarlowCondensed_700Bold',
     fontSize: 30,
-    color: '#171717',
+    color: Palette.gold,
   },
   previewAddButton: {
     flexDirection: 'row',
@@ -916,16 +945,16 @@ const styles = StyleSheet.create({
     paddingLeft: 16,
     paddingRight: 20,
     borderRadius: 14,
-    backgroundColor: '#2e7d32',
+    backgroundColor: Palette.greenAccent,
   },
   previewAddButtonActive: {
-    backgroundColor: '#171717',
+    backgroundColor: Palette.green,
   },
   previewAddText: {
     fontFamily: 'BarlowCondensed_700Bold',
     fontSize: 18,
     letterSpacing: 1.2,
-    color: '#FFFFFF',
+    color: Palette.white,
   },
   previewMenu: {
     position: 'absolute',

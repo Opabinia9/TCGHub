@@ -1,3 +1,4 @@
+
 import { useEffect, useState } from 'react';
 import { Pressable, ScrollView, StyleSheet, View } from 'react-native';
 import { Searchbar, Text } from 'react-native-paper';
@@ -6,7 +7,7 @@ import { router, useLocalSearchParams } from 'expo-router';
 import CardList from '@/components/card-list';
 import ScreenHeader from '@/components/screen-header';
 import { fetchCollection } from '@/api/collection';
-import { layout } from '@/constants/theme';
+import { Palette, layout } from '@/constants/theme';
 import { searchStyles } from '@/constants/search-filter-styles';
 import { buttonStyles, ToggleButton } from '@/components/toggle-button';
 
@@ -84,10 +85,12 @@ export default function Decks() {
 
   const isCollection = tab === 'collection';
   const query = searchQuery.trim().toLowerCase();
-  const decks = MY_DECKS.filter((deck) => deck.name.toLowerCase().includes(query));
+  const decks = MY_DECKS.filter((deck) =>
+    deck.name.toLowerCase().includes(query),
+  );
 
   return (
-    <View style={layout.screen}>
+    <View style={styles.screen}>
       <ScreenHeader
         title="DECKS"
         subtitle="Discover, build and share decks."
@@ -99,7 +102,7 @@ export default function Decks() {
               accessibilityLabel="Create a new deck"
               style={styles.newButton}
             >
-              <Ionicons name="add" size={18} color="#FFFFFF" />
+              <Ionicons name="add" size={18} color={Palette.white} />
               <Text style={styles.newButtonText}>NEW</Text>
             </Pressable>
           )
@@ -107,10 +110,14 @@ export default function Decks() {
       />
 
       {/* Top part: toggle, search, filters (doesn't scroll) */}
-      <View style={layout.top}>
+      <View style={[layout.top, { flex: 1 }]}>
         {/* My decks / My collection toggle */}
         <View style={buttonStyles.toggle} accessibilityRole="tablist">
-          <ToggleButton label="MY DECKS" active={tab === 'mine'} onPress={() => setTab('mine')} />
+          <ToggleButton
+            label="MY DECKS"
+            active={tab === 'mine'}
+            onPress={() => setTab('mine')}
+          />
           <ToggleButton
             label="MY COLLECTION"
             active={isCollection}
@@ -119,15 +126,17 @@ export default function Decks() {
         </View>
 
         <Searchbar
-          placeholder={isCollection ? 'Search your collection…' : 'Search for a deck…'}
+          placeholder={
+            isCollection ? 'Search your collection…' : 'Search for a deck…'
+          }
           value={searchQuery}
           onChangeText={setSearchQuery}
           style={searchStyles.searchbar}
           inputStyle={searchStyles.searchInput}
-          iconColor="#245f28"
-          placeholderTextColor="#7A705F"
-          selectionColor="#171717"
-          cursorColor="#171717"
+          iconColor={Palette.gold}
+          placeholderTextColor={Palette.textSecondary}
+          selectionColor={Palette.gold}
+          cursorColor={Palette.gold}
           elevation={0}
         />
 
@@ -142,10 +151,15 @@ export default function Decks() {
               style={styles.filterChip}
             >
               <Text style={styles.filterText}>{label}</Text>
-              <Ionicons name="chevron-down" size={16} color="#171717" />
+              <Ionicons
+                name="chevron-down"
+                size={16}
+                color={Palette.gold}
+              />
             </Pressable>
           ))}
         </View>
+
         {/* Bottom part: scrolls by itself */}
         {isCollection ? (
           <CardList
@@ -169,7 +183,9 @@ export default function Decks() {
 
             {decks.length === 0 && (
               <Text style={styles.emptyMessage}>
-                {query ? `No decks match "${searchQuery}".` : 'No decks yet.'}
+                {query
+                  ? `No decks match "${searchQuery}".`
+                  : 'No decks yet.'}
               </Text>
             )}
           </ScrollView>
@@ -180,15 +196,23 @@ export default function Decks() {
 }
 
 // ─── Pieces ──────────────────────────────────────────────────────────────────
+
 function DeckRow({ deck }: { deck: Deck }) {
   const colourNames = deck.colors.map((c) => MANA[c].name).join(' and ');
 
   return (
     <View style={styles.deckRow}>
       <View style={[styles.deckArt, { backgroundColor: deck.artColor }]}>
-        <View style={styles.pipRow} accessible accessibilityLabel={`Colours: ${colourNames}`}>
+        <View
+          style={styles.pipRow}
+          accessible
+          accessibilityLabel={`Colours: ${colourNames}`}
+        >
           {deck.colors.map((c) => (
-            <View key={c} style={[styles.pip, { backgroundColor: MANA[c].color }]} />
+            <View
+              key={c}
+              style={[styles.pip, { backgroundColor: MANA[c].color }]}
+            />
           ))}
         </View>
       </View>
@@ -217,6 +241,10 @@ function DeckRow({ deck }: { deck: Deck }) {
 // ─── Styles ──────────────────────────────────────────────────────────────────
 
 const styles = StyleSheet.create({
+  screen: {
+    flex: 1,
+    backgroundColor: Palette.background,
+  },
   listArea: {
     flex: 1,
   },
@@ -234,11 +262,11 @@ const styles = StyleSheet.create({
     fontFamily: 'BarlowCondensed_700Bold',
     fontSize: 48,
     lineHeight: 50,
-    color: '#171717',
+    color: Palette.text,
   },
   subtitle: {
     fontSize: 14,
-    color: '#5A5246',
+    color: Palette.textSecondary,
   },
   newButton: {
     flexDirection: 'row',
@@ -247,13 +275,15 @@ const styles = StyleSheet.create({
     height: 44,
     paddingHorizontal: 14,
     borderRadius: 12,
-    backgroundColor: '#2e7d32',
+    backgroundColor: Palette.greenAccent,
+    borderWidth: 1,
+    borderColor: Palette.gold,
   },
   newButtonText: {
     fontFamily: 'BarlowCondensed_700Bold',
     fontSize: 15,
     letterSpacing: 1.5,
-    color: '#FFFFFF',
+    color: Palette.white,
   },
   filterRow: {
     flexDirection: 'row',
@@ -268,19 +298,20 @@ const styles = StyleSheet.create({
     paddingLeft: 14,
     paddingRight: 12,
     borderRadius: 18,
-    borderWidth: 1.5,
-    borderColor: '#171717',
+    borderWidth: 1,
+    borderColor: Palette.border,
+    backgroundColor: Palette.surface,
   },
   filterText: {
     fontFamily: 'BarlowCondensed_700Bold',
     fontSize: 14,
     letterSpacing: 1.1,
-    color: '#171717',
+    color: Palette.text,
   },
   deckList: {
     marginTop: 16,
     borderTopWidth: 1,
-    borderTopColor: '#C9BB98',
+    borderTopColor: Palette.border,
   },
   deckRow: {
     flexDirection: 'row',
@@ -288,7 +319,7 @@ const styles = StyleSheet.create({
     gap: 14,
     paddingVertical: 12,
     borderBottomWidth: 1,
-    borderBottomColor: '#C9BB98',
+    borderBottomColor: Palette.border,
   },
   deckArt: {
     width: 56,
@@ -312,7 +343,7 @@ const styles = StyleSheet.create({
     height: 11,
     borderRadius: 6,
     borderWidth: 1.5,
-    borderColor: '#F4EEDF',
+    borderColor: Palette.text,
   },
   deckInfo: {
     flex: 1,
@@ -323,19 +354,20 @@ const styles = StyleSheet.create({
     fontSize: 18,
     letterSpacing: 0.7,
     textTransform: 'uppercase',
-    color: '#171717',
+    color: Palette.text,
   },
   deckMeta: {
     fontSize: 13,
-    color: '#5A5246',
+    color: Palette.textSecondary,
     marginTop: 2,
   },
   viewButton: {
     height: 44,
     paddingHorizontal: 18,
     borderRadius: 22,
-    borderWidth: 1.5,
-    borderColor: '#171717',
+    borderWidth: 1,
+    borderColor: Palette.gold,
+    backgroundColor: Palette.surface,
     alignItems: 'center',
     justifyContent: 'center',
   },
@@ -343,11 +375,11 @@ const styles = StyleSheet.create({
     fontFamily: 'BarlowCondensed_700Bold',
     fontSize: 14,
     letterSpacing: 1.4,
-    color: '#171717',
+    color: Palette.gold,
   },
   emptyMessage: {
     marginTop: 24,
     textAlign: 'center',
-    color: '#5A5246',
+    color: Palette.textSecondary,
   },
 });

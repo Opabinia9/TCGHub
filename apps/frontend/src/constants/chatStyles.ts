@@ -1,9 +1,11 @@
+
 import { StyleSheet } from 'react-native';
+import { Palette } from '@/constants/theme';
 
 export const chatStyles = StyleSheet.create({
   screen: {
     flex: 1,
-    backgroundColor: '#E2D7BD',
+    backgroundColor: Palette.background,
   },
   content: {
     padding: 20,
@@ -13,31 +15,31 @@ export const chatStyles = StyleSheet.create({
     fontFamily: 'BarlowCondensed_700Bold',
     fontSize: 48,
     lineHeight: 50,
-    color: '#171717',
+    color: Palette.text,
   },
   subtitle: {
     fontSize: 14,
-    color: '#5A5246',
+    color: Palette.textSecondary,
   },
   searchbar: {
     marginTop: 16,
     height: 46,
     borderRadius: 12,
-    borderWidth: 1.5,
-    borderColor: '#B9A985',
-    backgroundColor: '#EFE7D4',
+    borderWidth: 1,
+    borderColor: Palette.border,
+    backgroundColor: Palette.surface,
   },
   searchInput: {
     minHeight: 0,
     fontSize: 15,
-    color: '#171717',
+    color: Palette.text,
   },
 
   // List
   list: {
     marginTop: 16,
     borderTopWidth: 1,
-    borderTopColor: '#C9BB98',
+    borderTopColor: Palette.border,
   },
   row: {
     flexDirection: 'row',
@@ -45,13 +47,15 @@ export const chatStyles = StyleSheet.create({
     gap: 12,
     paddingVertical: 12,
     borderBottomWidth: 1,
-    borderBottomColor: '#C9BB98',
+    borderBottomColor: Palette.border,
   },
   avatar: {
     width: 48,
     height: 48,
     borderRadius: 24,
-    backgroundColor: '#171717',
+    backgroundColor: Palette.green,
+    borderWidth: 1,
+    borderColor: Palette.gold,
     alignItems: 'center',
     justifyContent: 'center',
   },
@@ -59,7 +63,7 @@ export const chatStyles = StyleSheet.create({
     width: 48,
     height: 48,
     borderRadius: 24,
-    backgroundColor: '#C12323',
+    backgroundColor: '#8B5148',
     alignItems: 'center',
     justifyContent: 'center',
   },
@@ -67,14 +71,14 @@ export const chatStyles = StyleSheet.create({
     width: 48,
     height: 48,
     borderRadius: 24,
-    backgroundColor: '#2E7D32',
+    backgroundColor: Palette.greenAccent,
     alignItems: 'center',
     justifyContent: 'center',
   },
   avatarText: {
     fontFamily: 'BarlowCondensed_700Bold',
     fontSize: 17,
-    color: '#E2D7BD',
+    color: Palette.text,
   },
   rowText: {
     flex: 1,
@@ -88,16 +92,16 @@ export const chatStyles = StyleSheet.create({
   name: {
     fontSize: 17,
     fontWeight: '600',
-    color: '#171717',
+    color: Palette.text,
   },
   time: {
     fontSize: 12,
-    color: '#5A5246',
+    color: Palette.textSecondary,
   },
   about: {
     fontSize: 12,
     fontWeight: '600',
-    color: '#245f28',
+    color: Palette.gold,
   },
   previewRow: {
     flexDirection: 'row',
@@ -107,27 +111,27 @@ export const chatStyles = StyleSheet.create({
   preview: {
     flex: 1,
     fontSize: 14,
-    color: '#5A5246',
+    color: Palette.textSecondary,
   },
   previewUnread: {
     fontWeight: '600',
-    color: '#171717',
+    color: Palette.text,
   },
   unreadDot: {
     width: 10,
     height: 10,
     borderRadius: 5,
-    backgroundColor: '#2e7d32',
+    backgroundColor: Palette.greenAccent,
   },
   emptyMessage: {
     marginTop: 24,
     textAlign: 'center',
-    color: '#5A5246',
+    color: Palette.textSecondary,
   },
   notFound: {
     marginTop: 40,
     textAlign: 'center',
-    color: '#5A5246',
+    color: Palette.textSecondary,
   },
 
   header: {
@@ -137,7 +141,7 @@ export const chatStyles = StyleSheet.create({
     paddingHorizontal: 6,
     paddingVertical: 8,
     borderBottomWidth: 1,
-    borderBottomColor: '#C9BB98',
+    borderBottomColor: Palette.border,
   },
   iconButton: {
     width: 44,
@@ -151,7 +155,7 @@ export const chatStyles = StyleSheet.create({
   },
   distance: {
     fontSize: 13,
-    color: '#5A5246',
+    color: Palette.textSecondary,
   },
 
   listing: {
@@ -164,16 +168,16 @@ export const chatStyles = StyleSheet.create({
     paddingLeft: 8,
     paddingRight: 12,
     borderRadius: 12,
-    borderWidth: 1.5,
-    borderColor: '#C9BB98',
-    backgroundColor: '#EFE7D4',
+    borderWidth: 1,
+    borderColor: Palette.border,
+    backgroundColor: Palette.surface,
   },
   listingThumbFrame: {
     width: 34,
     height: 46,
     padding: 2,
     borderRadius: 5,
-    backgroundColor: '#171717',
+    backgroundColor: Palette.surfaceElevated,
   },
   listingThumb: {
     flex: 1,
@@ -186,20 +190,21 @@ export const chatStyles = StyleSheet.create({
   listingName: {
     fontSize: 15,
     fontWeight: '600',
-    color: '#171717',
+    color: Palette.text,
   },
   listingDetail: {
     fontSize: 12,
-    color: '#5A5246',
+    color: Palette.textSecondary,
   },
   listingLink: {
     fontSize: 14,
     fontWeight: '600',
-    color: '#245f28',
+    color: Palette.gold,
   },
 
   messageScroll: {
     flex: 1,
+    backgroundColor: Palette.background,
   },
   messageList: {
     padding: 16,
@@ -211,7 +216,7 @@ export const chatStyles = StyleSheet.create({
     fontSize: 12,
     fontWeight: '600',
     letterSpacing: 0.7,
-    color: '#5A5246',
+    color: Palette.textSecondary,
   },
   bubbleWrap: {
     maxWidth: '78%',
@@ -231,26 +236,26 @@ export const chatStyles = StyleSheet.create({
     borderRadius: 18,
   },
   bubbleMine: {
-    backgroundColor: '#171717',
+    backgroundColor: Palette.green,
     borderBottomRightRadius: 4,
   },
   bubbleTheirs: {
-    backgroundColor: '#EFE7D4',
+    backgroundColor: Palette.surface,
     borderWidth: 1,
-    borderColor: '#C9BB98',
+    borderColor: Palette.border,
     borderBottomLeftRadius: 4,
   },
   bubbleText: {
     fontSize: 15,
     lineHeight: 20,
-    color: '#171717',
+    color: Palette.text,
   },
   bubbleTextMine: {
-    color: '#E2D7BD',
+    color: Palette.text,
   },
   bubbleTime: {
     fontSize: 11,
-    color: '#5A5246',
+    color: Palette.textSecondary,
   },
 
   composer: {
@@ -258,7 +263,8 @@ export const chatStyles = StyleSheet.create({
     paddingTop: 8,
     paddingHorizontal: 16,
     borderTopWidth: 1,
-    borderTopColor: '#C9BB98',
+    borderTopColor: Palette.border,
+    backgroundColor: Palette.background,
   },
   quickReplies: {
     gap: 8,
@@ -267,14 +273,14 @@ export const chatStyles = StyleSheet.create({
     height: 36,
     paddingHorizontal: 14,
     borderRadius: 18,
-    borderWidth: 1.5,
-    borderColor: '#171717',
+    borderWidth: 1,
+    borderColor: Palette.gold,
     justifyContent: 'center',
   },
   quickReplyText: {
     fontSize: 14,
     fontWeight: '500',
-    color: '#171717',
+    color: Palette.gold,
   },
   inputRow: {
     flexDirection: 'row',
@@ -286,11 +292,11 @@ export const chatStyles = StyleSheet.create({
     height: 46,
     paddingHorizontal: 16,
     borderRadius: 23,
-    borderWidth: 1.5,
-    borderColor: '#B9A985',
-    backgroundColor: '#EFE7D4',
+    borderWidth: 1,
+    borderColor: Palette.border,
+    backgroundColor: Palette.surface,
     fontSize: 16,
-    color: '#171717',
+    color: Palette.text,
   },
   sendButton: {
     width: 46,
@@ -298,7 +304,7 @@ export const chatStyles = StyleSheet.create({
     borderRadius: 23,
     alignItems: 'center',
     justifyContent: 'center',
-    backgroundColor: '#2e7d32',
+    backgroundColor: Palette.greenAccent,
   },
   sendButtonDisabled: {
     opacity: 0.4,

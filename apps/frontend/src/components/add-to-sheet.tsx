@@ -1,3 +1,4 @@
+
 import { useState } from 'react';
 import { Modal, Pressable, StyleSheet, View } from 'react-native';
 import { Text } from 'react-native-paper';
@@ -5,6 +6,7 @@ import { Image } from 'expo-image';
 import { Ionicons } from '@expo/vector-icons';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import type { MagicCard } from '@/api/types';
+import { Palette } from '@/constants/theme';
 
 export const CONDITIONS = [
   'Near mint',
@@ -24,9 +26,12 @@ type AddToSheetProps = {
   onConfirm: (quantity: number, condition: Condition) => void;
 };
 
-// Bottom panel for "Add to my listings" (condition + quantity)
-// and "Add to collection" (quantity only).
-export default function AddToSheet({ type, card, onClose, onConfirm }: AddToSheetProps) {
+export default function AddToSheet({
+  type,
+  card,
+  onClose,
+  onConfirm,
+}: AddToSheetProps) {
   const insets = useSafeAreaInsets();
   const [quantity, setQuantity] = useState(1);
   const [condition, setCondition] = useState<Condition>('Near mint');
@@ -44,7 +49,6 @@ export default function AddToSheet({ type, card, onClose, onConfirm }: AddToShee
       onRequestClose={onClose}
     >
       <View style={styles.overlay}>
-        {/* Dark area above the panel: tap it to close */}
         <Pressable
           style={styles.backdrop}
           onPress={onClose}
@@ -55,45 +59,57 @@ export default function AddToSheet({ type, card, onClose, onConfirm }: AddToShee
         <View style={[styles.sheet, { paddingBottom: insets.bottom + 20 }]}>
           <View style={styles.handle} />
 
-          {/* Header: card picture, title, close button */}
           <View style={styles.header}>
             <Image
-              source={{ uri: card.imageUris?.small ?? card.imageUris?.grid ?? undefined }}
+              source={{
+                uri: card.imageUris?.small ?? card.imageUris?.grid ?? undefined,
+              }}
               style={styles.thumb}
               contentFit="cover"
             />
+
             <View style={styles.headerText}>
               <Text style={styles.title}>{title}</Text>
               <Text style={styles.cardName} numberOfLines={1}>
                 {card.name}
               </Text>
             </View>
+
             <Pressable
               onPress={onClose}
               accessibilityRole="button"
               accessibilityLabel="Close"
               style={styles.closeButton}
             >
-              <Ionicons name="close" size={20} color="#171717" />
+              <Ionicons name="close" size={20} color={Palette.text} />
             </Pressable>
           </View>
 
-          {/* Condition: listings only */}
           {isListing && (
             <View>
               <Text style={styles.label}>CONDITION</Text>
+
               <View style={styles.chips} accessibilityRole="radiogroup">
                 {CONDITIONS.map((option) => {
                   const selected = option === condition;
+
                   return (
                     <Pressable
                       key={option}
                       onPress={() => setCondition(option)}
                       accessibilityRole="radio"
                       accessibilityState={{ checked: selected }}
-                      style={[styles.chip, selected && styles.chipSelected]}
+                      style={[
+                        styles.chip,
+                        selected && styles.chipSelected,
+                      ]}
                     >
-                      <Text style={[styles.chipText, selected && styles.chipTextSelected]}>
+                      <Text
+                        style={[
+                          styles.chipText,
+                          selected && styles.chipTextSelected,
+                        ]}
+                      >
                         {option}
                       </Text>
                     </Pressable>
@@ -103,13 +119,10 @@ export default function AddToSheet({ type, card, onClose, onConfirm }: AddToShee
             </View>
           )}
 
-          {/* Quantity */}
           <View style={styles.quantityRow}>
             <View>
               <Text style={styles.label}>QUANTITY</Text>
-              <Text style={styles.hint}>
-                How many copies to add
-              </Text>
+              <Text style={styles.hint}>How many copies to add</Text>
             </View>
 
             <View style={styles.stepper}>
@@ -118,9 +131,12 @@ export default function AddToSheet({ type, card, onClose, onConfirm }: AddToShee
                 disabled={quantity <= 1}
                 accessibilityRole="button"
                 accessibilityLabel="Decrease quantity"
-                style={[styles.stepButton, quantity <= 1 && styles.stepButtonDisabled]}
+                style={[
+                  styles.stepButton,
+                  quantity <= 1 && styles.stepButtonDisabled,
+                ]}
               >
-                <Ionicons name="remove" size={20} color="#171717" />
+                <Ionicons name="remove" size={20} color={Palette.text} />
               </Pressable>
 
               <Text style={styles.quantity} accessibilityLiveRegion="polite">
@@ -131,16 +147,17 @@ export default function AddToSheet({ type, card, onClose, onConfirm }: AddToShee
                 onPress={() => setQuantity((q) => Math.min(99, q + 1))}
                 accessibilityRole="button"
                 accessibilityLabel="Increase quantity"
-                style={[styles.stepButton, styles.stepButtonDark]}
+                style={[styles.stepButton, styles.stepButtonPlus]}
               >
-                <Ionicons name="add" size={20} color="#E2D7BD" />
+                <Ionicons name="add" size={20} color={Palette.white} />
               </Pressable>
             </View>
           </View>
 
           {isListing && (
             <Text style={styles.note}>
-              Listing a card also adds it to your collection, and removes it from your wishlist.
+              Listing a card also adds it to your collection, and removes it
+              from your wishlist.
             </Text>
           )}
 
@@ -163,36 +180,36 @@ const styles = StyleSheet.create({
     justifyContent: 'flex-end',
   },
   backdrop: {
-    ...StyleSheet.absoluteFill,
-    backgroundColor: 'rgba(23, 23, 23, 0.5)',
+    ...StyleSheet.absoluteFillObject,
+    backgroundColor: 'rgba(0, 0, 0, 0.72)',
   },
   sheet: {
-    gap: 18,
-    paddingTop: 10,
-    paddingHorizontal: 20,
-    borderTopLeftRadius: 24,
-    borderTopRightRadius: 24,
-    backgroundColor: '#E2D7BD',
+    gap: 20,
+    paddingTop: 12,
+    paddingHorizontal: 22,
+    borderTopLeftRadius: 26,
+    borderTopRightRadius: 26,
+    backgroundColor: Palette.surface,
+    borderWidth: 1,
+    borderColor: Palette.border,
   },
   handle: {
     alignSelf: 'center',
-    width: 40,
+    width: 42,
     height: 5,
     borderRadius: 3,
-    backgroundColor: '#B9A985',
+    backgroundColor: Palette.greenAccent,
   },
-
-  // Header
   header: {
     flexDirection: 'row',
     alignItems: 'center',
     gap: 12,
   },
   thumb: {
-    width: 44,
-    height: 61,
-    borderRadius: 6,
-    backgroundColor: '#171717',
+    width: 48,
+    height: 66,
+    borderRadius: 7,
+    backgroundColor: Palette.background,
   },
   headerText: {
     flex: 1,
@@ -200,63 +217,62 @@ const styles = StyleSheet.create({
   },
   title: {
     fontFamily: 'BarlowCondensed_700Bold',
-    fontSize: 24,
-    letterSpacing: 1,
-    color: '#171717',
+    fontSize: 25,
+    letterSpacing: 1.2,
+    color: Palette.gold,
   },
   cardName: {
     fontSize: 14,
-    color: '#5A5246',
+    color: Palette.textSecondary,
   },
   closeButton: {
-    width: 44,
-    height: 44,
-    borderRadius: 22,
-    backgroundColor: '#D8C9A8',
+    width: 42,
+    height: 42,
+    borderRadius: 21,
+    backgroundColor: Palette.surfaceElevated,
+    borderWidth: 1,
+    borderColor: Palette.border,
     alignItems: 'center',
     justifyContent: 'center',
   },
-
-  // Labels
   label: {
     fontFamily: 'BarlowCondensed_700Bold',
-    fontSize: 14,
-    letterSpacing: 1.7,
-    color: '#3A342B',
+    fontSize: 15,
+    letterSpacing: 1.8,
+    color: Palette.gold,
   },
   hint: {
     fontSize: 13,
-    color: '#5A5246',
+    color: Palette.textSecondary,
+    marginTop: 3,
   },
-
-  // Condition chips
   chips: {
     flexDirection: 'row',
     flexWrap: 'wrap',
-    gap: 8,
-    marginTop: 10,
+    gap: 9,
+    marginTop: 12,
   },
   chip: {
-    height: 40,
+    minHeight: 40,
     paddingHorizontal: 14,
-    borderRadius: 20,
-    borderWidth: 1.5,
-    borderColor: '#171717',
+    borderRadius: 12,
+    borderWidth: 1,
+    borderColor: Palette.border,
+    backgroundColor: Palette.surfaceElevated,
     justifyContent: 'center',
   },
   chipSelected: {
-    backgroundColor: '#171717',
+    backgroundColor: Palette.green,
+    borderColor: Palette.gold,
   },
   chipText: {
-    fontSize: 14,
+    fontSize: 13,
     fontWeight: '600',
-    color: '#171717',
+    color: Palette.textSecondary,
   },
   chipTextSelected: {
-    color: '#E2D7BD',
+    color: Palette.white,
   },
-
-  // Quantity stepper
   quantityRow: {
     flexDirection: 'row',
     alignItems: 'center',
@@ -265,49 +281,53 @@ const styles = StyleSheet.create({
   stepper: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: 6,
+    gap: 7,
     padding: 4,
     borderRadius: 26,
-    backgroundColor: '#D8C9A8',
+    backgroundColor: Palette.surfaceElevated,
+    borderWidth: 1,
+    borderColor: Palette.border,
   },
   stepButton: {
-    width: 44,
-    height: 44,
-    borderRadius: 22,
-    backgroundColor: '#EFE7D4',
+    width: 40,
+    height: 40,
+    borderRadius: 20,
+    backgroundColor: Palette.green,
     alignItems: 'center',
     justifyContent: 'center',
   },
-  stepButtonDark: {
-    backgroundColor: '#171717',
+  stepButtonPlus: {
+    backgroundColor: Palette.greenAccent,
   },
   stepButtonDisabled: {
-    opacity: 0.4,
+    opacity: 0.35,
   },
   quantity: {
-    minWidth: 32,
+    minWidth: 30,
     textAlign: 'center',
     fontFamily: 'BarlowCondensed_700Bold',
     fontSize: 22,
-    color: '#171717',
+    color: Palette.text,
   },
-
   note: {
-    marginTop: -6,
+    marginTop: -5,
     fontSize: 13,
-    color: '#5A5246',
+    lineHeight: 19,
+    color: Palette.textSecondary,
   },
   confirmButton: {
-    height: 52,
+    height: 54,
     borderRadius: 14,
-    backgroundColor: '#2e7d32',
+    backgroundColor: Palette.greenAccent,
+    borderWidth: 1,
+    borderColor: Palette.gold,
     alignItems: 'center',
     justifyContent: 'center',
   },
   confirmText: {
     fontFamily: 'BarlowCondensed_700Bold',
-    fontSize: 17,
+    fontSize: 18,
     letterSpacing: 2,
-    color: '#FFFFFF',
+    color: Palette.white,
   },
 });

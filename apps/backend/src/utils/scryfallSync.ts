@@ -9,7 +9,7 @@ function transformCard(card: ScryfallCard) {
   return {
     scryfallId: card.id,
     oracleId: card.oracle_id || null,
-    name: card.name,
+    name: card.name.slice(0, 255),
     printedName: card.printed_name || null,
     lang: card.lang,
     releasedAt: card.released_at ? new Date(card.released_at) : null,
@@ -25,10 +25,10 @@ function transformCard(card: ScryfallCard) {
     rarity: card.rarity || null,
     artist: card.artist || null,
     multiverseIds: card.multiverse_ids || null,
-    imageUris: card.image_uris || null,
+    imageUris: card.image_uris || card.card_faces?.[0]?.image_uris || null,
     legalities: card.legalities || null,
     prices: card.prices || null,
-    finishes: card.finishes ?? false,
+    finishes: card.finishes || null,
     power: card.power ?? card.card_faces?.[0]?.power ?? null,
     toughness: card.toughness ?? card.card_faces?.[0]?.toughness ?? null,
     keywords: card.keywords,
@@ -99,7 +99,7 @@ async function getDailyBulk(bulkName: string) {
 }
 
 async function loadCards() {
-  const bulkCardsURL = await getDailyBulk('all_cards');
+  const bulkCardsURL = await getDailyBulk('oracle_cards');
   const bulkCardsFile = bulkCardsURL.replace(/(^.*\/)([a-zA-Z0-9-.]+$)/, '$2');
   const batchSize = 1000;
   let batch: any[] = [];

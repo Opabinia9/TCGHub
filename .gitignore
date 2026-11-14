@@ -1,2 +1,6 @@
 .DS_Store
 .env
+
+# Dependencies and Expo cache
+node_modules/
+.expo/

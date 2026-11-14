@@ -1,9 +1,11 @@
+
 import { StyleSheet } from 'react-native';
+import { Palette } from '@/constants/theme';
 
 export const searchStyles = StyleSheet.create({
   filterSection: {
     paddingHorizontal: 6,
-    backgroundColor: '#E2D7BD',
+    backgroundColor: Palette.background,
   },
   filterList: {
     paddingVertical: 8,
@@ -12,33 +14,33 @@ export const searchStyles = StyleSheet.create({
     paddingHorizontal: 18,
     paddingVertical: 10,
     borderRadius: 20,
-    backgroundColor: '#F4ECDD',
+    backgroundColor: Palette.surface,
     borderWidth: 1,
-    borderColor: '#C9BDA3',
+    borderColor: Palette.border,
   },
   activeFilterButton: {
-    backgroundColor: '#171717',
-    borderColor: '#171717',
+    backgroundColor: Palette.green,
+    borderColor: Palette.gold,
   },
   filterText: {
     fontSize: 13,
     fontWeight: '600',
-    color: '#514B40',
+    color: Palette.textSecondary,
   },
   activeFilterText: {
-    color: '#E2D7BD',
+    color: Palette.gold,
   },
   searchbar: {
     marginTop: 14,
     height: 46,
     borderRadius: 12,
-    borderWidth: 1.5,
-    borderColor: '#B9A985',
-    backgroundColor: '#EFE7D4',
+    borderWidth: 1,
+    borderColor: Palette.border,
+    backgroundColor: Palette.surface,
   },
   searchInput: {
     minHeight: 0,
     fontSize: 15,
-    color: '#171717',
+    color: Palette.text,
   },
 });

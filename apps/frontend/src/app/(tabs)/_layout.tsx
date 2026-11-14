@@ -6,18 +6,22 @@ import { fetchChats } from '@/api/chats';
 import { useQuery } from '@tanstack/react-query';
 import { useEffect, useState } from 'react';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
+import { Palette } from '@/constants/theme';
 
 export default function TabsLayout() {
   const insets = useSafeAreaInsets();
+
   const { data: chats } = useQuery({
     queryKey: ['chats'],
     queryFn: fetchChats,
   });
 
   const [unreadCount, setUnreadCount] = useState(0);
+
   useEffect(() => {
     if (chats) {
       let count = 0;
+
       for (const chat of chats) {
         count +=
           chat.messages.length -
@@ -28,6 +32,7 @@ export default function TabsLayout() {
             .indexOf(chat.lastReadMessageId) +
             1);
       }
+
       setUnreadCount(count);
     }
   }, [chats]);
@@ -37,47 +42,49 @@ export default function TabsLayout() {
       <Tabs
         screenOptions={{
           headerShown: false,
-          tabBarActiveTintColor: '#E2D7BD',
-          tabBarInactiveTintColor: '#A79E8B',
+          tabBarActiveTintColor: Palette.gold,
+          tabBarInactiveTintColor: Palette.textSecondary,
           tabBarStyle: {
-            backgroundColor: '#171717',
-            borderTopColor: '#171717',
+            backgroundColor: Palette.background,
+            borderTopColor: Palette.border,
+            borderTopWidth: 1,
             paddingTop: 7,
             paddingBottom: insets.bottom,
             height: 60 + insets.bottom,
           },
           tabBarLabelStyle: {
             fontSize: 11,
+            fontWeight: '600',
           },
         }}
       >
         <Tabs.Screen
-          name='cards'
+          name="cards"
           options={{
             title: 'Cards',
             tabBarIcon: ({ color, size }) => (
-              <Ionicons name='copy' size={size} color={String(color)} />
+              <Ionicons name="copy" size={size} color={String(color)} />
             ),
           }}
         />
 
         <Tabs.Screen
-          name='decks'
+          name="decks"
           options={{
             title: 'Decks',
             tabBarIcon: ({ color, size }) => (
-              <Ionicons name='layers' size={size} color={String(color)} />
+              <Ionicons name="layers" size={size} color={String(color)} />
             ),
           }}
         />
 
         <Tabs.Screen
-          name='trade'
+          name="trade"
           options={{
             title: 'Trades',
             tabBarIcon: ({ color, size }) => (
               <MaterialIcons
-                name='swap-horiz'
+                name="swap-horiz"
                 size={size}
                 color={String(color)}
               />
@@ -86,23 +93,30 @@ export default function TabsLayout() {
         />
 
         <Tabs.Screen
-          name='messages'
+          name="messages"
           options={{
             title: 'Messages',
             tabBarBadge: unreadCount > 0 ? unreadCount : undefined,
-            tabBarBadgeStyle: { backgroundColor: '#2e7d32', color: '#FFFFFF' },
+            tabBarBadgeStyle: {
+              backgroundColor: Palette.greenAccent,
+              color: Palette.white,
+            },
             tabBarIcon: ({ color, size }) => (
-              <Ionicons name='chatbubble' size={size} color={String(color)} />
+              <Ionicons
+                name="chatbubble"
+                size={size}
+                color={String(color)}
+              />
             ),
           }}
         />
 
         <Tabs.Screen
-          name='profile'
+          name="profile"
           options={{
             title: 'Profile',
             tabBarIcon: ({ color, size }) => (
-              <Ionicons name='person' size={size} color={String(color)} />
+              <Ionicons name="person" size={size} color={String(color)} />
             ),
           }}
         />

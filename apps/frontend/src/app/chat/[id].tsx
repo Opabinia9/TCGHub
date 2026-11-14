@@ -1,3 +1,4 @@
+
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { ListViewToken, Platform, Pressable, TextInput, View } from 'react-native';
 import { Text } from 'react-native-paper';
@@ -13,6 +14,7 @@ import { chatStyles } from '@/constants/chatStyles';
 import { KeyboardAvoidingView } from 'react-native-keyboard-controller';
 import { authClient } from '@/utils/auth-client';
 import { dateStringToMessageDate } from '@/utils/dateStringToMessageDate';
+import { Palette } from '@/constants/theme';
 import {
   Chat,
   fetchChat,
@@ -43,6 +45,7 @@ export default function ChatScreen() {
     queryKey: ['chats', selfId],
     queryFn: fetchChats,
   });
+
   const { refetch: messageRefetch, data: messages } = useQuery({
     queryKey: ['messages', chatId],
     queryFn: async () => await fetchMessages(chatId),
@@ -138,7 +141,6 @@ export default function ChatScreen() {
       behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
       keyboardVerticalOffset={Platform.OS === 'ios' ? insets.top - insets.bottom : 50}
     >
-      {/* Header */}
       <View style={chatStyles.header}>
         <BackArrrow />
         <View
@@ -158,20 +160,18 @@ export default function ChatScreen() {
             <Text style={chatStyles.distance}>DISTANCE NOT IMPLEMENTED</Text>
           )}
         </View>
-        {/* NOTE: this currently does nothing */}
         <Pressable
           onPress={() => console.log('More options pressed')}
           accessibilityRole="button"
           accessibilityLabel="More options"
           style={chatStyles.iconButton}
         >
-          <Ionicons name="ellipsis-vertical" size={22} color="#171717" />
+          <Ionicons name="ellipsis-vertical" size={22} color={Palette.gold} />
         </Pressable>
       </View>
 
       <MessageListing sellerId={chat.sellerId} cardId={chat.cardId} />
 
-      {/* messages in the chat */}
       <FlatList
         inverted
         ref={messagesRef}
@@ -182,7 +182,6 @@ export default function ChatScreen() {
         viewabilityConfig={viewabilityConfig}
       />
 
-      {/* Quick replies + typing box */}
       <View style={[chatStyles.composer, { paddingBottom: insets.bottom + 10 }]}>
         {chat.type === 'TRADE' && <QuickReply replies={QUICK_REPLIES} setDraft={setDraft} />}
 
@@ -192,9 +191,9 @@ export default function ChatScreen() {
             onChangeText={setDraft}
             onSubmitEditing={send}
             placeholder="Message…"
-            placeholderTextColor="#7A705F"
-            selectionColor="#171717"
-            cursorColor="#171717"
+            placeholderTextColor={Palette.textSecondary}
+            selectionColor={Palette.gold}
+            cursorColor={Palette.gold}
             returnKeyType="send"
             accessibilityLabel={`Message ${chat.name}`}
             style={chatStyles.input}
@@ -206,7 +205,7 @@ export default function ChatScreen() {
             accessibilityLabel="Send message"
             style={[chatStyles.sendButton, !draft.trim() && chatStyles.sendButtonDisabled]}
           >
-            <Ionicons name="arrow-up" size={22} color="#FFFFFF" />
+            <Ionicons name="arrow-up" size={22} color={Palette.white} />
           </Pressable>
         </View>
       </View>

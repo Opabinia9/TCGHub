@@ -1,5 +1,7 @@
+
 import { Pressable, StyleSheet } from 'react-native';
 import { Text } from 'react-native-paper';
+import { Palette } from '@/constants/theme';
 
 type ToggleButtonProps = {
   label: string;
@@ -13,9 +15,17 @@ export function ToggleButton({ label, active, onPress }: ToggleButtonProps) {
       onPress={onPress}
       accessibilityRole="tab"
       accessibilityState={{ selected: active }}
-      style={[buttonStyles.toggleButton, active && buttonStyles.toggleButtonActive]}
+      style={[
+        buttonStyles.toggleButton,
+        active && buttonStyles.toggleButtonActive,
+      ]}
     >
-      <Text style={[buttonStyles.toggleText, active && buttonStyles.toggleTextActive]}>
+      <Text
+        style={[
+          buttonStyles.toggleText,
+          active && buttonStyles.toggleTextActive,
+        ]}
+      >
         {label}
       </Text>
     </Pressable>
@@ -28,7 +38,9 @@ export const buttonStyles = StyleSheet.create({
     flexDirection: 'row',
     padding: 4,
     borderRadius: 12,
-    backgroundColor: '#D8C9A8',
+    backgroundColor: Palette.surface,
+    borderWidth: 1,
+    borderColor: Palette.border,
   },
   toggleButton: {
     flex: 1,
@@ -38,15 +50,17 @@ export const buttonStyles = StyleSheet.create({
     justifyContent: 'center',
   },
   toggleButtonActive: {
-    backgroundColor: '#171717',
+    backgroundColor: Palette.green,
+    borderWidth: 1,
+    borderColor: Palette.gold,
   },
   toggleText: {
     fontFamily: 'BarlowCondensed_700Bold',
     fontSize: 14,
     letterSpacing: 1.4,
-    color: '#3A342B',
+    color: Palette.textSecondary,
   },
   toggleTextActive: {
-    color: '#E2D7BD',
+    color: Palette.gold,
   },
 });

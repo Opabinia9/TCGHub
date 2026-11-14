@@ -1,3 +1,4 @@
+
 import { useState, useRef, useEffect, useCallback } from 'react';
 import { useFocusEffect } from 'expo-router';
 import {
@@ -6,24 +7,45 @@ import {
   type MagicCard,
   type Pagination,
 } from '@/api/types';
-import { ActivityIndicator, Pressable, Text, View, StyleSheet, Modal } from 'react-native';
+import {
+  ActivityIndicator,
+  Pressable,
+  Text,
+  View,
+  StyleSheet,
+  Modal,
+} from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { Image } from 'expo-image';
 import { FlatList } from 'react-native-gesture-handler';
 import { Menu, Portal, Snackbar } from 'react-native-paper';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
-import AddToSheet, { type Condition, type SheetType } from '@/components/add-to-sheet';
-import { fetchOwnedQuantities, fetchWishlistIds, updateCollectionCard } from '@/api/collection';
+import AddToSheet, {
+  type Condition,
+  type SheetType,
+} from '@/components/add-to-sheet';
+import {
+  fetchOwnedQuantities,
+  fetchWishlistIds,
+  updateCollectionCard,
+} from '@/api/collection';
 import { fetchCards } from '@/api/cards';
+import { fetchDecks, addCardToDeck, type Deck } from '@/api/decks';
+import { Palette } from '@/constants/theme';
 
 // Draws an Ionicons icon in our green, for a menu item.
 function menuIcon(name: keyof typeof Ionicons.glyphMap) {
-  return ({ size }: { size: number }) => <Ionicons name={name} size={size} color="#245f28" />;
+  return ({ size }: { size: number }) => (
+    <Ionicons name={name} size={size} color={Palette.gold} />
+  );
 }
 
 function conditionLabel(condition: string) {
-  return condition && condition !== 'unmarked' ? condition : 'Condition not set';
+  return condition && condition !== 'unmarked'
+    ? condition
+    : 'Condition not set';
 }
+
 export default function CardList(props: CardListProps) {
   const [cards, setCards] = useState<MagicCard[]>([]);
   const [loading, setLoading] = useState(true);
@@ -35,11 +57,9 @@ export default function CardList(props: CardListProps) {
   const cardsRef = useRef<MagicCard[]>([]);
   cardsRef.current = cards;
   const [selectedCard, setSelectedCard] = useState<MagicCard | null>(null);
-  // Filter by category and by the search text. Some lists (collection, wishlist)
-  // ignore the search on the backend, so we also filter here.
+
   const searchText = props.query.trim().toLowerCase();
 
-  // Goes up by 1 each time the screen comes into view, which makes the list reload.
   const [refreshCount, setRefreshCount] = useState(0);
 
   useFocusEffect(
@@ -51,54 +71,57 @@ export default function CardList(props: CardListProps) {
     }, [props.refreshOnFocus]),
   );
 
-  // Which card's + menu is open (null = none).
   const [menuCardId, setMenuCardId] = useState<string | null>(null);
-  // The listing / collection panel that's open (null = none).
+
   const [sheet, setSheet] = useState<{
     type: SheetType;
     card: MagicCard;
   } | null>(null);
-  // The message in the bar at the bottom (null = hidden).
-  const [message, setMessage] = useState<string | null>(null);
 
-  // Ids of the cards on your wishlist, so the menu knows Add or Remove.
+  const [message, setMessage] = useState<string | null>(null);
   const [wishlistIds, setWishlistIds] = useState<Set<string>>(new Set());
-  // How many of each card you own (card id → quantity).
-  const [ownedQuantities, setOwnedQuantities] = useState<Map<string, number>>(new Map());
+  const [ownedQuantities, setOwnedQuantities] = useState<Map<string, number>>(
+    new Map(),
+  );
+
   const insets = useSafeAreaInsets();
 
-  // Reload the wishlist every time this screen comes into view.
+  // State for choosing a deck.
+  const [deckPickerCard, setDeckPickerCard] = useState<MagicCard | null>(null);
+  const [decks, setDecks] = useState<Deck[]>([]);
+  const [loadingDecks, setLoadingDecks] = useState(false);
+  const [savingDeckId, setSavingDeckId] = useState<string | null>(null);
+
   useFocusEffect(
     useCallback(() => {
       fetchWishlistIds()
         .then(setWishlistIds)
         .catch(() => setWishlistIds(new Set()));
+
       fetchOwnedQuantities()
         .then(setOwnedQuantities)
         .catch(() => setOwnedQuantities(new Map()));
     }, []),
   );
 
-  // Add or remove one id. Makes a NEW Set, because React only redraws
-  // when it gets a new object, not when the old one is changed.
   function setInWishlist(cardId: string, inWishlist: boolean) {
     setWishlistIds((current) => {
       const next = new Set(current);
+
       if (inWishlist) {
         next.add(cardId);
       } else {
         next.delete(cardId);
       }
+
       return next;
     });
   }
 
   const closeMenu = () => setMenuCardId(null);
 
-  // Is the ADD TO menu in the fullscreen view open?
   const [previewMenuOpen, setPreviewMenuOpen] = useState(false);
 
-  // Closes the fullscreen view, and its menu, so it starts closed next time.
   function closePreview() {
     setSelectedCard(null);
     setPreviewMenuOpen(false);
@@ -110,10 +133,49 @@ export default function CardList(props: CardListProps) {
     setSheet({ type, card });
   }
 
+  // Opens the deck picker and loads the user's decks.
+  async function openDeckPicker(card: MagicCard) {
+    closeMenu();
+    setPreviewMenuOpen(false);
+    setDeckPickerCard(card);
+    setDecks([]);
+    setLoadingDecks(true);
+
+    try {
+      const result = await fetchDecks();
+      setDecks(result);
+    } catch {
+      setDeckPickerCard(null);
+      setMessage('Could not load your decks. Please try again.');
+    } finally {
+      setLoadingDecks(false);
+    }
+  }
+
+  // Adds the selected card to the chosen deck.
+  async function handleAddCardToDeck(deck: Deck) {
+    if (!deckPickerCard) return;
+
+    const card = deckPickerCard;
+    setSavingDeckId(deck.id);
+
+    try {
+      await addCardToDeck(deck.id, card.id, 1);
+      setDeckPickerCard(null);
+      setMessage(`${card.name} added to ${deck.deck_name}`);
+    } catch {
+      setMessage('Could not add this card to the deck. Please try again.');
+    } finally {
+      setSavingDeckId(null);
+    }
+  }
+
   async function toggleWishlist(card: MagicCard) {
     closeMenu();
     setPreviewMenuOpen(false);
+
     const inWishlist = wishlistIds.has(card.id);
+
     try {
       await updateCollectionCard({
         card_id: card.id,
@@ -121,7 +183,9 @@ export default function CardList(props: CardListProps) {
         for_trade: false,
         wishlist: !inWishlist,
       });
+
       setInWishlist(card.id, !inWishlist);
+
       setMessage(
         inWishlist
           ? `${card.name} removed from your wishlist`
@@ -134,8 +198,10 @@ export default function CardList(props: CardListProps) {
 
   async function handleConfirm(quantity: number, condition: Condition) {
     if (!sheet) return;
+
     const { type, card } = sheet;
     setSheet(null);
+
     try {
       await updateCollectionCard({
         card_id: card.id,
@@ -144,12 +210,15 @@ export default function CardList(props: CardListProps) {
         for_trade: type === 'listing',
         wishlist: false,
       });
+
       setInWishlist(card.id, false);
+
       setOwnedQuantities((current) => {
         const next = new Map(current);
         next.set(card.id, (current.get(card.id) ?? 0) + quantity);
         return next;
       });
+
       setMessage(
         type === 'listing'
           ? `${card.name} listed for trade`
@@ -208,6 +277,7 @@ export default function CardList(props: CardListProps) {
       }
     };
   }, [searchText, props.activeFilter, props.fetchlist, refreshCount]);
+
   async function loadMore() {
     if (loading || !pagination || loadingMoreRef.current) return;
     if (pagination.page >= pagination.totalPages) return;
@@ -217,17 +287,21 @@ export default function CardList(props: CardListProps) {
     const version = listVersionRef.current;
 
     try {
-      const result = await props.fetchlist(searchText, props.activeFilter, pagination.page + 1, 20);
+      const result = await props.fetchlist(
+        searchText,
+        props.activeFilter,
+        pagination.page + 1,
+        20,
+      );
 
       if (version !== listVersionRef.current) return;
 
-      // Only keep cards we don't already have. Some lists send everything
-      // on every page, which would otherwise repeat the cards forever.
       const shownIds = new Set(cardsRef.current.map((card) => card.id));
-      const newCards = result.items.filter((card) => !shownIds.has(card.id));
+      const newCards = result.items.filter(
+        (card) => !shownIds.has(card.id),
+      );
 
       if (newCards.length === 0) {
-        // Nothing new came back, so treat this as the last page and stop asking.
         setPagination((p) => (p ? { ...p, totalPages: p.page } : p));
         return;
       }
@@ -243,11 +317,12 @@ export default function CardList(props: CardListProps) {
       setLoadingMore(false);
     }
   }
+
   const variant = props.variant ?? 'browse';
 
-  // Profile → My Wishlist: take it off the wishlist and out of this list.
   async function removeFromWishlist(card: MagicCard) {
     closeMenu();
+
     try {
       await updateCollectionCard({
         card_id: card.id,
@@ -255,6 +330,7 @@ export default function CardList(props: CardListProps) {
         for_trade: false,
         wishlist: false,
       });
+
       setInWishlist(card.id, false);
       setCards((current) => current.filter((c) => c.id !== card.id));
       setMessage(`${card.name} removed from your wishlist`);
@@ -263,7 +339,6 @@ export default function CardList(props: CardListProps) {
     }
   }
 
-  // Profile → My Listings: stop trading it (you still own it) and take it out of this list.
   async function removeFromListings(card: MagicCard) {
     try {
       await updateCollectionCard({
@@ -272,6 +347,7 @@ export default function CardList(props: CardListProps) {
         for_trade: false,
         wishlist: false,
       });
+
       setCards((current) => current.filter((c) => c.id !== card.id));
       setMessage(`${card.name} removed from your listings`);
     } catch {
@@ -279,7 +355,6 @@ export default function CardList(props: CardListProps) {
     }
   }
 
-  // The listing / collection panel, built once so we can show it in two places.
   const sheetPanel = sheet && (
     <AddToSheet
       type={sheet.type}
@@ -295,7 +370,9 @@ export default function CardList(props: CardListProps) {
         onPress={() => setSelectedCard(card)}
         accessibilityRole="button"
         accessibilityLabel={`View ${card.name}${
-          (ownedQuantities.get(card.id) ?? 0) > 0 ? `, you own ${ownedQuantities.get(card.id)}` : ''
+          (ownedQuantities.get(card.id) ?? 0) > 0
+            ? `, you own ${ownedQuantities.get(card.id)}`
+            : ''
         }${wishlistIds.has(card.id) ? ', on your wishlist' : ''}`}
         style={styles.imageContainer}
       >
@@ -317,22 +394,28 @@ export default function CardList(props: CardListProps) {
           {card.setName || ' '}
         </Text>
 
-        {/* Tags: how many you own, and whether it's on your wishlist */}
-        {((ownedQuantities.get(card.id) ?? 0) > 0 || wishlistIds.has(card.id)) && (
+        {((ownedQuantities.get(card.id) ?? 0) > 0 ||
+          wishlistIds.has(card.id)) && (
           <View style={styles.tagRow}>
             {(ownedQuantities.get(card.id) ?? 0) > 0 && (
               <View style={styles.tag}>
-                <Text style={styles.tagText}>OWNED ×{ownedQuantities.get(card.id)}</Text>
+                <Text style={styles.tagText}>
+                  OWNED ×{ownedQuantities.get(card.id)}
+                </Text>
               </View>
             )}
+
             {wishlistIds.has(card.id) && (
               <View style={[styles.tag, styles.tagWishlist]}>
                 <Ionicons name="heart" size={11} color="#FFFFFF" />
-                <Text style={[styles.tagText, styles.tagTextLight]}>WISHLIST</Text>
+                <Text style={[styles.tagText, styles.tagTextLight]}>
+                  WISHLIST
+                </Text>
               </View>
             )}
           </View>
         )}
+
         {variant === 'trades' && (
           <Text style={styles.listedInfo}>
             Listed ×{(card as CollectionCard).quantity} ·{' '}
@@ -340,16 +423,17 @@ export default function CardList(props: CardListProps) {
           </Text>
         )}
 
-        {/* Price on the left, + on the right */}
         <View style={styles.cardPriceRow}>
           <View>
             <Text style={styles.cardPriceLabel}>
               {card.finishes.includes('nonfoil') ? '' : 'foil'}
             </Text>
-            <Text style={styles.cardPrice}>{card.prices.usd ? `$${card.prices.usd}` : '—'}</Text>
+            <Text style={styles.cardPrice}>
+              {card.prices.usd ? `$${card.prices.usd}` : '—'}
+            </Text>
           </View>
+
           {variant === 'trades' ? (
-            // My Listings: ✕ removes the card from your listings
             <Pressable
               onPress={() => removeFromListings(card)}
               accessibilityRole="button"
@@ -360,7 +444,6 @@ export default function CardList(props: CardListProps) {
               <Ionicons name="close" size={22} color="#7A2E22" />
             </Pressable>
           ) : variant === 'wishlist' ? (
-            // My Wishlist: filled heart opens a menu with "Remove from wishlist"
             <Menu
               visible={menuCardId === card.id}
               onDismiss={closeMenu}
@@ -397,40 +480,55 @@ export default function CardList(props: CardListProps) {
                   accessibilityRole="button"
                   accessibilityLabel={`Add ${card.name} to…`}
                   hitSlop={4}
-                  style={[styles.addButton, menuCardId === card.id && styles.addButtonActive]}
+                  style={[
+                    styles.addButton,
+                    menuCardId === card.id && styles.addButtonActive,
+                  ]}
                 >
                   <Ionicons
                     name="add"
                     size={22}
-                    color={menuCardId === card.id ? '#E2D7BD' : '#171717'}
+                    color={
+                      menuCardId === card.id ? Palette.text : Palette.gold
+                    }
                   />
                 </Pressable>
               }
             >
               <Menu.Item
-                leadingIcon={menuIcon(wishlistIds.has(card.id) ? 'heart' : 'heart-outline')}
-                title={wishlistIds.has(card.id) ? 'Remove from wishlist' : 'Add to wishlist'}
+                leadingIcon={menuIcon(
+                  wishlistIds.has(card.id) ? 'heart' : 'heart-outline',
+                )}
+                title={
+                  wishlistIds.has(card.id)
+                    ? 'Remove from wishlist'
+                    : 'Add to wishlist'
+                }
                 titleStyle={styles.menuItemText}
                 onPress={() => toggleWishlist(card)}
               />
+
               <Menu.Item
                 leadingIcon={menuIcon('pricetag-outline')}
                 title="Add to my listings"
                 titleStyle={styles.menuItemText}
                 onPress={() => openSheet('listing', card)}
               />
+
               <Menu.Item
                 leadingIcon={menuIcon('albums-outline')}
                 title="Add to collection"
                 titleStyle={styles.menuItemText}
                 onPress={() => openSheet('collection', card)}
               />
+
               <View style={styles.menuDivider} />
+
               <Menu.Item
                 leadingIcon={menuIcon('layers-outline')}
                 title="Add to deck"
                 titleStyle={styles.menuItemText}
-                onPress={closeMenu}
+                onPress={() => openDeckPicker(card)}
               />
             </Menu>
           )}
@@ -438,10 +536,14 @@ export default function CardList(props: CardListProps) {
       </View>
     </View>
   );
+
   const filteredCards =
     props.fetchlist === fetchCards
       ? cards
-      : cards.filter((item) => item.name.toLowerCase().includes(searchText));
+      : cards.filter((item) =>
+          item.name.toLowerCase().includes(searchText),
+        );
+
   return (
     <View style={{ height: '90%' }}>
       <FlatList
@@ -460,29 +562,52 @@ export default function CardList(props: CardListProps) {
         ItemSeparatorComponent={() => <View style={{ height: 16 }} />}
         ListEmptyComponent={
           loading ? (
-            <ActivityIndicator style={styles.emptyState} color="#171717" />
+            <ActivityIndicator style={styles.emptyState} color={Palette.gold} />
           ) : error ? (
             <View style={styles.emptyState}>
-              <Ionicons name="alert-circle-outline" size={36} color="#77705F" />
+              <Ionicons
+                name="alert-circle-outline"
+                size={36}
+                color={Palette.gold}
+              />
               <Text style={styles.emptyTitle}>Something went wrong</Text>
               <Text style={styles.emptyText}>{error}</Text>
             </View>
           ) : (
             <View style={styles.emptyState}>
-              <Ionicons name="search-outline" size={36} color="#77705F" />
+              <Ionicons
+                name="search-outline"
+                size={36}
+                color={Palette.gold}
+              />
               <Text style={styles.emptyTitle}>No cards found</Text>
-              <Text style={styles.emptyText}>Try another search or category.</Text>
+              <Text style={styles.emptyText}>
+                Try another search or category.
+              </Text>
             </View>
           )
         }
         ListFooterComponent={
-          <View style={styles.footer}>
-            {loadingMore && <ActivityIndicator style={{ marginBottom: 20 }} color="#171717" />}
-            <Text style={styles.footerText}>TCG HUB · YOUR NEXT TRADE STARTS HERE</Text>
-          </View>
+          <>
+            {props.footer}
+
+            <View style={styles.footer}>
+              {loadingMore && (
+                <ActivityIndicator
+                  style={{ marginBottom: 20 }}
+                  color={Palette.gold}
+                />
+              )}
+
+              <Text style={styles.footerText}>
+                TCG HUB · YOUR NEXT TRADE STARTS HERE
+              </Text>
+            </View>
+          </>
         }
       />
 
+      {/* Fullscreen card preview */}
       <Modal
         visible={selectedCard !== null}
         transparent
@@ -495,10 +620,12 @@ export default function CardList(props: CardListProps) {
           <View
             style={[
               styles.preview,
-              { paddingTop: insets.top + 8, paddingBottom: insets.bottom + 16 },
+              {
+                paddingTop: insets.top + 8,
+                paddingBottom: insets.bottom + 16,
+              },
             ]}
           >
-            {/* While the menu is open, tapping anywhere else closes it */}
             {previewMenuOpen && (
               <Pressable
                 style={styles.menuCatcher}
@@ -508,7 +635,6 @@ export default function CardList(props: CardListProps) {
               />
             )}
 
-            {/* Top: close button on the right */}
             <View style={styles.previewTopRow}>
               <Pressable
                 style={styles.previewClose}
@@ -516,11 +642,10 @@ export default function CardList(props: CardListProps) {
                 accessibilityRole="button"
                 accessibilityLabel="Close preview"
               >
-                <Ionicons name="close" size={22} color="#E2D7BD" />
+                <Ionicons name="close" size={22} color={Palette.text} />
               </Pressable>
             </View>
 
-            {/* Middle: the card, as big as fits */}
             <View style={styles.previewImageArea}>
               <Image
                 source={{
@@ -535,22 +660,23 @@ export default function CardList(props: CardListProps) {
               />
             </View>
 
-            {/* Name and set */}
             <View style={styles.previewInfo}>
               <Text style={styles.previewName} numberOfLines={2}>
                 {selectedCard.name}
               </Text>
+
               <Text style={styles.previewSetName} numberOfLines={1}>
                 {selectedCard.setName || 'Set information unavailable'}
               </Text>
             </View>
 
-            {/* Bottom bar: price on the left, ADD TO on the right */}
             <View style={styles.previewBar}>
               <View>
                 <Text style={styles.previewPriceLabel}>MARKET PRICE</Text>
                 <Text style={styles.previewPrice}>
-                  {selectedCard.prices.usd ? `$${selectedCard.prices.usd}` : '—'}
+                  {selectedCard.prices.usd
+                    ? `$${selectedCard.prices.usd}`
+                    : '—'}
                 </Text>
               </View>
 
@@ -559,49 +685,58 @@ export default function CardList(props: CardListProps) {
                 accessibilityRole="button"
                 accessibilityLabel={`Add ${selectedCard.name} to…`}
                 accessibilityState={{ expanded: previewMenuOpen }}
-                style={[styles.previewAddButton, previewMenuOpen && styles.previewAddButtonActive]}
+                style={[
+                  styles.previewAddButton,
+                  previewMenuOpen && styles.previewAddButtonActive,
+                ]}
               >
                 <Ionicons name="add" size={20} color="#FFFFFF" />
                 <Text style={styles.previewAddText}>ADD TO</Text>
               </Pressable>
 
-              {/* Same items as the grid menu, drawn ourselves because Paper's <Menu> can't show inside a Modal */}
               {previewMenuOpen && (
                 <View style={[styles.menu, styles.previewMenu]}>
                   <Menu.Item
                     leadingIcon={menuIcon(
-                      wishlistIds.has(selectedCard.id) ? 'heart' : 'heart-outline',
+                      wishlistIds.has(selectedCard.id)
+                        ? 'heart'
+                        : 'heart-outline',
                     )}
                     title={
-                      wishlistIds.has(selectedCard.id) ? 'Remove from wishlist' : 'Add to wishlist'
+                      wishlistIds.has(selectedCard.id)
+                        ? 'Remove from wishlist'
+                        : 'Add to wishlist'
                     }
                     titleStyle={styles.menuItemText}
                     onPress={() => toggleWishlist(selectedCard)}
                   />
+
                   <Menu.Item
                     leadingIcon={menuIcon('pricetag-outline')}
                     title="Add to my listings"
                     titleStyle={styles.menuItemText}
                     onPress={() => openSheet('listing', selectedCard)}
                   />
+
                   <Menu.Item
                     leadingIcon={menuIcon('albums-outline')}
                     title="Add to collection"
                     titleStyle={styles.menuItemText}
                     onPress={() => openSheet('collection', selectedCard)}
                   />
+
                   <View style={styles.menuDivider} />
+
                   <Menu.Item
                     leadingIcon={menuIcon('layers-outline')}
                     title="Add to deck"
                     titleStyle={styles.menuItemText}
-                    onPress={() => setPreviewMenuOpen(false)}
+                    onPress={() => openDeckPicker(selectedCard)}
                   />
                 </View>
               )}
             </View>
 
-            {/* Message bar, drawn inside the popup so it isn't hidden behind it */}
             <Snackbar
               visible={message !== null}
               onDismiss={() => setMessage(null)}
@@ -611,16 +746,99 @@ export default function CardList(props: CardListProps) {
               {message ?? ''}
             </Snackbar>
 
-            {/* From the fullscreen view: the panel has to be inside this Modal on iOS */}
             {sheetPanel}
           </View>
         )}
       </Modal>
 
-      {/* From the grid: show the panel normally */}
+      {/* Deck selection window */}
+      <Modal
+        visible={deckPickerCard !== null}
+        transparent
+        animationType="fade"
+        onRequestClose={() => setDeckPickerCard(null)}
+      >
+        <View style={styles.deckPickerOverlay}>
+          <View style={styles.deckPicker}>
+            <View style={styles.deckPickerHeader}>
+              <View style={styles.deckPickerTitleArea}>
+                <Text style={styles.deckPickerTitle}>ADD TO DECK</Text>
+                <Text style={styles.deckPickerSubtitle} numberOfLines={1}>
+                  {deckPickerCard?.name}
+                </Text>
+              </View>
+
+              <Pressable
+                onPress={() => setDeckPickerCard(null)}
+                style={styles.deckPickerClose}
+                accessibilityRole="button"
+                accessibilityLabel="Close deck selection"
+              >
+                <Ionicons name="close" size={22} color={Palette.text} />
+              </Pressable>
+            </View>
+
+            {loadingDecks ? (
+              <ActivityIndicator
+                style={styles.deckPickerLoading}
+                color={Palette.gold}
+              />
+            ) : decks.length === 0 ? (
+              <View style={styles.deckPickerEmpty}>
+                <Ionicons
+                  name="layers-outline"
+                  size={32}
+                  color={Palette.gold}
+                />
+                <Text style={styles.deckPickerEmptyTitle}>
+                  No decks found
+                </Text>
+                <Text style={styles.deckPickerEmptyText}>
+                  Create a deck first, then you can add cards to it.
+                </Text>
+              </View>
+            ) : (
+              <FlatList
+                data={decks}
+                keyExtractor={(deck) => deck.id}
+                style={styles.deckPickerList}
+                renderItem={({ item: deck }) => (
+                  <Pressable
+                    style={styles.deckPickerRow}
+                    onPress={() => handleAddCardToDeck(deck)}
+                    disabled={savingDeckId !== null}
+                  >
+                    <View style={styles.deckPickerIcon}>
+                      <Ionicons
+                        name="layers-outline"
+                        size={20}
+                        color={Palette.gold}
+                      />
+                    </View>
+
+                    <Text style={styles.deckPickerRowText} numberOfLines={1}>
+                      {deck.deck_name}
+                    </Text>
+
+                    {savingDeckId === deck.id ? (
+                      <ActivityIndicator color={Palette.gold} />
+                    ) : (
+                      <Ionicons
+                        name="add-circle-outline"
+                        size={22}
+                        color={Palette.gold}
+                      />
+                    )}
+                  </Pressable>
+                )}
+              />
+            )}
+          </View>
+        </View>
+      </Modal>
+
       {!selectedCard && sheetPanel}
 
-      {/* Portal = draw at the top level of the app, so it's never cut off */}
       <Portal>
         <Snackbar
           visible={message !== null}
@@ -637,7 +855,7 @@ export default function CardList(props: CardListProps) {
 
 const styles = StyleSheet.create({
   container: {
-    backgroundColor: '#E2D7BD',
+    backgroundColor: Palette.background,
   },
   footer: {
     marginTop: 30,
@@ -647,7 +865,7 @@ const styles = StyleSheet.create({
     fontSize: 10,
     fontWeight: '700',
     letterSpacing: 1.3,
-    color: '#77705F',
+    color: Palette.textSecondary,
     textAlign: 'center',
   },
   loadMoreButton: {
@@ -656,10 +874,10 @@ const styles = StyleSheet.create({
     paddingHorizontal: 24,
     paddingVertical: 12,
     borderRadius: 20,
-    backgroundColor: '#171717',
+    backgroundColor: Palette.green,
   },
   loadMoreText: {
-    color: '#E2D7BD',
+    color: Palette.text,
     fontSize: 13,
     fontWeight: '700',
   },
@@ -671,11 +889,11 @@ const styles = StyleSheet.create({
   emptyTitle: {
     fontSize: 18,
     fontWeight: '800',
-    color: '#171717',
+    color: Palette.text,
   },
   emptyText: {
     fontSize: 13,
-    color: '#77705F',
+    color: Palette.textSecondary,
   },
   content: {
     paddingTop: 24,
@@ -691,7 +909,7 @@ const styles = StyleSheet.create({
     position: 'relative',
     width: '100%',
     aspectRatio: 0.72,
-    backgroundColor: '#D1C4A8',
+    backgroundColor: Palette.surfaceElevated,
   },
   tagRow: {
     flexDirection: 'row',
@@ -706,19 +924,19 @@ const styles = StyleSheet.create({
     height: 22,
     paddingHorizontal: 8,
     borderRadius: 11,
-    backgroundColor: '#E2D7BD',
+    backgroundColor: Palette.surfaceElevated,
   },
   tagWishlist: {
-    backgroundColor: '#2e7d32',
+    backgroundColor: Palette.greenAccent,
   },
   tagText: {
     fontFamily: 'BarlowCondensed_700Bold',
     fontSize: 12,
     letterSpacing: 0.8,
-    color: '#3A342B',
+    color: Palette.gold,
   },
   tagTextLight: {
-    color: '#FFFFFF',
+    color: Palette.white,
   },
   expandIcon: {
     position: 'absolute',
@@ -727,7 +945,7 @@ const styles = StyleSheet.create({
     width: 32,
     height: 32,
     borderRadius: 16,
-    backgroundColor: 'rgba(23, 23, 23, 0.8)',
+    backgroundColor: 'rgba(16, 23, 19, 0.85)',
     alignItems: 'center',
     justifyContent: 'center',
   },
@@ -749,12 +967,12 @@ const styles = StyleSheet.create({
   cardName: {
     fontSize: 15,
     fontWeight: '800',
-    color: '#171717',
+    color: Palette.text,
   },
   cardSetName: {
     textAlign: 'center',
     fontSize: 11,
-    color: '#77705F',
+    color: Palette.textSecondary,
     marginTop: 5,
     marginBottom: 10,
   },
@@ -766,35 +984,35 @@ const styles = StyleSheet.create({
     marginTop: 'auto',
     paddingTop: 10,
     borderTopWidth: 1,
-    borderTopColor: '#DCCFB3',
+    borderTopColor: Palette.border,
   },
   cardPriceLabel: {
     fontSize: 10,
     fontWeight: '700',
     letterSpacing: 1,
-    color: '#77705F',
+    color: Palette.textSecondary,
   },
   cardPrice: {
     fontFamily: 'BarlowCondensed_700Bold',
     fontSize: 19,
-    color: '#171717',
+    color: Palette.gold,
   },
   addButton: {
     width: 36,
     height: 36,
     borderRadius: 10,
-    backgroundColor: '#E2D7BD',
+    backgroundColor: Palette.green,
     alignItems: 'center',
     justifyContent: 'center',
   },
   addButtonActive: {
-    backgroundColor: '#171717',
+    backgroundColor: Palette.greenAccent,
   },
   heartButton: {
     width: 36,
     height: 36,
     borderRadius: 10,
-    backgroundColor: '#2e7d32',
+    backgroundColor: Palette.greenAccent,
     alignItems: 'center',
     justifyContent: 'center',
   },
@@ -802,8 +1020,8 @@ const styles = StyleSheet.create({
     width: 36,
     height: 36,
     borderRadius: 10,
-    borderWidth: 1.5,
-    borderColor: '#7A2E22',
+    borderWidth: 1,
+    borderColor: '#8B5148',
     alignItems: 'center',
     justifyContent: 'center',
   },
@@ -812,21 +1030,21 @@ const styles = StyleSheet.create({
     marginBottom: 10,
     fontSize: 12,
     fontWeight: '600',
-    color: '#3A342B',
+    color: Palette.textSecondary,
   },
   menu: {
-    backgroundColor: '#FBF7EE',
+    backgroundColor: Palette.surfaceElevated,
     borderRadius: 14,
   },
   menuItemText: {
     fontSize: 15,
-    color: '#171717',
+    color: Palette.text,
   },
   menuDivider: {
     height: 1,
     marginHorizontal: 12,
     marginVertical: 4,
-    backgroundColor: '#DCCFB3',
+    backgroundColor: Palette.border,
   },
   wishlistButton: {
     width: 30,
@@ -838,14 +1056,14 @@ const styles = StyleSheet.create({
     width: '48%',
     overflow: 'hidden',
     borderRadius: 14,
-    backgroundColor: '#F4ECDD',
+    backgroundColor: Palette.surface,
     borderWidth: 1,
-    borderColor: '#C9BDA3',
+    borderColor: Palette.border,
   },
   preview: {
     flex: 1,
     paddingHorizontal: 20,
-    backgroundColor: '#171717',
+    backgroundColor: Palette.background,
   },
   menuCatcher: {
     ...StyleSheet.absoluteFill,
@@ -858,7 +1076,7 @@ const styles = StyleSheet.create({
     width: 44,
     height: 44,
     borderRadius: 22,
-    backgroundColor: '#2C2A26',
+    backgroundColor: Palette.surfaceElevated,
     alignItems: 'center',
     justifyContent: 'center',
   },
@@ -879,12 +1097,12 @@ const styles = StyleSheet.create({
     fontSize: 28,
     letterSpacing: 1,
     textTransform: 'uppercase',
-    color: '#F4EEDF',
+    color: Palette.text,
   },
   previewSetName: {
     marginTop: 2,
     fontSize: 14,
-    color: '#A79E8B',
+    color: Palette.textSecondary,
   },
   previewBar: {
     flexDirection: 'row',
@@ -895,18 +1113,20 @@ const styles = StyleSheet.create({
     paddingLeft: 18,
     paddingRight: 14,
     borderRadius: 18,
-    backgroundColor: '#E2D7BD',
+    backgroundColor: Palette.surface,
+    borderWidth: 1,
+    borderColor: Palette.border,
   },
   previewPriceLabel: {
     fontSize: 11,
     fontWeight: '700',
     letterSpacing: 1.2,
-    color: '#5A5246',
+    color: Palette.textSecondary,
   },
   previewPrice: {
     fontFamily: 'BarlowCondensed_700Bold',
     fontSize: 30,
-    color: '#171717',
+    color: Palette.gold,
   },
   previewAddButton: {
     flexDirection: 'row',
@@ -916,16 +1136,16 @@ const styles = StyleSheet.create({
     paddingLeft: 16,
     paddingRight: 20,
     borderRadius: 14,
-    backgroundColor: '#2e7d32',
+    backgroundColor: Palette.greenAccent,
   },
   previewAddButtonActive: {
-    backgroundColor: '#171717',
+    backgroundColor: Palette.green,
   },
   previewAddText: {
     fontFamily: 'BarlowCondensed_700Bold',
     fontSize: 18,
     letterSpacing: 1.2,
-    color: '#FFFFFF',
+    color: Palette.white,
   },
   previewMenu: {
     position: 'absolute',
@@ -935,5 +1155,93 @@ const styles = StyleSheet.create({
     width: 250,
     paddingVertical: 6,
     boxShadow: '0 12px 30px rgba(0, 0, 0, 0.4)',
+  },
+
+  // Deck picker styles.
+  deckPickerOverlay: {
+    flex: 1,
+    justifyContent: 'center',
+    paddingHorizontal: 24,
+    backgroundColor: 'rgba(0, 0, 0, 0.7)',
+  },
+  deckPicker: {
+    maxHeight: '70%',
+    padding: 20,
+    borderRadius: 18,
+    backgroundColor: Palette.surface,
+    borderWidth: 1,
+    borderColor: Palette.border,
+  },
+  deckPickerHeader: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    marginBottom: 18,
+  },
+  deckPickerTitleArea: {
+    flex: 1,
+    paddingRight: 12,
+  },
+  deckPickerTitle: {
+    fontFamily: 'BarlowCondensed_700Bold',
+    fontSize: 22,
+    letterSpacing: 1,
+    color: Palette.gold,
+  },
+  deckPickerSubtitle: {
+    marginTop: 3,
+    fontSize: 13,
+    color: Palette.textSecondary,
+  },
+  deckPickerClose: {
+    width: 36,
+    height: 36,
+    borderRadius: 18,
+    alignItems: 'center',
+    justifyContent: 'center',
+    backgroundColor: Palette.surfaceElevated,
+  },
+  deckPickerLoading: {
+    marginVertical: 35,
+  },
+  deckPickerEmpty: {
+    alignItems: 'center',
+    paddingVertical: 28,
+    gap: 10,
+  },
+  deckPickerEmptyTitle: {
+    fontSize: 16,
+    fontWeight: '700',
+    color: Palette.text,
+  },
+  deckPickerEmptyText: {
+    fontSize: 13,
+    textAlign: 'center',
+    color: Palette.textSecondary,
+  },
+  deckPickerList: {
+    flexGrow: 0,
+  },
+  deckPickerRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 12,
+    paddingVertical: 14,
+    borderTopWidth: 1,
+    borderTopColor: Palette.border,
+  },
+  deckPickerIcon: {
+    width: 36,
+    height: 36,
+    borderRadius: 10,
+    alignItems: 'center',
+    justifyContent: 'center',
+    backgroundColor: Palette.surfaceElevated,
+  },
+  deckPickerRowText: {
+    flex: 1,
+    fontSize: 15,
+    fontWeight: '600',
+    color: Palette.text,
   },
 });

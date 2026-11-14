@@ -2,18 +2,29 @@ import { Tabs } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
 import MaterialIcons from '@expo/vector-icons/MaterialIcons';
 import { WishlistProvider } from '@/context/WishlistContext';
-import { fetchChats } from '@/api/chats';
-import { useQuery } from '@tanstack/react-query';
+import { fetchChats, fetchChat } from '@/api/chats';
+import { useQueries, useQuery } from '@tanstack/react-query';
 import { useEffect, useState } from 'react';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
+import { authClient } from '@/utils/auth-client';
 import { Palette } from '@/constants/theme';
 
 export default function TabsLayout() {
   const insets = useSafeAreaInsets();
-
-  const { data: chats } = useQuery({
-    queryKey: ['chats'],
+  const selfId = authClient.useSession().data?.user.id;
+  const { data: chatsList } = useQuery({
+    queryKey: ['chats', selfId],
     queryFn: fetchChats,
+  });
+  const chats = useQueries({
+    queries:
+      chatsList?.map((chat) => ({
+        queryKey: ['chats', chat.id, selfId],
+        queryFn: async () => {
+          return await fetchChat(chat.id);
+        },
+      })) ?? [],
+    combine: (chats) => chats.map((chat) => chat.data),
   });
 
   const [unreadCount, setUnreadCount] = useState(0);
@@ -23,14 +34,16 @@ export default function TabsLayout() {
       let count = 0;
 
       for (const chat of chats) {
-        count +=
-          chat.messages.length -
-          (chat.messages
-            .map((message) => {
-              return message.id;
-            })
-            .indexOf(chat.lastReadMessageId) +
-            1);
+        if (chat) {
+          count +=
+            chat.messages.length -
+            (chat.messages
+              .map((message) => {
+                return message.id;
+              })
+              .indexOf(chat.lastReadMessageId) +
+              1);
+        }
       }
 
       setUnreadCount(count);
@@ -83,11 +96,7 @@ export default function TabsLayout() {
           options={{
             title: 'Trades',
             tabBarIcon: ({ color, size }) => (
-              <MaterialIcons
-                name="swap-horiz"
-                size={size}
-                color={String(color)}
-              />
+              <MaterialIcons name="swap-horiz" size={size} color={String(color)} />
             ),
           }}
         />
@@ -102,11 +111,7 @@ export default function TabsLayout() {
               color: Palette.white,
             },
             tabBarIcon: ({ color, size }) => (
-              <Ionicons
-                name="chatbubble"
-                size={size}
-                color={String(color)}
-              />
+              <Ionicons name="chatbubble" size={size} color={String(color)} />
             ),
           }}
         />

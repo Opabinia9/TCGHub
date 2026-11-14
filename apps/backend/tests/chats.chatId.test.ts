@@ -36,13 +36,16 @@ describe('GET /api/v1/chats/:chatId', () => {
 
     expect(response.statusCode).toBe(200);
     expect(payload).toMatchObject({
-      id: chat.id,
-      type: chat.type,
-      name: chat.name,
-      createdAt: chat.createdAt.toISOString(),
-      members: [{ id: userOneDetails.user.id }, { id: userTwoDetails.user.id }],
-      lastReadMessageId: null,
-      joinedAt: expect.any(String),
+      success: 'Chat Successfully Retrieved',
+      chat: {
+        id: chat.id,
+        type: chat.type,
+        name: chat.name,
+        createdAt: chat.createdAt.toISOString(),
+        members: [{ id: userOneDetails.user.id }, { id: userTwoDetails.user.id }],
+        lastReadMessageId: null,
+        joinedAt: expect.any(String),
+      },
     });
   });
 

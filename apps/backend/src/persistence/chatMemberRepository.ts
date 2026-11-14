@@ -36,4 +36,12 @@ export default class ChatMemberRepository extends Repository<ChatMember> {
       },
     });
   }
+
+  async getChatMembers(chatId: string): Promise<Array<ChatMember>> {
+    return this.db.chatMember.findMany({
+      where: {
+        chatId: chatId,
+      },
+    });
+  }
 }

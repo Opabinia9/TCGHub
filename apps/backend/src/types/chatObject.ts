@@ -29,7 +29,7 @@ const chatWithMembersCreationZod = z.discriminatedUnion('type', [
 export type ChatWithMembersCreationInterface = z.infer<typeof chatWithMembersCreationZod>;
 
 export const chatWithMessages = {
-  include: { messages: true },
+  include: { messages: true, members: { include: { User: true } } },
 } satisfies Prisma.ChatDefaultArgs;
 
 export type ChatWithMessages = Prisma.ChatGetPayload<typeof chatWithMessages>;

@@ -1,4 +1,3 @@
-
 import '@/global.css';
 import { StyleSheet, Platform } from 'react-native';
 
@@ -72,9 +71,15 @@ export const MaxContentWidth = 800;
 export const layout = StyleSheet.create({
   screen: {
     flex: 1,
-    backgroundColor: '#E2D7BD',
+    backgroundColor: Palette.background,
   },
   top: {
-    paddingHorizontal: 20,
+    flex: 1,
+    paddingHorizontal: 5,
+    paddingVertical: 5,
+  },
+  content: {
+    paddingTop: 16,
+    paddingBottom: 32,
   },
 });

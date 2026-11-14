@@ -1,6 +1,11 @@
-
 import { useCallback, useEffect, useRef, useState } from 'react';
-import { ListViewToken, Platform, Pressable, TextInput, View } from 'react-native';
+import {
+  ListViewToken,
+  Platform,
+  Pressable,
+  TextInput,
+  View,
+} from 'react-native';
 import { Text } from 'react-native-paper';
 import { FlatList } from 'react-native-gesture-handler';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
@@ -9,7 +14,7 @@ import { Ionicons } from '@expo/vector-icons';
 import { useLocalSearchParams } from 'expo-router';
 import MessageListing from '@/components/message-listing';
 import QuickReply from '@/components/quick-reply';
-import BackArrrow from '@/components/back-arrow';
+import BackArrow from '@/components/back-arrow';
 import { chatStyles } from '@/constants/chatStyles';
 import { KeyboardAvoidingView } from 'react-native-keyboard-controller';
 import { authClient } from '@/utils/auth-client';
@@ -25,7 +30,11 @@ import {
   updateLastReadMessage,
 } from '@/api/chats';
 
-const QUICK_REPLIES = ['Propose a trade', 'Suggest a meetup', 'Still available?'];
+const QUICK_REPLIES = [
+  'Propose a trade',
+  'Suggest a meetup',
+  'Still available?',
+];
 
 export default function ChatScreen() {
   const { id: chatId } = useLocalSearchParams<{ id: string }>();
@@ -38,7 +47,8 @@ export default function ChatScreen() {
   const selfIsSeller = selfId === chat?.sellerId;
   const chatTitle: string =
     chat?.name ??
-    chat?.members.reduce((acc, cur) => (cur.id !== selfId ? cur : acc)).username ??
+    chat?.members.reduce((acc, cur) => (cur.id !== selfId ? cur : acc))
+      .username ??
     '';
 
   const { refetch: chatRefetch } = useQuery({
@@ -54,7 +64,10 @@ export default function ChatScreen() {
   const onViewableItemsChanged = useCallback(
     ({ viewableItems }: { viewableItems: Array<ListViewToken> }) => {
       if (chat != null) {
-        if (!hasViewedLatest.current && viewableItems.some((v) => v.index === 0 && v.isViewable)) {
+        if (
+          !hasViewedLatest.current &&
+          viewableItems.some((v) => v.index === 0 && v.isViewable)
+        ) {
           const message = viewableItems[0].item;
           if (message != null && message.id != chat.lastReadMessageId) {
             updateLastReadMessage(chat.id, message.id);
@@ -100,7 +113,9 @@ export default function ChatScreen() {
         <View
           style={[
             chatStyles.bubbleWrap,
-            senderSelf ? chatStyles.bubbleWrapMine : chatStyles.bubbleWrapTheirs,
+            senderSelf
+              ? chatStyles.bubbleWrapMine
+              : chatStyles.bubbleWrapTheirs,
           ]}
         >
           <View
@@ -109,7 +124,12 @@ export default function ChatScreen() {
               senderSelf ? chatStyles.bubbleMine : chatStyles.bubbleTheirs,
             ]}
           >
-            <Text style={[chatStyles.bubbleText, senderSelf && chatStyles.bubbleTextMine]}>
+            <Text
+              style={[
+                chatStyles.bubbleText,
+                senderSelf && chatStyles.bubbleTextMine,
+              ]}
+            >
               {message.body}
             </Text>
           </View>
@@ -139,10 +159,12 @@ export default function ChatScreen() {
     <KeyboardAvoidingView
       style={chatStyles.screen}
       behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
-      keyboardVerticalOffset={Platform.OS === 'ios' ? insets.top - insets.bottom : 50}
+      keyboardVerticalOffset={
+        Platform.OS === 'ios' ? insets.top - insets.bottom : 50
+      }
     >
       <View style={chatStyles.header}>
-        <BackArrrow />
+        <BackArrow />
         <View
           style={
             chat.type === 'TRADE'
@@ -152,7 +174,9 @@ export default function ChatScreen() {
               : chatStyles.avatar
           }
         >
-          <Text style={chatStyles.avatarText}>{chatTitle[0].toUpperCase()}</Text>
+          <Text style={chatStyles.avatarText}>
+            {chatTitle[0].toUpperCase()}
+          </Text>
         </View>
         <View style={chatStyles.headerText}>
           <Text style={chatStyles.name}>{chatTitle}</Text>
@@ -162,11 +186,11 @@ export default function ChatScreen() {
         </View>
         <Pressable
           onPress={() => console.log('More options pressed')}
-          accessibilityRole="button"
-          accessibilityLabel="More options"
+          accessibilityRole='button'
+          accessibilityLabel='More options'
           style={chatStyles.iconButton}
         >
-          <Ionicons name="ellipsis-vertical" size={22} color={Palette.gold} />
+          <Ionicons name='ellipsis-vertical' size={22} color={Palette.gold} />
         </Pressable>
       </View>
 
@@ -182,30 +206,37 @@ export default function ChatScreen() {
         viewabilityConfig={viewabilityConfig}
       />
 
-      <View style={[chatStyles.composer, { paddingBottom: insets.bottom + 10 }]}>
-        {chat.type === 'TRADE' && <QuickReply replies={QUICK_REPLIES} setDraft={setDraft} />}
+      <View
+        style={[chatStyles.composer, { paddingBottom: insets.bottom + 10 }]}
+      >
+        {chat.type === 'TRADE' && (
+          <QuickReply replies={QUICK_REPLIES} setDraft={setDraft} />
+        )}
 
         <View style={chatStyles.inputRow}>
           <TextInput
             value={draft}
             onChangeText={setDraft}
             onSubmitEditing={send}
-            placeholder="Message…"
+            placeholder='Message…'
             placeholderTextColor={Palette.textSecondary}
             selectionColor={Palette.gold}
             cursorColor={Palette.gold}
-            returnKeyType="send"
+            returnKeyType='send'
             accessibilityLabel={`Message ${chat.name}`}
             style={chatStyles.input}
           />
           <Pressable
             onPress={send}
             disabled={!draft.trim()}
-            accessibilityRole="button"
-            accessibilityLabel="Send message"
-            style={[chatStyles.sendButton, !draft.trim() && chatStyles.sendButtonDisabled]}
+            accessibilityRole='button'
+            accessibilityLabel='Send message'
+            style={[
+              chatStyles.sendButton,
+              !draft.trim() && chatStyles.sendButtonDisabled,
+            ]}
           >
-            <Ionicons name="arrow-up" size={22} color={Palette.white} />
+            <Ionicons name='arrow-up' size={22} color={Palette.white} />
           </Pressable>
         </View>
       </View>

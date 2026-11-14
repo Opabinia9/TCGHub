@@ -1,4 +1,3 @@
-
 import { useState } from 'react';
 import { Pressable, StyleSheet, View } from 'react-native';
 import { Searchbar, Text } from 'react-native-paper';
@@ -6,7 +5,7 @@ import { Ionicons } from '@expo/vector-icons';
 import { router } from 'expo-router';
 import TradeList from '@/components/trade-list';
 import ScreenHeader from '@/components/screen-header';
-import { Palette } from '@/constants/theme';
+import { layout, Palette } from '@/constants/theme';
 import { searchStyles } from '@/constants/search-filter-styles';
 
 export default function TradeScreen() {
@@ -15,8 +14,8 @@ export default function TradeScreen() {
   return (
     <View style={styles.screen}>
       <ScreenHeader
-        title="LISTED CARDS"
-        subtitle="Buy, sell and trade with players near you."
+        title='LISTED CARDS'
+        subtitle='Buy, sell and trade with players near you.'
         right={
           <Pressable
             onPress={() =>
@@ -25,19 +24,19 @@ export default function TradeScreen() {
                 params: { tab: 'collection' },
               })
             }
-            accessibilityRole="button"
-            accessibilityLabel="List a card"
+            accessibilityRole='button'
+            accessibilityLabel='List a card'
             style={styles.listButton}
           >
-            <Ionicons name="add" size={18} color={Palette.white} />
+            <Ionicons name='add' size={18} color={Palette.white} />
             <Text style={styles.listButtonText}>LIST A CARD</Text>
           </Pressable>
         }
       />
 
-      <View style={styles.top}>
+      <View style={[layout.top, { flex: 0 }]}>
         <Searchbar
-          placeholder="Search listed cards…"
+          placeholder='Search listed cards…'
           value={searchQuery}
           onChangeText={setSearchQuery}
           style={searchStyles.searchbar}

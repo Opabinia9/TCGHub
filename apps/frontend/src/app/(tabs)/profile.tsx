@@ -1,4 +1,3 @@
-
 import { useState } from 'react';
 import { StyleSheet, View, Pressable, Alert } from 'react-native';
 import { Avatar, Text, Button, TextInput, Searchbar } from 'react-native-paper';
@@ -10,13 +9,15 @@ import { QueryClient } from '@tanstack/react-query';
 import { fetchMyTrades } from '@/api/myTrades';
 import { fetchWishlist } from '@/api/myWishlist';
 import { searchStyles } from '@/constants/search-filter-styles';
-import { Palette } from '@/constants/theme';
+import { layout, Palette } from '@/constants/theme';
 import { ToggleButton, buttonStyles } from '@/components/toggle-button';
 
 export default function Profile() {
   const router = useRouter();
 
-  const [bio, setBio] = useState('Magic player. Always looking for my next trade!');
+  const [bio, setBio] = useState(
+    'Magic player. Always looking for my next trade!',
+  );
   const [editedBio, setEditedBio] = useState(bio);
   const [isEditing, setIsEditing] = useState(false);
   const [tab, setTab] = useState<'trades' | 'wishlist'>('trades');
@@ -37,34 +38,30 @@ export default function Profile() {
   };
 
   const handleLogout = () => {
-    Alert.alert(
-      'Log out',
-      'Are you sure you want to log out?',
-      [
-        {
-          text: 'Cancel',
-          style: 'cancel',
+    Alert.alert('Log out', 'Are you sure you want to log out?', [
+      {
+        text: 'Cancel',
+        style: 'cancel',
+      },
+      {
+        text: 'Log out',
+        style: 'destructive',
+        onPress: async () => {
+          await authClient.signOut();
+          queryClient.clear();
+          router.replace('/(auth)/login');
         },
-        {
-          text: 'Log out',
-          style: 'destructive',
-          onPress: async () => {
-            await authClient.signOut();
-            queryClient.clear();
-            router.replace('/(auth)/login');
-          },
-        },
-      ],
-    );
+      },
+    ]);
   };
 
   return (
-    <View style={styles.screen}>
-      <View style={styles.top}>
+    <View style={layout.screen}>
+      <View style={layout.top}>
         <View style={styles.profileHeader}>
           <Avatar.Icon
             size={76}
-            icon="account"
+            icon='account'
             color={Palette.gold}
             style={styles.avatar}
           />
@@ -75,7 +72,7 @@ export default function Profile() {
           </View>
 
           <Button
-            mode="outlined"
+            mode='outlined'
             onPress={() => {
               if (isEditing) {
                 handleCancel();
@@ -96,8 +93,8 @@ export default function Profile() {
           {isEditing ? (
             <>
               <TextInput
-                mode="outlined"
-                label="Your bio"
+                mode='outlined'
+                label='Your bio'
                 value={editedBio}
                 onChangeText={setEditedBio}
                 multiline
@@ -115,7 +112,7 @@ export default function Profile() {
               />
 
               <Button
-                mode="contained"
+                mode='contained'
                 onPress={handleSave}
                 buttonColor={Palette.greenAccent}
                 textColor={Palette.white}
@@ -129,36 +126,38 @@ export default function Profile() {
           )}
         </View>
 
-        <View style={buttonStyles.toggle} accessibilityRole="tablist">
+        <View style={buttonStyles.toggle} accessibilityRole='tablist'>
           <ToggleButton
-            label="MY TRADES"
+            label='MY TRADES'
             active={isTrades}
             onPress={() => setTab('trades')}
           />
           <ToggleButton
-            label="WISHLIST"
+            label='WISHLIST'
             active={!isTrades}
             onPress={() => setTab('wishlist')}
           />
         </View>
-
-        <Searchbar
-          placeholder="Search your cards..."
-          value={searchQuery}
-          onChangeText={setSearchQuery}
-          style={searchStyles.searchbar}
-          inputStyle={searchStyles.searchInput}
-          iconColor={Palette.gold}
-          placeholderTextColor={Palette.textSecondary}
-          selectionColor={Palette.gold}
-          cursorColor={Palette.gold}
-          elevation={0}
-        />
+        <View style={{ paddingBottom: 5 }}>
+          <Searchbar
+            placeholder='Search your cards...'
+            value={searchQuery}
+            onChangeText={setSearchQuery}
+            style={searchStyles.searchbar}
+            inputStyle={searchStyles.searchInput}
+            iconColor={Palette.gold}
+            placeholderTextColor={Palette.textSecondary}
+            selectionColor={Palette.gold}
+            cursorColor={Palette.gold}
+            elevation={0}
+          />
+        </View>
 
         <CardList
+          key={tab}
           fetchlist={isTrades ? fetchMyTrades : fetchWishlist}
           query={searchQuery}
-          activeFilter="all"
+          activeFilter='all'
           emptyMessage={
             isTrades
               ? 'Unable to load your listings'
@@ -171,11 +170,11 @@ export default function Profile() {
               <Pressable
                 onPress={handleLogout}
                 style={styles.logoutButton}
-                accessibilityRole="button"
-                accessibilityLabel="Log out"
+                accessibilityRole='button'
+                accessibilityLabel='Log out'
               >
                 <Ionicons
-                  name="log-out-outline"
+                  name='log-out-outline'
                   size={19}
                   color={Palette.textSecondary}
                 />

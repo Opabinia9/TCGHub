@@ -6,22 +6,22 @@ import CardList from '@/components/card-list';
 import { fetchCards } from '@/api/cards';
 import ScreenHeader from '@/components/screen-header';
 import { searchStyles } from '@/constants/search-filter-styles';
-import { Palette } from '@/constants/theme';
+import { layout, Palette } from '@/constants/theme';
 
 export default function CardsScreen() {
   const [searchQuery, setSearchQuery] = useState('');
   const [activeFilter, setActiveFilter] = useState<FilterOption>('all');
 
   return (
-    <View style={styles.screen}>
+    <View style={layout.screen}>
       <ScreenHeader
-        title="EXPLORE CARDS"
-        subtitle="Find cards to collect and trade."
+        title='EXPLORE CARDS'
+        subtitle='Find cards to collect and trade.'
       />
 
-      <View style={styles.top}>
+      <View style={layout.top}>
         <Searchbar
-          placeholder="Search your cards..."
+          placeholder='Search your cards...'
           value={searchQuery}
           onChangeText={setSearchQuery}
           style={searchStyles.searchbar}
@@ -67,7 +67,7 @@ export default function CardsScreen() {
           fetchlist={fetchCards}
           query={searchQuery}
           activeFilter={activeFilter}
-          emptyMessage="Unable to load cards"
+          emptyMessage='Unable to load cards'
         />
       </View>
     </View>

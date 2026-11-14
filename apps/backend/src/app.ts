@@ -27,6 +27,7 @@ import {
 } from 'fastify-type-provider-zod';
 import type { PrismaClientKnownRequestError } from '@prisma/client/runtime/client';
 import registerAuthDecorator from './decorators/authDecorator.js';
+import registerSocketDecorator from './decorators/SocketDecorator.js';
 
 export default async function buildServer(opts = {}, env: Env) {
   const server: Fastify.FastifyInstance = Fastify({
@@ -72,6 +73,7 @@ export default async function buildServer(opts = {}, env: Env) {
     specCheckPlugin(server);
   }
   registerAuthDecorator(server);
+  registerSocketDecorator(server);
 
   await server.register(authRoutes, { prefix: '/api/auth' });
   await server.register(userRoutes, { prefix: '/api/v1/user' });

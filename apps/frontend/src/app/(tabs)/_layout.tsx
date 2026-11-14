@@ -2,16 +2,28 @@ import { Tabs } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
 import MaterialIcons from '@expo/vector-icons/MaterialIcons';
 import { WishlistProvider } from '@/context/WishlistContext';
-import { fetchChats } from '@/api/chats';
-import { useQuery } from '@tanstack/react-query';
+import { fetchChats, fetchChat } from '@/api/chats';
+import { useQueries, useQuery } from '@tanstack/react-query';
 import { useEffect, useState } from 'react';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
+import { authClient } from '@/utils/auth-client';
 
 export default function TabsLayout() {
   const insets = useSafeAreaInsets();
-  const { data: chats } = useQuery({
-    queryKey: ['chats'],
+  const selfId = authClient.useSession().data?.user.id;
+  const { data: chatsList } = useQuery({
+    queryKey: ['chats', selfId],
     queryFn: fetchChats,
+  });
+  const chats = useQueries({
+    queries:
+      chatsList?.map((chat) => ({
+        queryKey: ['chats', chat.id, selfId],
+        queryFn: async () => {
+          return await fetchChat(chat.id);
+        },
+      })) ?? [],
+    combine: (chats) => chats.map((chat) => chat.data),
   });
 
   const [unreadCount, setUnreadCount] = useState(0);
@@ -19,14 +31,16 @@ export default function TabsLayout() {
     if (chats) {
       let count = 0;
       for (const chat of chats) {
-        count +=
-          chat.messages.length -
-          (chat.messages
-            .map((message) => {
-              return message.id;
-            })
-            .indexOf(chat.lastReadMessageId) +
-            1);
+        if (chat) {
+          count +=
+            chat.messages.length -
+            (chat.messages
+              .map((message) => {
+                return message.id;
+              })
+              .indexOf(chat.lastReadMessageId) +
+              1);
+        }
       }
       setUnreadCount(count);
     }
@@ -52,57 +66,53 @@ export default function TabsLayout() {
         }}
       >
         <Tabs.Screen
-          name='cards'
+          name="cards"
           options={{
             title: 'Cards',
             tabBarIcon: ({ color, size }) => (
-              <Ionicons name='copy' size={size} color={String(color)} />
+              <Ionicons name="copy" size={size} color={String(color)} />
             ),
           }}
         />
 
         <Tabs.Screen
-          name='decks'
+          name="decks"
           options={{
             title: 'Decks',
             tabBarIcon: ({ color, size }) => (
-              <Ionicons name='layers' size={size} color={String(color)} />
+              <Ionicons name="layers" size={size} color={String(color)} />
             ),
           }}
         />
 
         <Tabs.Screen
-          name='trade'
+          name="trade"
           options={{
             title: 'Trades',
             tabBarIcon: ({ color, size }) => (
-              <MaterialIcons
-                name='swap-horiz'
-                size={size}
-                color={String(color)}
-              />
+              <MaterialIcons name="swap-horiz" size={size} color={String(color)} />
             ),
           }}
         />
 
         <Tabs.Screen
-          name='messages'
+          name="messages"
           options={{
             title: 'Messages',
             tabBarBadge: unreadCount > 0 ? unreadCount : undefined,
             tabBarBadgeStyle: { backgroundColor: '#2e7d32', color: '#FFFFFF' },
             tabBarIcon: ({ color, size }) => (
-              <Ionicons name='chatbubble' size={size} color={String(color)} />
+              <Ionicons name="chatbubble" size={size} color={String(color)} />
             ),
           }}
         />
 
         <Tabs.Screen
-          name='profile'
+          name="profile"
           options={{
             title: 'Profile',
             tabBarIcon: ({ color, size }) => (
-              <Ionicons name='person' size={size} color={String(color)} />
+              <Ionicons name="person" size={size} color={String(color)} />
             ),
           }}
         />

@@ -40,9 +40,12 @@ describe('GET /api/v1/chats/:chatId/messages', () => {
     const payload = await response.json();
     expect(response.statusCode).toBe(200);
     expect(payload).toMatchObject({
-      messages: messages.map((x) => {
-        return { ...x, chatId: chat.id };
-      }),
+      success: 'Messages Successfully Retrived',
+      chat: {
+        messages: messages.map((x) => {
+          return { ...x, chatId: chat.id };
+        }),
+      },
     });
   });
 

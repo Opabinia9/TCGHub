@@ -14,6 +14,7 @@ export default function MessageListing({ sellerId, cardId }: Props): ReactNode {
   const { data: trade } = useQuery({
     queryKey: ['trade', sellerId, cardId],
     queryFn: async () => await fetchTrade(sellerId, cardId),
+    staleTime: 60_000,
   });
 
   return (

@@ -5,7 +5,7 @@ import DeckRepository from '@/persistence/deckRepository.js';
 import ChatRepository from '@/persistence/chatReposistory.js';
 import MessageRepository from '@/persistence/messageReposistory.js';
 import NotFoundError from '@/errortypes/NotFoundError.js';
-import type { Deck, DeckCard, Message, User, UserCard } from '@prisma/client';
+import type { ChatMember, Deck, DeckCard, Message, User, UserCard } from '@prisma/client';
 import type { AuthSignupBody, DeckCardParams } from '@/routes/api/v1/routeSchemas.js';
 import type { UserCreationInterface, UserWithChats } from '@/types/userObject.js';
 import type { ChatWithMembersCreationInterface, ChatWithMessages } from '@/types/chatObject.js';
@@ -84,6 +84,8 @@ export default class Facade {
     }
   }
 
+  /** Chat Functions */
+
   async getChatWithMessages(chatId: string): Promise<ChatWithMessages> {
     const chat = await this.chatRepo.getChatWithMessages(chatId);
 
@@ -102,6 +104,10 @@ export default class Facade {
 
   async createChatWithMembers(chat: ChatWithMembersCreationInterface) {
     return await this.chatRepo.addChatWithMembers(chat);
+  }
+
+  async getChatMembers(chatId: string): Promise<Array<ChatMember>> {
+    return await this.chatMemberRepo.getChatMembers(chatId);
   }
 
   async UpdateLastReadMessage(chatId: string, userId: string, messageId: string) {

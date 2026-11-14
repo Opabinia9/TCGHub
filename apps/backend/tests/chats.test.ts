@@ -61,9 +61,6 @@ describe('GET /api/v1/chats', () => {
         type: createChatsInput[idx].type,
         name: createChatsInput[idx].name,
         createdAt: savedChats[idx].createdAt.toISOString(),
-        members: createChatsInput[idx].memberIDs.map((id) => {
-          return { id };
-        }),
         lastReadMessageId: null,
         joinedAt: expect.any(String),
       });

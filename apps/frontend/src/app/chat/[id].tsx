@@ -1,59 +1,51 @@
-import { useCallback, useEffect, useRef, useState } from 'react';
-import { ListViewToken, Platform, Pressable, TextInput, View } from 'react-native';
+import { useCallback, useRef, useState } from 'react';
+import { ListViewToken, Platform, Pressable, View } from 'react-native';
 import { Text } from 'react-native-paper';
 import { FlatList } from 'react-native-gesture-handler';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
-import { useQuery } from '@tanstack/react-query';
+import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { Ionicons } from '@expo/vector-icons';
 import { useLocalSearchParams } from 'expo-router';
 import MessageListing from '@/components/message-listing';
 import QuickReply from '@/components/quick-reply';
 import BackArrrow from '@/components/back-arrow';
+import { MessageBubble } from '@/components/message-bubble';
+import { TextBox } from '@/components/text-box';
 import { chatStyles } from '@/constants/chatStyles';
 import { KeyboardAvoidingView } from 'react-native-keyboard-controller';
 import { authClient } from '@/utils/auth-client';
-import { dateStringToMessageDate } from '@/utils/dateStringToMessageDate';
-import {
-  Chat,
-  fetchChat,
-  fetchChats,
-  fetchMessages,
-  Message,
-  sendMessage,
-  updateLastReadMessage,
-} from '@/api/chats';
+import { ChatWithMessages, fetchChat, updateLastReadMessage } from '@/api/chats';
 
 const QUICK_REPLIES = ['Propose a trade', 'Suggest a meetup', 'Still available?'];
 
 export default function ChatScreen() {
   const { id: chatId } = useLocalSearchParams<{ id: string }>();
-  const selfId = authClient.useSession().data?.user.id;
-  const [chat, setChat] = useState<Chat>();
   const [draft, setDraft] = useState('');
   const messagesRef = useRef<FlatList>(null);
   const hasViewedLatest = useRef(false);
   const insets = useSafeAreaInsets();
+  const selfId = authClient.useSession().data?.user.id;
+
+  const queryClient = useQueryClient();
+  const { data: chat } = useQuery({
+    queryKey: ['chats', chatId, selfId],
+    queryFn: async () => await fetchChat(chatId),
+  });
   const selfIsSeller = selfId === chat?.sellerId;
   const chatTitle: string =
     chat?.name ??
     chat?.members.reduce((acc, cur) => (cur.id !== selfId ? cur : acc)).username ??
     '';
-
-  const { refetch: chatRefetch } = useQuery({
-    queryKey: ['chats', selfId],
-    queryFn: fetchChats,
-  });
-  const { refetch: messageRefetch, data: messages } = useQuery({
-    queryKey: ['messages', chatId],
-    queryFn: async () => await fetchMessages(chatId),
-  });
-
   const onViewableItemsChanged = useCallback(
-    ({ viewableItems }: { viewableItems: Array<ListViewToken> }) => {
+    async ({ viewableItems }: { viewableItems: Array<ListViewToken> }) => {
       if (chat != null) {
-        if (!hasViewedLatest.current && viewableItems.some((v) => v.index === 0 && v.isViewable)) {
+        if (viewableItems.some((v) => v.index === 0 && v.isViewable)) {
           const message = viewableItems[0].item;
           if (message != null && message.id != chat.lastReadMessageId) {
+            await queryClient.cancelQueries({ queryKey: ['chats', message.chatId, selfId] });
+            queryClient.setQueryData(['chats', message.chatId, selfId], (old: ChatWithMessages) => {
+              return { ...old, lastReadMessageId: message.id };
+            });
             updateLastReadMessage(chat.id, message.id);
           }
           hasViewedLatest.current = true;
@@ -63,58 +55,10 @@ export default function ChatScreen() {
     [chat],
   );
 
-  useEffect(() => {
-    fetchChat(chatId).then((chat) => {
-      setChat(chat);
-    });
-    messageRefetch();
-  }, []);
-
   const viewabilityConfig = useRef({
     itemVisiblePercentThreshold: 50,
-    minimumViewTime: 100,
+    minimumViewTime: 10,
   }).current;
-
-  const send = async () => {
-    const text = draft.trim();
-    if (!text) return;
-    const message = await sendMessage(chatId, text);
-    await updateLastReadMessage(chatId, message.id);
-    await messageRefetch();
-    await chatRefetch();
-    setDraft('');
-  };
-
-  const renderMessage = ({ item: message }: { item: Message }) => {
-    const senderSelf = message.senderId === selfId;
-    const MessageDateString: string = dateStringToMessageDate(
-      message.createdAt ?? null,
-      'SPECIFIC',
-    );
-
-    return (
-      <View>
-        <View
-          style={[
-            chatStyles.bubbleWrap,
-            senderSelf ? chatStyles.bubbleWrapMine : chatStyles.bubbleWrapTheirs,
-          ]}
-        >
-          <View
-            style={[
-              chatStyles.bubble,
-              senderSelf ? chatStyles.bubbleMine : chatStyles.bubbleTheirs,
-            ]}
-          >
-            <Text style={[chatStyles.bubbleText, senderSelf && chatStyles.bubbleTextMine]}>
-              {message.body}
-            </Text>
-          </View>
-          <Text style={chatStyles.bubbleTime}>{MessageDateString}</Text>
-        </View>
-      </View>
-    );
-  };
 
   if (chat === undefined) {
     return (
@@ -124,7 +68,7 @@ export default function ChatScreen() {
     );
   }
 
-  if (!messages) {
+  if (!chat.messages) {
     return (
       <View style={chatStyles.screen}>
         <Text style={chatStyles.notFound}>Loading...</Text>
@@ -176,8 +120,8 @@ export default function ChatScreen() {
         inverted
         ref={messagesRef}
         style={chatStyles.messageScroll}
-        data={messages.reverse()}
-        renderItem={renderMessage}
+        data={chat.messages.toReversed()}
+        renderItem={({ item }) => <MessageBubble message={item} />}
         onViewableItemsChanged={onViewableItemsChanged}
         viewabilityConfig={viewabilityConfig}
       />
@@ -186,29 +130,8 @@ export default function ChatScreen() {
       <View style={[chatStyles.composer, { paddingBottom: insets.bottom + 10 }]}>
         {chat.type === 'TRADE' && <QuickReply replies={QUICK_REPLIES} setDraft={setDraft} />}
 
-        <View style={chatStyles.inputRow}>
-          <TextInput
-            value={draft}
-            onChangeText={setDraft}
-            onSubmitEditing={send}
-            placeholder="Message…"
-            placeholderTextColor="#7A705F"
-            selectionColor="#171717"
-            cursorColor="#171717"
-            returnKeyType="send"
-            accessibilityLabel={`Message ${chat.name}`}
-            style={chatStyles.input}
-          />
-          <Pressable
-            onPress={send}
-            disabled={!draft.trim()}
-            accessibilityRole="button"
-            accessibilityLabel="Send message"
-            style={[chatStyles.sendButton, !draft.trim() && chatStyles.sendButtonDisabled]}
-          >
-            <Ionicons name="arrow-up" size={22} color="#FFFFFF" />
-          </Pressable>
-        </View>
+        {/* The box you type in and the send button */}
+        <TextBox chat={chat} draftState={{ draft, setDraft }} />
       </View>
     </KeyboardAvoidingView>
   );

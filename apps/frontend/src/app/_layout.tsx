@@ -7,6 +7,7 @@ import { KeyboardProvider } from 'react-native-keyboard-controller';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { StatusBar } from 'expo-status-bar';
 import { useFonts, BarlowCondensed_700Bold } from '@expo-google-fonts/barlow-condensed';
+import { WSProvider } from '@/api/WSProvider';
 
 export default function RootLayout() {
   const [fontsLoaded] = useFonts({ BarlowCondensed_700Bold });
@@ -22,17 +23,19 @@ export default function RootLayout() {
   return (
     <QueryClientProvider client={queryClient}>
       <GestureHandlerRootView style={{ flex: 1 }}>
-        <PaperProvider theme={theme}>
-          <StatusBar style="dark" />
-          <SafeAreaView edges={['top']} style={{ flex: 1, backgroundColor: '#E2D7BD' }}>
-            <KeyboardProvider statusBarTranslucent navigationBarTranslucent>
-              <Stack screenOptions={{ headerShown: false }}>
-                <Stack.Screen name="(auth)" />
-                <Stack.Screen name="(tabs)" />
-              </Stack>
-            </KeyboardProvider>
-          </SafeAreaView>
-        </PaperProvider>
+        <WSProvider>
+          <PaperProvider theme={theme}>
+            <StatusBar style="dark" />
+            <SafeAreaView edges={['top']} style={{ flex: 1, backgroundColor: '#E2D7BD' }}>
+              <KeyboardProvider statusBarTranslucent navigationBarTranslucent>
+                <Stack screenOptions={{ headerShown: false }}>
+                  <Stack.Screen name="(auth)" />
+                  <Stack.Screen name="(tabs)" />
+                </Stack>
+              </KeyboardProvider>
+            </SafeAreaView>
+          </PaperProvider>
+        </WSProvider>
       </GestureHandlerRootView>
     </QueryClientProvider>
   );

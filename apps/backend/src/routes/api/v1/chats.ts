@@ -12,8 +12,8 @@ import type {
   ChatPostMessageBodyInterface,
   ChatUpdateLastReadBodyInterface,
 } from './routeSchemas.js';
-import { ChatType } from '@prisma/client';
-import z from 'zod';
+import { ChatType, type User } from '@prisma/client';
+import { z } from 'zod';
 
 export default async function chatRoutes(fastify: Fastify.FastifyInstance, options: object) {
   const controller = new ChatController();
@@ -36,8 +36,7 @@ export default async function chatRoutes(fastify: Fastify.FastifyInstance, optio
                   sellerId: z.uuid().optional(),
                   cardId: z.uuid().optional(),
                   createdAt: z.date(),
-                  // TODO: CHANGE THIS BULLSHIT
-                  members: z.array(z.any()),
+                  members: z.array(z.string()),
                   lastReadMessageId: z.uuid().nullable(),
                   joinedAt: z.date(),
                 }),
@@ -105,17 +104,20 @@ export default async function chatRoutes(fastify: Fastify.FastifyInstance, optio
         response: {
           200: z
             .object({
-              id: z.uuid(),
-              type: z.enum(Object.values(ChatType)),
-              name: z.string().optional(),
-              directKey: z.string().optional(),
-              sellerId: z.uuid().optional(),
-              cardId: z.uuid().optional(),
-              createdAt: z.date(),
-              // TODO: CAHNGE THIS BULLSHIT
-              members: z.array(z.any()),
-              lastReadMessageId: z.uuid().nullable(),
-              joinedAt: z.date(),
+              success: z.string(),
+              chat: z.object({
+                id: z.uuid(),
+                type: z.enum(Object.values(ChatType)),
+                name: z.string().optional(),
+                directKey: z.string().optional(),
+                sellerId: z.uuid().optional(),
+                cardId: z.uuid().optional(),
+                createdAt: z.date(),
+                // TODO: CAHNGE THIS BULLSHIT
+                members: z.array(z.any()),
+                lastReadMessageId: z.uuid().nullable(),
+                joinedAt: z.date(),
+              }),
             })
             .meta({ description: 'OK' }),
           401: z
@@ -162,15 +164,20 @@ export default async function chatRoutes(fastify: Fastify.FastifyInstance, optio
           200: z
             .object({
               success: z.string(),
-              messages: z.array(
-                z.object({
-                  id: z.uuid(),
-                  createdAt: z.date(),
-                  body: z.string(),
-                  chatId: z.uuid(),
-                  senderId: z.uuid(),
-                }),
-              ),
+              chat: z.object({
+                id: z.uuid(),
+                type: z.enum(Object.values(ChatType)),
+                name: z.string().optional(),
+                directKey: z.string().optional(),
+                sellerId: z.uuid().optional(),
+                cardId: z.uuid().optional(),
+                createdAt: z.date(),
+                // TODO: CAHNGE THIS BULLSHIT
+                members: z.array(z.any()),
+                messages: z.array(z.any()),
+                lastReadMessageId: z.uuid().nullable(),
+                joinedAt: z.date(),
+              }),
             })
             .meta({ description: 'OK' }),
           401: z

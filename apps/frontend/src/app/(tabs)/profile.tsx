@@ -1,15 +1,16 @@
+
 import { useState } from 'react';
-import { StyleSheet, View, Pressable } from 'react-native';
+import { StyleSheet, View, Pressable, Alert } from 'react-native';
 import { Avatar, Text, Button, TextInput, Searchbar } from 'react-native-paper';
 import { Ionicons } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
 import CardList from '@/components/card-list';
 import { authClient } from '@/utils/auth-client';
-import { QueryCache, QueryClient } from '@tanstack/react-query';
+import { QueryClient } from '@tanstack/react-query';
 import { fetchMyTrades } from '@/api/myTrades';
 import { fetchWishlist } from '@/api/myWishlist';
 import { searchStyles } from '@/constants/search-filter-styles';
-import { layout } from '@/constants/theme';
+import { Palette } from '@/constants/theme';
 import { ToggleButton, buttonStyles } from '@/components/toggle-button';
 
 export default function Profile() {
@@ -20,6 +21,7 @@ export default function Profile() {
   const [isEditing, setIsEditing] = useState(false);
   const [tab, setTab] = useState<'trades' | 'wishlist'>('trades');
   const [searchQuery, setSearchQuery] = useState('');
+
   const queryClient = new QueryClient();
   const { data: session } = authClient.useSession();
   const isTrades = tab === 'trades';
@@ -34,19 +36,40 @@ export default function Profile() {
     setIsEditing(false);
   };
 
-  const handleLogout = async () => {
-    await authClient.signOut();
-    queryClient.clear();
-    router.replace('/(auth)/login');
+  const handleLogout = () => {
+    Alert.alert(
+      'Log out',
+      'Are you sure you want to log out?',
+      [
+        {
+          text: 'Cancel',
+          style: 'cancel',
+        },
+        {
+          text: 'Log out',
+          style: 'destructive',
+          onPress: async () => {
+            await authClient.signOut();
+            queryClient.clear();
+            router.replace('/(auth)/login');
+          },
+        },
+      ],
+    );
   };
 
   return (
-    <View style={layout.screen}>
-      <View style={layout.top}>
+    <View style={styles.screen}>
+      <View style={styles.top}>
         <View style={styles.profileHeader}>
-          <Avatar.Icon size={76} icon="account" color="#E2D7BD" style={styles.avatar} />
+          <Avatar.Icon
+            size={76}
+            icon="account"
+            color={Palette.gold}
+            style={styles.avatar}
+          />
 
-          <View style={styles.userInfo}>
+          <View style={{ flex: 1, gap: 4 }}>
             <Text style={styles.name}>{session?.user.name}</Text>
             <Text style={styles.username}>@{session?.user.username}</Text>
           </View>
@@ -61,13 +84,14 @@ export default function Profile() {
                 setIsEditing(true);
               }
             }}
-            textColor="#171717"
+            textColor={Palette.gold}
             style={styles.editButton}
             compact
           >
             {isEditing ? 'CANCEL' : 'EDIT'}
           </Button>
         </View>
+
         <View style={styles.bioContainer}>
           {isEditing ? (
             <>
@@ -79,16 +103,22 @@ export default function Profile() {
                 multiline
                 maxLength={150}
                 style={styles.bioInput}
-                textColor="#171717"
-                placeholderTextColor="#655d50"
-                outlineColor="#655D50"
-                activeOutlineColor="#171717"
+                textColor={Palette.text}
+                placeholderTextColor={Palette.textSecondary}
+                outlineColor={Palette.border}
+                activeOutlineColor={Palette.gold}
+                theme={{
+                  colors: {
+                    onSurfaceVariant: Palette.textSecondary,
+                  },
+                }}
               />
+
               <Button
                 mode="contained"
                 onPress={handleSave}
-                buttonColor="#171717"
-                textColor="#E2D7BD"
+                buttonColor={Palette.greenAccent}
+                textColor={Palette.white}
                 style={styles.saveButton}
               >
                 SAVE BIO
@@ -99,16 +129,17 @@ export default function Profile() {
           )}
         </View>
 
-        <View style={styles.logoutContainer}>
-          <Pressable onPress={handleLogout} style={styles.logoutButton}>
-            <Ionicons name="log-out-outline" size={20} color="#A12626" />
-            <Text style={styles.logoutText}>LOG OUT</Text>
-          </Pressable>
-        </View>
-
         <View style={buttonStyles.toggle} accessibilityRole="tablist">
-          <ToggleButton label="MY TRADES" active={isTrades} onPress={() => setTab('trades')} />
-          <ToggleButton label="WISHLIST" active={!isTrades} onPress={() => setTab('wishlist')} />
+          <ToggleButton
+            label="MY TRADES"
+            active={isTrades}
+            onPress={() => setTab('trades')}
+          />
+          <ToggleButton
+            label="WISHLIST"
+            active={!isTrades}
+            onPress={() => setTab('wishlist')}
+          />
         </View>
 
         <Searchbar
@@ -117,10 +148,10 @@ export default function Profile() {
           onChangeText={setSearchQuery}
           style={searchStyles.searchbar}
           inputStyle={searchStyles.searchInput}
-          iconColor="#245f28"
-          placeholderTextColor="#7A705F"
-          selectionColor="#171717"
-          cursorColor="#171717"
+          iconColor={Palette.gold}
+          placeholderTextColor={Palette.textSecondary}
+          selectionColor={Palette.gold}
+          cursorColor={Palette.gold}
           elevation={0}
         />
 
@@ -128,9 +159,30 @@ export default function Profile() {
           fetchlist={isTrades ? fetchMyTrades : fetchWishlist}
           query={searchQuery}
           activeFilter="all"
-          emptyMessage={isTrades ? 'Unable to load your listings' : 'Unable to load your wishlist'}
+          emptyMessage={
+            isTrades
+              ? 'Unable to load your listings'
+              : 'Unable to load your wishlist'
+          }
           refreshOnFocus
           variant={isTrades ? 'trades' : 'wishlist'}
+          footer={
+            <View style={styles.logoutContainer}>
+              <Pressable
+                onPress={handleLogout}
+                style={styles.logoutButton}
+                accessibilityRole="button"
+                accessibilityLabel="Log out"
+              >
+                <Ionicons
+                  name="log-out-outline"
+                  size={19}
+                  color={Palette.textSecondary}
+                />
+                <Text style={styles.logoutText}>Log out</Text>
+              </Pressable>
+            </View>
+          }
         />
       </View>
     </View>
@@ -138,6 +190,14 @@ export default function Profile() {
 }
 
 const styles = StyleSheet.create({
+  screen: {
+    flex: 1,
+    backgroundColor: Palette.background,
+  },
+  top: {
+    flex: 1,
+    paddingHorizontal: 20,
+  },
   profileHeader: {
     flexDirection: 'row',
     alignItems: 'center',
@@ -145,58 +205,54 @@ const styles = StyleSheet.create({
     marginTop: 15,
   },
   avatar: {
-    backgroundColor: '#171717',
-  },
-  userInfo: {
-    flex: 1,
-    gap: 4,
+    backgroundColor: Palette.surfaceElevated,
+    borderWidth: 1,
+    borderColor: Palette.gold,
   },
   name: {
-    color: '#171717',
+    color: Palette.text,
     fontSize: 20,
     fontWeight: 'bold',
   },
   username: {
-    color: '#655D50',
+    color: Palette.textSecondary,
     fontSize: 14,
   },
   editButton: {
-    borderColor: '#171717',
+    borderColor: Palette.gold,
     borderRadius: 8,
   },
   bioContainer: {
     marginTop: 22,
   },
+  bioInput: {
+    backgroundColor: Palette.surface,
+  },
   bio: {
-    color: '#171717',
+    color: Palette.text,
     fontSize: 15,
     lineHeight: 22,
-  },
-  bioInput: {
-    backgroundColor: '#F4EBDD',
   },
   saveButton: {
     marginTop: 12,
     borderRadius: 8,
   },
   logoutContainer: {
-    marginTop: 40,
+    marginTop: 24,
+    marginBottom: 20,
     alignItems: 'center',
   },
   logoutButton: {
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
-    gap: 10,
-    borderWidth: 1,
-    borderColor: '#A12626',
-    borderRadius: 10,
-    paddingVertical: 13,
-    width: '100%',
+    gap: 8,
+    paddingVertical: 12,
+    paddingHorizontal: 20,
   },
   logoutText: {
-    color: '#A12626',
-    fontWeight: 'bold',
-    letterSpacing: 1,
+    color: Palette.textSecondary,
+    fontSize: 14,
+    fontWeight: '600',
   },
 });

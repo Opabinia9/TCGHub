@@ -4,6 +4,7 @@ import { Ionicons } from '@expo/vector-icons';
 import { chatStyles } from '@/constants/chatStyles';
 import { ChatWithMessages } from '@/api/chats';
 import { useWS } from '@/api/WSProvider';
+import { Palette } from '@/constants/theme';
 type Props = {
   chat: ChatWithMessages;
   draftState: { draft: string; setDraft: Dispatch<SetStateAction<string>> };
@@ -25,9 +26,9 @@ export function TextBox({ chat, draftState: { draft, setDraft } }: Props) {
         onChangeText={setDraft}
         onSubmitEditing={send}
         placeholder="Message…"
-        placeholderTextColor="#7A705F"
-        selectionColor="#171717"
-        cursorColor="#171717"
+        placeholderTextColor={Palette.textSecondary}
+        selectionColor={Palette.gold}
+        cursorColor={Palette.gold}
         returnKeyType="send"
         accessibilityLabel={`Message ${chat.name}`}
         style={chatStyles.input}
@@ -39,7 +40,7 @@ export function TextBox({ chat, draftState: { draft, setDraft } }: Props) {
         accessibilityLabel="Send message"
         style={[chatStyles.sendButton, !draft.trim() && chatStyles.sendButtonDisabled]}
       >
-        <Ionicons name="arrow-up" size={22} color="#FFFFFF" />
+        <Ionicons name="arrow-up" size={22} color={Palette.white} />
       </Pressable>
     </View>
   );

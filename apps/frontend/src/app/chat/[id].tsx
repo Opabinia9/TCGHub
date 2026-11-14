@@ -12,6 +12,7 @@ import BackArrrow from '@/components/back-arrow';
 import { MessageBubble } from '@/components/message-bubble';
 import { TextBox } from '@/components/text-box';
 import { chatStyles } from '@/constants/chatStyles';
+import { Palette } from '@/constants/theme';
 import { KeyboardAvoidingView } from 'react-native-keyboard-controller';
 import { authClient } from '@/utils/auth-client';
 import { ChatWithMessages, fetchChat, updateLastReadMessage } from '@/api/chats';
@@ -82,7 +83,6 @@ export default function ChatScreen() {
       behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
       keyboardVerticalOffset={Platform.OS === 'ios' ? insets.top - insets.bottom : 50}
     >
-      {/* Header */}
       <View style={chatStyles.header}>
         <BackArrrow />
         <View
@@ -102,20 +102,18 @@ export default function ChatScreen() {
             <Text style={chatStyles.distance}>DISTANCE NOT IMPLEMENTED</Text>
           )}
         </View>
-        {/* NOTE: this currently does nothing */}
         <Pressable
           onPress={() => console.log('More options pressed')}
           accessibilityRole="button"
           accessibilityLabel="More options"
           style={chatStyles.iconButton}
         >
-          <Ionicons name="ellipsis-vertical" size={22} color="#171717" />
+          <Ionicons name="ellipsis-vertical" size={22} color={Palette.gold} />
         </Pressable>
       </View>
 
       <MessageListing sellerId={chat.sellerId} cardId={chat.cardId} />
 
-      {/* messages in the chat */}
       <FlatList
         inverted
         ref={messagesRef}
@@ -126,7 +124,6 @@ export default function ChatScreen() {
         viewabilityConfig={viewabilityConfig}
       />
 
-      {/* Quick replies + typing box */}
       <View style={[chatStyles.composer, { paddingBottom: insets.bottom + 10 }]}>
         {chat.type === 'TRADE' && <QuickReply replies={QUICK_REPLIES} setDraft={setDraft} />}
 

@@ -7,6 +7,7 @@ import { useQueries, useQuery } from '@tanstack/react-query';
 import { useEffect, useState } from 'react';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { authClient } from '@/utils/auth-client';
+import { Palette } from '@/constants/theme';
 
 export default function TabsLayout() {
   const insets = useSafeAreaInsets();
@@ -27,9 +28,11 @@ export default function TabsLayout() {
   });
 
   const [unreadCount, setUnreadCount] = useState(0);
+
   useEffect(() => {
     if (chats) {
       let count = 0;
+
       for (const chat of chats) {
         if (chat) {
           count +=
@@ -42,6 +45,7 @@ export default function TabsLayout() {
               1);
         }
       }
+
       setUnreadCount(count);
     }
   }, [chats]);
@@ -51,17 +55,19 @@ export default function TabsLayout() {
       <Tabs
         screenOptions={{
           headerShown: false,
-          tabBarActiveTintColor: '#E2D7BD',
-          tabBarInactiveTintColor: '#A79E8B',
+          tabBarActiveTintColor: Palette.gold,
+          tabBarInactiveTintColor: Palette.textSecondary,
           tabBarStyle: {
-            backgroundColor: '#171717',
-            borderTopColor: '#171717',
+            backgroundColor: Palette.background,
+            borderTopColor: Palette.border,
+            borderTopWidth: 1,
             paddingTop: 7,
             paddingBottom: insets.bottom,
             height: 60 + insets.bottom,
           },
           tabBarLabelStyle: {
             fontSize: 11,
+            fontWeight: '600',
           },
         }}
       >
@@ -100,7 +106,10 @@ export default function TabsLayout() {
           options={{
             title: 'Messages',
             tabBarBadge: unreadCount > 0 ? unreadCount : undefined,
-            tabBarBadgeStyle: { backgroundColor: '#2e7d32', color: '#FFFFFF' },
+            tabBarBadgeStyle: {
+              backgroundColor: Palette.greenAccent,
+              color: Palette.white,
+            },
             tabBarIcon: ({ color, size }) => (
               <Ionicons name="chatbubble" size={size} color={String(color)} />
             ),

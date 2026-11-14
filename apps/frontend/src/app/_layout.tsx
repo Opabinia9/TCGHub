@@ -13,11 +13,13 @@ export default function RootLayout() {
   const [fontsLoaded] = useFonts({ BarlowCondensed_700Bold });
   const isDark = useColorScheme() === 'dark';
   const baseTheme = isDark ? MD3DarkTheme : MD3LightTheme;
+
   // Our black as the main colour, so text cursors and focus outlines aren't purple.
   const theme = {
     ...baseTheme,
     colors: { ...baseTheme.colors, primary: '#171717' },
   };
+
   const queryClient = new QueryClient();
 
   return (
@@ -25,8 +27,8 @@ export default function RootLayout() {
       <GestureHandlerRootView style={{ flex: 1 }}>
         <WSProvider>
           <PaperProvider theme={theme}>
-            <StatusBar style="dark" />
-            <SafeAreaView edges={['top']} style={{ flex: 1, backgroundColor: '#E2D7BD' }}>
+            <StatusBar style="light" />
+            <SafeAreaView edges={['top']} style={{ flex: 1, backgroundColor: '#101713' }}>
               <KeyboardProvider statusBarTranslucent navigationBarTranslucent>
                 <Stack screenOptions={{ headerShown: false }}>
                   <Stack.Screen name="(auth)" />

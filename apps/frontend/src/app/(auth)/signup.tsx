@@ -1,9 +1,11 @@
+
 import { useState } from 'react';
 import { StyleSheet, View } from 'react-native';
 import { KeyboardAwareScrollView } from 'react-native-keyboard-controller';
 import { Button, Text, TextInput } from 'react-native-paper';
 import { Link, useRouter } from 'expo-router';
 import { authClient } from '@/utils/auth-client';
+import { Palette } from '@/constants/theme';
 
 export default function Signup() {
   const router = useRouter();
@@ -27,7 +29,6 @@ export default function Signup() {
     setLoading(true);
 
     try {
-
       const result = await authClient.signUp.email({
         username: username.trimEnd(),
         email: email.trimEnd(),
@@ -39,6 +40,7 @@ export default function Signup() {
         setError('Account creation failed. Check your details or try another username or email.');
         return;
       }
+
       setSuccess(true);
       router.replace('/(tabs)/cards');
     } catch {
@@ -65,7 +67,9 @@ export default function Signup() {
           Create your account
         </Text>
 
-        <Text style={styles.description}>Join other Planeswalkers and find your next trade.</Text>
+        <Text style={styles.description}>
+          Join other Planeswalkers and find your next trade.
+        </Text>
 
         <TextInput
           label="Name"
@@ -73,10 +77,13 @@ export default function Signup() {
           onChangeText={setName}
           mode="outlined"
           autoCapitalize="words"
-          outlineColor="#C7B99E"
-          activeOutlineColor="#171717"
-          textColor="#171717"
+          outlineColor={Palette.border}
+          activeOutlineColor={Palette.gold}
+          textColor={Palette.text}
+          cursorColor={Palette.gold}
+          selectionColor={Palette.gold}
           style={styles.input}
+          theme={inputTheme}
         />
 
         <TextInput
@@ -86,10 +93,13 @@ export default function Signup() {
           mode="outlined"
           autoCapitalize="none"
           autoCorrect={false}
-          outlineColor="#C7B99E"
-          activeOutlineColor="#171717"
-          textColor="#171717"
+          outlineColor={Palette.border}
+          activeOutlineColor={Palette.gold}
+          textColor={Palette.text}
+          cursorColor={Palette.gold}
+          selectionColor={Palette.gold}
           style={styles.input}
+          theme={inputTheme}
         />
 
         <TextInput
@@ -100,10 +110,13 @@ export default function Signup() {
           keyboardType="email-address"
           autoCapitalize="none"
           autoCorrect={false}
-          outlineColor="#C7B99E"
-          activeOutlineColor="#171717"
-          textColor="#171717"
+          outlineColor={Palette.border}
+          activeOutlineColor={Palette.gold}
+          textColor={Palette.text}
+          cursorColor={Palette.gold}
+          selectionColor={Palette.gold}
           style={styles.input}
+          theme={inputTheme}
         />
 
         <TextInput
@@ -113,13 +126,17 @@ export default function Signup() {
           mode="outlined"
           secureTextEntry={!passwordVisible}
           autoCapitalize="none"
-          outlineColor="#C7B99E"
-          activeOutlineColor="#171717"
-          textColor="#171717"
+          outlineColor={Palette.border}
+          activeOutlineColor={Palette.gold}
+          textColor={Palette.text}
+          cursorColor={Palette.gold}
+          selectionColor={Palette.gold}
           style={styles.input}
+          theme={inputTheme}
           right={
             <TextInput.Icon
               icon={passwordVisible ? 'eye-off' : 'eye'}
+              color={Palette.textSecondary}
               onPress={() => setPasswordVisible(!passwordVisible)}
             />
           }
@@ -128,23 +145,23 @@ export default function Signup() {
         {error ? <Text style={styles.error}>{error}</Text> : null}
 
         {success ? (
-          <Text style={styles.success}>Account created successfully! You can now sign in.</Text>
+          <Text style={styles.success}>
+            Account created successfully! You can now sign in.
+          </Text>
         ) : null}
 
-        {
-          <Button
-            mode="contained"
-            onPress={handleSignup}
-            loading={loading}
-            disabled={loading}
-            buttonColor="#171717"
-            textColor="#E2D7BD"
-            style={styles.button}
-            contentStyle={styles.buttonContent}
-          >
-            Create Account
-          </Button>
-        }
+        <Button
+          mode="contained"
+          onPress={handleSignup}
+          loading={loading}
+          disabled={loading}
+          buttonColor={Palette.green}
+          textColor={Palette.gold}
+          style={styles.button}
+          contentStyle={styles.buttonContent}
+        >
+          Create Account
+        </Button>
 
         <View style={styles.loginContainer}>
           <Text style={styles.loginText}>Already have an account? </Text>
@@ -159,10 +176,17 @@ export default function Signup() {
   );
 }
 
+const inputTheme = {
+  colors: {
+    onSurfaceVariant: Palette.textSecondary,
+    primary: Palette.gold,
+  },
+};
+
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#E2D7BD',
+    backgroundColor: Palette.background,
   },
   content: {
     flexGrow: 1,
@@ -175,13 +199,13 @@ const styles = StyleSheet.create({
     marginBottom: 32,
   },
   logo: {
-    color: '#171717',
-    fontSize: 34,
+    color: Palette.gold,
+    fontSize: 38,
     fontWeight: '900',
     letterSpacing: 4,
   },
   subtitle: {
-    color: '#655D50',
+    color: Palette.textSecondary,
     fontSize: 10,
     letterSpacing: 2,
     marginTop: 8,
@@ -190,29 +214,34 @@ const styles = StyleSheet.create({
     width: '100%',
     maxWidth: 440,
     alignSelf: 'center',
+    padding: 20,
+    borderRadius: 16,
+    backgroundColor: Palette.surface,
+    borderWidth: 1,
+    borderColor: Palette.border,
   },
   title: {
-    color: '#171717',
+    color: Palette.text,
     fontWeight: 'bold',
     marginBottom: 8,
   },
   description: {
-    color: '#655D50',
+    color: Palette.textSecondary,
     fontSize: 14,
     lineHeight: 21,
     marginBottom: 24,
   },
   input: {
-    backgroundColor: '#F4EBDD',
+    backgroundColor: Palette.surfaceElevated,
     marginBottom: 16,
   },
   error: {
-    color: '#A12626',
+    color: '#E58A80',
     fontSize: 13,
     marginBottom: 12,
   },
   success: {
-    color: '#276738',
+    color: Palette.greenAccent,
     fontSize: 14,
     marginBottom: 12,
   },
@@ -230,15 +259,15 @@ const styles = StyleSheet.create({
     marginTop: 24,
   },
   loginText: {
-    color: '#655D50',
+    color: Palette.textSecondary,
   },
   loginLink: {
-    color: '#171717',
+    color: Palette.gold,
     fontWeight: 'bold',
     textDecorationLine: 'underline',
   },
   footer: {
-    color: '#817663',
+    color: Palette.textSecondary,
     textAlign: 'center',
     fontSize: 12,
     marginTop: 36,

@@ -1,4 +1,3 @@
-
 import { useEffect, useState } from 'react';
 import { Pressable, ScrollView, StyleSheet, View } from 'react-native';
 import { Searchbar, Text } from 'react-native-paper';
@@ -7,10 +6,11 @@ import { router, useLocalSearchParams } from 'expo-router';
 import CardList from '@/components/card-list';
 import ScreenHeader from '@/components/screen-header';
 import { fetchCollection } from '@/api/collection';
-import { fetchDecks, type Deck } from '@/api/decks';
 import { Palette, layout } from '@/constants/theme';
 import { searchStyles } from '@/constants/search-filter-styles';
 import { buttonStyles, ToggleButton } from '@/components/toggle-button';
+import CreateDeckSheet from '@/components/create-deck-sheet';
+import { fetchDecks, createDeck, type Deck } from '@/api/decks';
 
 type Tab = 'mine' | 'collection';
 
@@ -25,6 +25,9 @@ export default function Decks() {
   const [decks, setDecks] = useState<Deck[]>([]);
   const [loadingDecks, setLoadingDecks] = useState(true);
   const [deckError, setDeckError] = useState(false);
+  const [createOpen, setCreateOpen] = useState(false);
+  const [creating, setCreating] = useState(false);
+  const [createError, setCreateError] = useState<string | null>(null);
 
   useEffect(() => {
     if (params.tab === 'collection') {
@@ -61,20 +64,40 @@ export default function Decks() {
     deck.deck_name.toLowerCase().includes(query),
   );
 
+  function openCreate() {
+    setCreateError(null);
+    setCreateOpen(true);
+  }
+
+  async function handleCreateDeck(deckName: string) {
+    setCreating(true);
+    setCreateError(null);
+
+    try {
+      const deck = await createDeck(deckName);
+      setDecks((current) => [deck, ...current]); // new deck shows up immediately
+      setCreateOpen(false);
+    } catch {
+      setCreateError('Could not create the deck. Please try again.');
+    } finally {
+      setCreating(false);
+    }
+  }
+
   return (
-    <View style={styles.screen}>
+    <View style={layout.screen}>
       <ScreenHeader
-        title="DECKS"
-        subtitle="Discover, build and share decks."
+        title='DECKS'
+        subtitle='Discover, build and share decks.'
         right={
           !isCollection && (
             <Pressable
-              onPress={() => console.log('New deck pressed')}
-              accessibilityRole="button"
-              accessibilityLabel="Create a new deck"
+              onPress={openCreate}
+              accessibilityRole='button'
+              accessibilityLabel='Create a new deck'
               style={styles.newButton}
             >
-              <Ionicons name="add" size={18} color={Palette.white} />
+              <Ionicons name='add' size={18} color={Palette.white} />
               <Text style={styles.newButtonText}>NEW</Text>
             </Pressable>
           )
@@ -82,14 +105,14 @@ export default function Decks() {
       />
 
       <View style={[layout.top, { flex: 1 }]}>
-        <View style={buttonStyles.toggle} accessibilityRole="tablist">
+        <View style={buttonStyles.toggle} accessibilityRole='tablist'>
           <ToggleButton
-            label="MY DECKS"
+            label='MY DECKS'
             active={tab === 'mine'}
             onPress={() => setTab('mine')}
           />
           <ToggleButton
-            label="MY COLLECTION"
+            label='MY COLLECTION'
             active={isCollection}
             onPress={() => setTab('collection')}
           />
@@ -116,16 +139,12 @@ export default function Decks() {
               key={label}
               onPress={() => console.log(label + ' filter pressed')}
               hitSlop={4}
-              accessibilityRole="button"
+              accessibilityRole='button'
               accessibilityLabel={`Filter by ${label.toLowerCase()}`}
               style={styles.filterChip}
             >
               <Text style={styles.filterText}>{label}</Text>
-              <Ionicons
-                name="chevron-down"
-                size={16}
-                color={Palette.gold}
-              />
+              <Ionicons name='chevron-down' size={16} color={Palette.gold} />
             </Pressable>
           ))}
         </View>
@@ -134,8 +153,8 @@ export default function Decks() {
           <CardList
             fetchlist={fetchCollection}
             query={searchQuery}
-            activeFilter="all"
-            emptyMessage="Unable to load your collection"
+            activeFilter='all'
+            emptyMessage='Unable to load your collection'
             refreshOnFocus
           />
         ) : (
@@ -170,6 +189,14 @@ export default function Decks() {
           </ScrollView>
         )}
       </View>
+      {createOpen && (
+        <CreateDeckSheet
+          saving={creating}
+          error={createError}
+          onClose={() => setCreateOpen(false)}
+          onConfirm={handleCreateDeck}
+        />
+      )}
     </View>
   );
 }
@@ -180,10 +207,7 @@ function DeckRow({ deck }: { deck: Deck }) {
   return (
     <View style={styles.deckRow}>
       <View
-        style={[
-          styles.deckArt,
-          { backgroundColor: Palette.greenAccent },
-        ]}
+        style={[styles.deckArt, { backgroundColor: Palette.greenAccent }]}
       />
 
       <View style={styles.deckInfo}>
@@ -194,8 +218,13 @@ function DeckRow({ deck }: { deck: Deck }) {
       </View>
 
       <Pressable
-        onPress={() => console.log('View deck', deck.id)}
-        accessibilityRole="button"
+        onPress={() =>
+          router.push({
+            pathname: '/deck/[id]',
+            params: { id: deck.id, name: deck.deck_name },
+          })
+        }
+        accessibilityRole='button'
         accessibilityLabel={`View ${deck.deck_name} deck`}
         style={styles.viewButton}
       >
@@ -253,9 +282,9 @@ const styles = StyleSheet.create({
     color: Palette.white,
   },
   filterRow: {
+    paddingVertical: 10,
     flexDirection: 'row',
     gap: 8,
-    marginTop: 14,
   },
   filterChip: {
     flexDirection: 'row',

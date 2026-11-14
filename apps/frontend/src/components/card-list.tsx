@@ -1,4 +1,3 @@
-
 import { useState, useRef, useEffect, useCallback } from 'react';
 import { useFocusEffect } from 'expo-router';
 import {
@@ -10,7 +9,6 @@ import {
 import {
   ActivityIndicator,
   Pressable,
-  Text,
   View,
   StyleSheet,
   Modal,
@@ -18,7 +16,7 @@ import {
 import { Ionicons } from '@expo/vector-icons';
 import { Image } from 'expo-image';
 import { FlatList } from 'react-native-gesture-handler';
-import { Menu, Portal, Snackbar } from 'react-native-paper';
+import { Menu, Text, Portal, Snackbar } from 'react-native-paper';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import AddToSheet, {
   type Condition,
@@ -30,8 +28,9 @@ import {
   updateCollectionCard,
 } from '@/api/collection';
 import { fetchCards } from '@/api/cards';
-import { fetchDecks, addCardToDeck, type Deck } from '@/api/decks';
+import { fetchDecks, addCardToDeck, type Deck, createDeck } from '@/api/decks';
 import { Palette } from '@/constants/theme';
+import CreateDeckSheet from './create-deck-sheet';
 
 // Draws an Ionicons icon in our green, for a menu item.
 function menuIcon(name: keyof typeof Ionicons.glyphMap) {
@@ -91,6 +90,8 @@ export default function CardList(props: CardListProps) {
   const [decks, setDecks] = useState<Deck[]>([]);
   const [loadingDecks, setLoadingDecks] = useState(false);
   const [savingDeckId, setSavingDeckId] = useState<string | null>(null);
+  const [createDeckOpen, setCreateDeckOpen] = useState(false);
+  const [creatingDeck, setCreatingDeck] = useState(false);
 
   useFocusEffect(
     useCallback(() => {
@@ -167,6 +168,26 @@ export default function CardList(props: CardListProps) {
       setMessage('Could not add this card to the deck. Please try again.');
     } finally {
       setSavingDeckId(null);
+    }
+  }
+
+  async function handleCreateDeck(deckName: string) {
+    if (!deckPickerCard) return;
+
+    const card = deckPickerCard;
+    setCreatingDeck(true);
+
+    try {
+      const deck = await createDeck(deckName);
+      await addCardToDeck(deck.id, card.id, 1);
+
+      setCreateDeckOpen(false);
+      setDeckPickerCard(null);
+      setMessage(`${card.name} added to ${deck.deck_name}`);
+    } catch {
+      setMessage('Could not create the deck. Please try again.');
+    } finally {
+      setCreatingDeck(false);
     }
   }
 
@@ -297,9 +318,7 @@ export default function CardList(props: CardListProps) {
       if (version !== listVersionRef.current) return;
 
       const shownIds = new Set(cardsRef.current.map((card) => card.id));
-      const newCards = result.items.filter(
-        (card) => !shownIds.has(card.id),
-      );
+      const newCards = result.items.filter((card) => !shownIds.has(card.id));
 
       if (newCards.length === 0) {
         setPagination((p) => (p ? { ...p, totalPages: p.page } : p));
@@ -368,7 +387,7 @@ export default function CardList(props: CardListProps) {
     <View key={card.id} style={styles.card}>
       <Pressable
         onPress={() => setSelectedCard(card)}
-        accessibilityRole="button"
+        accessibilityRole='button'
         accessibilityLabel={`View ${card.name}${
           (ownedQuantities.get(card.id) ?? 0) > 0
             ? `, you own ${ownedQuantities.get(card.id)}`
@@ -381,11 +400,11 @@ export default function CardList(props: CardListProps) {
             uri: card.imageUris?.grid ?? card.imageUris?.normal ?? undefined,
           }}
           style={styles.cardImage}
-          contentFit="cover"
+          contentFit='cover'
         />
 
         <View style={styles.expandIcon}>
-          <Ionicons name="expand-outline" size={18} color="#FFFFFF" />
+          <Ionicons name='expand-outline' size={18} color='#FFFFFF' />
         </View>
       </Pressable>
 
@@ -407,7 +426,7 @@ export default function CardList(props: CardListProps) {
 
             {wishlistIds.has(card.id) && (
               <View style={[styles.tag, styles.tagWishlist]}>
-                <Ionicons name="heart" size={11} color="#FFFFFF" />
+                <Ionicons name='heart' size={11} color='#FFFFFF' />
                 <Text style={[styles.tagText, styles.tagTextLight]}>
                   WISHLIST
                 </Text>
@@ -436,34 +455,34 @@ export default function CardList(props: CardListProps) {
           {variant === 'trades' ? (
             <Pressable
               onPress={() => removeFromListings(card)}
-              accessibilityRole="button"
+              accessibilityRole='button'
               accessibilityLabel={`Remove ${card.name} from your listings`}
               hitSlop={4}
               style={styles.removeButton}
             >
-              <Ionicons name="close" size={22} color="#7A2E22" />
+              <Ionicons name='close' size={22} color='#7A2E22' />
             </Pressable>
           ) : variant === 'wishlist' ? (
             <Menu
               visible={menuCardId === card.id}
               onDismiss={closeMenu}
-              anchorPosition="bottom"
+              anchorPosition='bottom'
               contentStyle={styles.menu}
               anchor={
                 <Pressable
                   onPress={() => setMenuCardId(card.id)}
-                  accessibilityRole="button"
+                  accessibilityRole='button'
                   accessibilityLabel={`${card.name} is on your wishlist. Show options`}
                   hitSlop={4}
                   style={styles.heartButton}
                 >
-                  <Ionicons name="heart" size={20} color="#FFFFFF" />
+                  <Ionicons name='heart' size={20} color='#FFFFFF' />
                 </Pressable>
               }
             >
               <Menu.Item
                 leadingIcon={menuIcon('heart-dislike-outline')}
-                title="Remove from wishlist"
+                title='Remove from wishlist'
                 titleStyle={styles.menuItemText}
                 onPress={() => removeFromWishlist(card)}
               />
@@ -472,12 +491,12 @@ export default function CardList(props: CardListProps) {
             <Menu
               visible={menuCardId === card.id}
               onDismiss={closeMenu}
-              anchorPosition="bottom"
+              anchorPosition='bottom'
               contentStyle={styles.menu}
               anchor={
                 <Pressable
                   onPress={() => setMenuCardId(card.id)}
-                  accessibilityRole="button"
+                  accessibilityRole='button'
                   accessibilityLabel={`Add ${card.name} to…`}
                   hitSlop={4}
                   style={[
@@ -486,11 +505,9 @@ export default function CardList(props: CardListProps) {
                   ]}
                 >
                   <Ionicons
-                    name="add"
+                    name='add'
                     size={22}
-                    color={
-                      menuCardId === card.id ? Palette.text : Palette.gold
-                    }
+                    color={menuCardId === card.id ? Palette.text : Palette.gold}
                   />
                 </Pressable>
               }
@@ -510,14 +527,14 @@ export default function CardList(props: CardListProps) {
 
               <Menu.Item
                 leadingIcon={menuIcon('pricetag-outline')}
-                title="Add to my listings"
+                title='Add to my listings'
                 titleStyle={styles.menuItemText}
                 onPress={() => openSheet('listing', card)}
               />
 
               <Menu.Item
                 leadingIcon={menuIcon('albums-outline')}
-                title="Add to collection"
+                title='Add to collection'
                 titleStyle={styles.menuItemText}
                 onPress={() => openSheet('collection', card)}
               />
@@ -526,7 +543,7 @@ export default function CardList(props: CardListProps) {
 
               <Menu.Item
                 leadingIcon={menuIcon('layers-outline')}
-                title="Add to deck"
+                title='Add to deck'
                 titleStyle={styles.menuItemText}
                 onPress={() => openDeckPicker(card)}
               />
@@ -540,12 +557,10 @@ export default function CardList(props: CardListProps) {
   const filteredCards =
     props.fetchlist === fetchCards
       ? cards
-      : cards.filter((item) =>
-          item.name.toLowerCase().includes(searchText),
-        );
+      : cards.filter((item) => item.name.toLowerCase().includes(searchText));
 
   return (
-    <View style={{ height: '90%' }}>
+    <View style={{ flex: 1 }}>
       <FlatList
         data={filteredCards}
         renderItem={renderItem}
@@ -556,7 +571,7 @@ export default function CardList(props: CardListProps) {
         style={styles.container}
         contentContainerStyle={styles.content}
         showsVerticalScrollIndicator={false}
-        keyboardShouldPersistTaps="handled"
+        keyboardShouldPersistTaps='handled'
         onEndReached={loadMore}
         onEndReachedThreshold={0.5}
         ItemSeparatorComponent={() => <View style={{ height: 16 }} />}
@@ -566,7 +581,7 @@ export default function CardList(props: CardListProps) {
           ) : error ? (
             <View style={styles.emptyState}>
               <Ionicons
-                name="alert-circle-outline"
+                name='alert-circle-outline'
                 size={36}
                 color={Palette.gold}
               />
@@ -575,11 +590,7 @@ export default function CardList(props: CardListProps) {
             </View>
           ) : (
             <View style={styles.emptyState}>
-              <Ionicons
-                name="search-outline"
-                size={36}
-                color={Palette.gold}
-              />
+              <Ionicons name='search-outline' size={36} color={Palette.gold} />
               <Text style={styles.emptyTitle}>No cards found</Text>
               <Text style={styles.emptyText}>
                 Try another search or category.
@@ -611,7 +622,7 @@ export default function CardList(props: CardListProps) {
       <Modal
         visible={selectedCard !== null}
         transparent
-        animationType="fade"
+        animationType='fade'
         statusBarTranslucent
         navigationBarTranslucent
         onRequestClose={closePreview}
@@ -630,8 +641,8 @@ export default function CardList(props: CardListProps) {
               <Pressable
                 style={styles.menuCatcher}
                 onPress={() => setPreviewMenuOpen(false)}
-                accessibilityRole="button"
-                accessibilityLabel="Close menu"
+                accessibilityRole='button'
+                accessibilityLabel='Close menu'
               />
             )}
 
@@ -639,10 +650,10 @@ export default function CardList(props: CardListProps) {
               <Pressable
                 style={styles.previewClose}
                 onPress={closePreview}
-                accessibilityRole="button"
-                accessibilityLabel="Close preview"
+                accessibilityRole='button'
+                accessibilityLabel='Close preview'
               >
-                <Ionicons name="close" size={22} color={Palette.text} />
+                <Ionicons name='close' size={22} color={Palette.text} />
               </Pressable>
             </View>
 
@@ -656,7 +667,7 @@ export default function CardList(props: CardListProps) {
                     undefined,
                 }}
                 style={styles.previewImage}
-                contentFit="contain"
+                contentFit='contain'
               />
             </View>
 
@@ -682,7 +693,7 @@ export default function CardList(props: CardListProps) {
 
               <Pressable
                 onPress={() => setPreviewMenuOpen((open) => !open)}
-                accessibilityRole="button"
+                accessibilityRole='button'
                 accessibilityLabel={`Add ${selectedCard.name} to…`}
                 accessibilityState={{ expanded: previewMenuOpen }}
                 style={[
@@ -690,7 +701,7 @@ export default function CardList(props: CardListProps) {
                   previewMenuOpen && styles.previewAddButtonActive,
                 ]}
               >
-                <Ionicons name="add" size={20} color="#FFFFFF" />
+                <Ionicons name='add' size={20} color='#FFFFFF' />
                 <Text style={styles.previewAddText}>ADD TO</Text>
               </Pressable>
 
@@ -713,14 +724,14 @@ export default function CardList(props: CardListProps) {
 
                   <Menu.Item
                     leadingIcon={menuIcon('pricetag-outline')}
-                    title="Add to my listings"
+                    title='Add to my listings'
                     titleStyle={styles.menuItemText}
                     onPress={() => openSheet('listing', selectedCard)}
                   />
 
                   <Menu.Item
                     leadingIcon={menuIcon('albums-outline')}
-                    title="Add to collection"
+                    title='Add to collection'
                     titleStyle={styles.menuItemText}
                     onPress={() => openSheet('collection', selectedCard)}
                   />
@@ -729,7 +740,7 @@ export default function CardList(props: CardListProps) {
 
                   <Menu.Item
                     leadingIcon={menuIcon('layers-outline')}
-                    title="Add to deck"
+                    title='Add to deck'
                     titleStyle={styles.menuItemText}
                     onPress={() => openDeckPicker(selectedCard)}
                   />
@@ -753,9 +764,9 @@ export default function CardList(props: CardListProps) {
 
       {/* Deck selection window */}
       <Modal
-        visible={deckPickerCard !== null}
+        visible={deckPickerCard !== null && !createDeckOpen}
         transparent
-        animationType="fade"
+        animationType='fade'
         onRequestClose={() => setDeckPickerCard(null)}
       >
         <View style={styles.deckPickerOverlay}>
@@ -771,10 +782,10 @@ export default function CardList(props: CardListProps) {
               <Pressable
                 onPress={() => setDeckPickerCard(null)}
                 style={styles.deckPickerClose}
-                accessibilityRole="button"
-                accessibilityLabel="Close deck selection"
+                accessibilityRole='button'
+                accessibilityLabel='Close deck selection'
               >
-                <Ionicons name="close" size={22} color={Palette.text} />
+                <Ionicons name='close' size={22} color={Palette.text} />
               </Pressable>
             </View>
 
@@ -786,20 +797,43 @@ export default function CardList(props: CardListProps) {
             ) : decks.length === 0 ? (
               <View style={styles.deckPickerEmpty}>
                 <Ionicons
-                  name="layers-outline"
+                  name='layers-outline'
                   size={32}
                   color={Palette.gold}
                 />
-                <Text style={styles.deckPickerEmptyTitle}>
-                  No decks found
-                </Text>
-                <Text style={styles.deckPickerEmptyText}>
-                  Create a deck first, then you can add cards to it.
-                </Text>
+                <Text style={styles.deckPickerEmptyTitle}>No decks found</Text>
+                <Pressable
+                  style={styles.deckPickerRow}
+                  onPress={() => setCreateDeckOpen(true)}
+                  accessibilityRole='button'
+                  accessibilityLabel='Create a new deck'
+                >
+                  <View style={styles.deckPickerIcon}>
+                    <Ionicons name='add' size={20} color={Palette.gold} />
+                  </View>
+                  <Text style={styles.deckPickerRowText}>
+                    Create a new deck
+                  </Text>
+                </Pressable>
               </View>
             ) : (
               <FlatList
                 data={decks}
+                ListHeaderComponent={
+                  <Pressable
+                    style={styles.deckPickerRow}
+                    onPress={() => setCreateDeckOpen(true)}
+                    accessibilityRole='button'
+                    accessibilityLabel='Create a new deck'
+                  >
+                    <View style={styles.deckPickerIcon}>
+                      <Ionicons name='add' size={20} color={Palette.gold} />
+                    </View>
+                    <Text style={styles.deckPickerRowText}>
+                      Create a new deck
+                    </Text>
+                  </Pressable>
+                }
                 keyExtractor={(deck) => deck.id}
                 style={styles.deckPickerList}
                 renderItem={({ item: deck }) => (
@@ -810,7 +844,7 @@ export default function CardList(props: CardListProps) {
                   >
                     <View style={styles.deckPickerIcon}>
                       <Ionicons
-                        name="layers-outline"
+                        name='layers-outline'
                         size={20}
                         color={Palette.gold}
                       />
@@ -824,7 +858,7 @@ export default function CardList(props: CardListProps) {
                       <ActivityIndicator color={Palette.gold} />
                     ) : (
                       <Ionicons
-                        name="add-circle-outline"
+                        name='add-circle-outline'
                         size={22}
                         color={Palette.gold}
                       />
@@ -838,6 +872,15 @@ export default function CardList(props: CardListProps) {
       </Modal>
 
       {!selectedCard && sheetPanel}
+
+      {createDeckOpen && deckPickerCard && (
+        <CreateDeckSheet
+          card={deckPickerCard}
+          saving={creatingDeck}
+          onClose={() => setCreateDeckOpen(false)}
+          onConfirm={handleCreateDeck}
+        />
+      )}
 
       <Portal>
         <Snackbar

@@ -8,7 +8,7 @@ import { Ionicons } from '@expo/vector-icons';
 import { useLocalSearchParams } from 'expo-router';
 import MessageListing from '@/components/message-listing';
 import QuickReply from '@/components/quick-reply';
-import BackArrrow from '@/components/back-arrow';
+import BackArrow from '@/components/back-arrow';
 import { MessageBubble } from '@/components/message-bubble';
 import { TextBox } from '@/components/text-box';
 import { chatStyles } from '@/constants/chatStyles';
@@ -84,7 +84,7 @@ export default function ChatScreen() {
       keyboardVerticalOffset={Platform.OS === 'ios' ? insets.top - insets.bottom : 50}
     >
       <View style={chatStyles.header}>
-        <BackArrrow />
+        <BackArrow />
         <View
           style={
             chat.type === 'TRADE'

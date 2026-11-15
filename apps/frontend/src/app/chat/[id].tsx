@@ -44,9 +44,12 @@ export default function ChatScreen() {
           const message = viewableItems[0].item;
           if (message != null && message.id != chat.lastReadMessageId) {
             await queryClient.cancelQueries({ queryKey: ['chats', message.chatId, selfId] });
-            queryClient.setQueryData(['chats', message.chatId, selfId], (old: ChatWithMessages) => {
-              return { ...old, lastReadMessageId: message.id };
-            });
+            queryClient.setQueryData(
+              ['chats', message.chatId, selfId],
+              (old: ChatWithMessages | undefined) => {
+                return { ...old, lastReadMessageId: message.id };
+              },
+            );
             updateLastReadMessage(chat.id, message.id);
           }
           hasViewedLatest.current = true;

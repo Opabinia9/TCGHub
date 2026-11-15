@@ -69,6 +69,7 @@ export default class ChatController {
     }
 
     const chat = await facade.createChatWithMembers(processedChatDetails);
+    forwardMessage(userId, { type: 'newChat', chat: chat }, request.server.sockets);
     return reply.code(201).send({ success: 'Chat created', chatId: chat.id });
   }
 
@@ -191,7 +192,11 @@ export default class ChatController {
       senderId: userId,
       body: message,
     });
-    await forwardMessage(userId, newMessage, request.server.sockets);
+    await forwardMessage(
+      userId,
+      { type: 'newMessage', message: newMessage },
+      request.server.sockets,
+    );
     return reply.code(201).send({ success: 'message sent', message: newMessage });
   }
 
@@ -212,7 +217,7 @@ export default class ChatController {
         senderId: userId,
         body: message.body,
       });
-      await forwardMessage(userId, newMessage, fastify.sockets);
+      await forwardMessage(userId, { type: 'newMessage', message: newMessage }, fastify.sockets);
       return socket.emit('messageSent', { success: 'message sent', message: newMessage });
     }
   }

@@ -2,19 +2,31 @@ import { Tabs } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
 import MaterialIcons from '@expo/vector-icons/MaterialIcons';
 import { WishlistProvider } from '@/context/WishlistContext';
-import { fetchChats, fetchChat } from '@/api/chats';
-import { useQueries, useQuery } from '@tanstack/react-query';
+import {
+  fetchChats,
+  fetchChat,
+  Message,
+  ChatWithMessages,
+  updateLastReadMessage,
+  ChatsListItem,
+  ChatsList,
+} from '@/api/chats';
+import { useQueries, useQuery, useQueryClient } from '@tanstack/react-query';
 import { useEffect, useState } from 'react';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { authClient } from '@/utils/auth-client';
 import { Palette } from '@/constants/theme';
+import { useWS } from '@/api/WSProvider';
 
 export default function TabsLayout() {
+  const queryClient = useQueryClient();
+  const webSocketService = useWS();
   const insets = useSafeAreaInsets();
   const selfId = authClient.useSession().data?.user.id;
-  const { data: chatsList } = useQuery({
+  const { data: chatsList, refetch: refetchChats } = useQuery({
     queryKey: ['chats', selfId],
     queryFn: fetchChats,
+    staleTime: 60_000,
   });
   const chats = useQueries({
     queries:
@@ -23,6 +35,7 @@ export default function TabsLayout() {
         queryFn: async () => {
           return await fetchChat(chat.id);
         },
+        staleTime: 60_000,
       })) ?? [],
     combine: (chats) => chats.map((chat) => chat.data),
   });
@@ -49,6 +62,46 @@ export default function TabsLayout() {
       setUnreadCount(count);
     }
   }, [chats]);
+
+  useEffect(() => {
+    const addMessage = async ({ message }: { message: Message }) => {
+      await queryClient.cancelQueries({ queryKey: ['chats', message.chatId, selfId] });
+      await queryClient.setQueryData(
+        ['chats', message.chatId, selfId],
+        (old: ChatWithMessages | undefined) => {
+          if (old) {
+            return { ...old, messages: [...old.messages, message] };
+          } else {
+            refetchChats();
+          }
+        },
+      );
+    };
+
+    webSocketService.on('newMessage', addMessage);
+    webSocketService.on('messageSent', async ({ message }: { message: Message }) => {
+      await addMessage({ message });
+      await queryClient.cancelQueries({ queryKey: ['chats', message.chatId, selfId] });
+      queryClient.setQueryData(
+        ['chats', message.chatId, selfId],
+        (old: ChatWithMessages | undefined) => {
+          return { ...old, lastReadMessageId: message.id };
+        },
+      );
+      await updateLastReadMessage(message.chatId, message.id);
+    });
+    webSocketService.on('newChat', async ({ chat }: { chat: ChatsListItem }) => {
+      await queryClient.cancelQueries({ queryKey: ['chats', selfId] });
+      queryClient.setQueryData(['chats', selfId], (old: ChatsList | undefined) => {
+        return old ? [...old, chat] : [chat];
+      });
+    });
+    return () => {
+      webSocketService.off('newChat');
+      webSocketService.off('newMessage');
+      webSocketService.off('messageSent');
+    };
+  }, [webSocketService.on, webSocketService.off]);
 
   return (
     <WishlistProvider>

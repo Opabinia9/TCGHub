@@ -21,19 +21,6 @@ export interface Message {
   body: string;
 }
 
-export type ChatsList = Array<{
-  id: string;
-  type: 'DIRECT' | 'GROUP' | 'TRADE';
-  name?: string;
-  directKey?: string;
-  sellerId?: string;
-  cardId?: string;
-  members: Array<string>;
-  createdAt: string;
-  lastReadMessageId: string;
-  joinedAt: string;
-}>;
-
 export type ChatWithMessages = Chat & { messages: Array<Message> };
 
 export async function fetchChats() {
@@ -51,7 +38,18 @@ export async function fetchChats() {
   const chats: {
     error?: string;
     success?: string;
-    chats: ChatsList;
+    chats: Array<{
+      id: string;
+      name?: string;
+      type: 'DIRECT' | 'GROUP' | 'TRADE';
+      directKey?: string;
+      sellerId?: string;
+      cardId?: string;
+      members: Array<string>;
+      createdAt: string;
+      lastReadMessageId: string;
+      joinedAt: string;
+    }>;
   } = await response.json();
   if (chats.error) {
     throw new Error(chats.error);

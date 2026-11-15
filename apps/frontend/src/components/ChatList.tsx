@@ -1,19 +1,27 @@
-import { ReactNode, useState } from 'react';
+import { ReactNode, useEffect, useState } from 'react';
 import { View } from 'react-native';
 import { Text } from 'react-native-paper';
 import { FlatList, RefreshControl } from 'react-native-gesture-handler';
 import { useQueries, useQuery, useQueryClient } from '@tanstack/react-query';
 import { chatStyles } from '@/constants/chatStyles';
 import { authClient } from '@/utils/auth-client';
-import { ChatWithMessages, fetchChats, fetchChat } from '@/api/chats';
+import {
+  ChatWithMessages,
+  fetchChats,
+  fetchChat,
+  Message,
+  updateLastReadMessage,
+} from '@/api/chats';
 import { fetchTrade } from '@/api/tradeListings';
 import { MagicCard, UserCard } from '@/api/types';
+import { useWS } from '@/api/WSProvider';
 import { ChatRow } from './chat-row';
 
 type Props = { query: string };
 export default function ChatList(props: Props): ReactNode {
   const selfId = authClient.useSession().data?.user.id;
   const trades: { [key: string]: (UserCard & { Card: MagicCard }) | undefined } = {};
+  const webSocketService = useWS();
   const queryClient = useQueryClient();
   const [refreshing, setRefreshing] = useState(false);
   const {
@@ -40,9 +48,7 @@ export default function ChatList(props: Props): ReactNode {
       chats
         .map((chat) => chat.data)
         .sort((a, b) =>
-          (b?.messages.at(-1)?.createdAt ?? b?.createdAt ?? '').localeCompare(
-            a?.messages.at(-1)?.createdAt ?? a?.createdAt ?? '',
-          ),
+          (b?.messages.at(-1)?.createdAt ?? '').localeCompare(a?.messages.at(-1)?.createdAt ?? ''),
         ),
   });
 
@@ -57,6 +63,30 @@ export default function ChatList(props: Props): ReactNode {
         })) ?? [],
     combine: (trades) => trades.map((trade) => trade.data),
   }).forEach((trade) => (trades[`${trade?.user_id}:${trade?.card_id}`] = trade));
+
+  useEffect(() => {
+    const addMessage = async ({ message }: { message: Message }) => {
+      await queryClient.cancelQueries({ queryKey: ['chats', message.chatId, selfId] });
+      await queryClient.setQueryData(['chats', message.chatId, selfId], (old: ChatWithMessages) => {
+        return { ...old, messages: [...old.messages, message] };
+      });
+    };
+
+    webSocketService.on('newMessage', addMessage);
+    webSocketService.on('messageSent', async ({ message }: { message: Message }) => {
+      await addMessage({ message });
+      await queryClient.cancelQueries({ queryKey: ['chats', message.chatId, selfId] });
+      queryClient.setQueryData(['chats', message.chatId, selfId], (old: ChatWithMessages) => {
+        return { ...old, lastReadMessageId: message.id };
+      });
+      await updateLastReadMessage(message.chatId, message.id);
+    });
+
+    return () => {
+      webSocketService.off('newMessage');
+      webSocketService.off('messageSent');
+    };
+  }, [webSocketService.on, webSocketService.off]);
 
   const refreshChats = async () => {
     setRefreshing(true);

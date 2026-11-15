@@ -21,7 +21,6 @@ type Props = { query: string };
 export default function ChatList(props: Props): ReactNode {
   const selfId = authClient.useSession().data?.user.id;
   const trades: { [key: string]: (UserCard & { Card: MagicCard }) | undefined } = {};
-  const webSocketService = useWS();
   const queryClient = useQueryClient();
   const [refreshing, setRefreshing] = useState(false);
   const {
@@ -30,9 +29,7 @@ export default function ChatList(props: Props): ReactNode {
     isPending: chatIsPending,
   } = useQuery({
     queryKey: ['chats', selfId],
-    queryFn: async () => {
-      return await fetchChats();
-    },
+    queryFn: fetchChats,
   });
 
   const chats: Array<ChatWithMessages | undefined> = useQueries({
@@ -47,9 +44,11 @@ export default function ChatList(props: Props): ReactNode {
     combine: (chats) =>
       chats
         .map((chat) => chat.data)
-        .sort((a, b) =>
-          (b?.messages.at(-1)?.createdAt ?? '').localeCompare(a?.messages.at(-1)?.createdAt ?? ''),
-        ),
+        .sort((a, b) => {
+          return (b?.messages.at(-1)?.createdAt ?? b?.createdAt ?? '').localeCompare(
+            a?.messages.at(-1)?.createdAt ?? a?.createdAt ?? '',
+          );
+        }),
   });
 
   useQueries({
@@ -63,30 +62,6 @@ export default function ChatList(props: Props): ReactNode {
         })) ?? [],
     combine: (trades) => trades.map((trade) => trade.data),
   }).forEach((trade) => (trades[`${trade?.user_id}:${trade?.card_id}`] = trade));
-
-  useEffect(() => {
-    const addMessage = async ({ message }: { message: Message }) => {
-      await queryClient.cancelQueries({ queryKey: ['chats', message.chatId, selfId] });
-      await queryClient.setQueryData(['chats', message.chatId, selfId], (old: ChatWithMessages) => {
-        return { ...old, messages: [...old.messages, message] };
-      });
-    };
-
-    webSocketService.on('newMessage', addMessage);
-    webSocketService.on('messageSent', async ({ message }: { message: Message }) => {
-      await addMessage({ message });
-      await queryClient.cancelQueries({ queryKey: ['chats', message.chatId, selfId] });
-      queryClient.setQueryData(['chats', message.chatId, selfId], (old: ChatWithMessages) => {
-        return { ...old, lastReadMessageId: message.id };
-      });
-      await updateLastReadMessage(message.chatId, message.id);
-    });
-
-    return () => {
-      webSocketService.off('newMessage');
-      webSocketService.off('messageSent');
-    };
-  }, [webSocketService.on, webSocketService.off]);
 
   const refreshChats = async () => {
     setRefreshing(true);

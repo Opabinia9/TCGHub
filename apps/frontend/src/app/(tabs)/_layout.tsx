@@ -101,7 +101,7 @@ export default function TabsLayout() {
       webSocketService.off('newMessage');
       webSocketService.off('messageSent');
     };
-  }, [webSocketService.on, webSocketService.off]);
+  }, [webSocketService.on, webSocketService.off, webSocketService.socket]);
 
   return (
     <WishlistProvider>

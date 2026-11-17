@@ -85,17 +85,17 @@ export default function Decks() {
   return (
     <View style={layout.screen}>
       <ScreenHeader
-        title="COLLECTION"
-        subtitle="Discover, build and share decks."
+        title='COLLECTION'
+        subtitle='Discover, build and share decks.'
         right={
           !isCollection && (
             <Pressable
               onPress={openCreate}
-              accessibilityRole="button"
-              accessibilityLabel="Create a new deck"
+              accessibilityRole='button'
+              accessibilityLabel='Create a new deck'
               style={styles.newButton}
             >
-              <Ionicons name="add" size={18} color={Palette.white} />
+              <Ionicons name='add' size={18} color={Palette.white} />
               <Text style={styles.newButtonText}>NEW</Text>
             </Pressable>
           )
@@ -103,10 +103,10 @@ export default function Decks() {
       />
 
       <View style={[layout.top, { flex: 1 }]}>
-        <View style={buttonStyles.toggle} accessibilityRole="tablist">
-          <ToggleButton label="MY DECKS" active={tab === 'decks'} onPress={() => setTab('decks')} />
+        <View style={buttonStyles.toggle} accessibilityRole='tablist'>
+          <ToggleButton label='MY DECKS' active={tab === 'decks'} onPress={() => setTab('decks')} />
           <ToggleButton
-            label="MY CARDS"
+            label='MY CARDS'
             active={isCollection}
             onPress={() => setTab('collection')}
           />
@@ -132,12 +132,12 @@ export default function Decks() {
                 key={label}
                 onPress={() => console.log(label + ' filter pressed')}
                 hitSlop={4}
-                accessibilityRole="button"
+                accessibilityRole='button'
                 accessibilityLabel={`Filter by ${label.toLowerCase()}`}
                 style={styles.filterChip}
               >
                 <Text style={styles.filterText}>{label}</Text>
-                <Ionicons name="chevron-down" size={16} color={Palette.gold} />
+                <Ionicons name='chevron-down' size={16} color={Palette.gold} />
               </Pressable>
             ))
           ) : (
@@ -149,8 +149,8 @@ export default function Decks() {
           <CardList
             fetchlist={fetchCollection}
             query={searchQuery}
-            activeFilter="all"
-            emptyMessage="Unable to load your collection"
+            activeFilter='name'
+            emptyMessage='Unable to load your collection'
             refreshOnFocus
           />
         ) : (
@@ -214,7 +214,7 @@ function DeckRow({ deck }: { deck: Deck }) {
             params: { id: deck.id, name: deck.deck_name },
           })
         }
-        accessibilityRole="button"
+        accessibilityRole='button'
         accessibilityLabel={`View ${deck.deck_name} deck`}
         style={styles.viewButton}
       >

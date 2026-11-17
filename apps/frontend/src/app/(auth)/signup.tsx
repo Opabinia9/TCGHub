@@ -5,6 +5,7 @@ import { Button, Text, TextInput } from 'react-native-paper';
 import { Link, useRouter } from 'expo-router';
 import { authClient } from '@/utils/auth-client';
 import { Palette } from '@/constants/theme';
+import { Image } from 'react-native';
 
 export default function Signup() {
   const router = useRouter();
@@ -57,8 +58,10 @@ export default function Signup() {
       bottomOffset={24}
     >
       <View style={styles.logoContainer}>
-        <Text style={styles.logo}>TCG HUB</Text>
-        <Text style={styles.subtitle}>YOUR NEXT TRADE STARTS HERE</Text>
+        <Image
+          source={require('@/assets/images/TapThatLogo.png')}
+          style={{ width: 200, height: 200 }}
+        />
       </View>
 
       <View style={styles.form}>

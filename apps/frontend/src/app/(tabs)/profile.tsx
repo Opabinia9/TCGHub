@@ -65,7 +65,7 @@ export default function Profile() {
           </View>
 
           <Button
-            mode='outlined'
+            mode="outlined"
             onPress={() => {
               if (isEditing) {
                 handleCancel();
@@ -86,8 +86,8 @@ export default function Profile() {
           {isEditing ? (
             <>
               <TextInput
-                mode='outlined'
-                label='Your bio'
+                mode="outlined"
+                label="Your bio"
                 value={editedBio}
                 onChangeText={setEditedBio}
                 multiline
@@ -105,7 +105,7 @@ export default function Profile() {
               />
 
               <Button
-                mode='contained'
+                mode="contained"
                 onPress={handleSave}
                 buttonColor={Palette.greenAccent}
                 textColor={Palette.white}
@@ -119,13 +119,13 @@ export default function Profile() {
           )}
         </View>
 
-        <View style={buttonStyles.toggle} accessibilityRole='tablist'>
-          <ToggleButton label='MY TRADES' active={isTrades} onPress={() => setTab('trades')} />
-          <ToggleButton label='WISHLIST' active={!isTrades} onPress={() => setTab('wishlist')} />
+        <View style={buttonStyles.toggle} accessibilityRole="tablist">
+          <ToggleButton label="MY LISTINGS" active={isTrades} onPress={() => setTab('trades')} />
+          <ToggleButton label="WISHLIST" active={!isTrades} onPress={() => setTab('wishlist')} />
         </View>
         <View style={{ paddingBottom: 5 }}>
           <Searchbar
-            placeholder='Search your cards...'
+            placeholder="Search your cards..."
             value={searchQuery}
             onChangeText={setSearchQuery}
             style={searchStyles.searchbar}
@@ -142,7 +142,7 @@ export default function Profile() {
           key={tab}
           fetchlist={isTrades ? fetchMyTrades : fetchWishlist}
           query={searchQuery}
-          activeFilter='all'
+          activeFilter="name"
           emptyMessage={isTrades ? 'Unable to load your listings' : 'Unable to load your wishlist'}
           refreshOnFocus
           variant={isTrades ? 'trades' : 'wishlist'}
@@ -151,11 +151,11 @@ export default function Profile() {
               <Pressable
                 onPress={handleLogout}
                 style={styles.logoutButton}
-                accessibilityRole='button'
-                accessibilityLabel='Log out'
+                accessibilityRole="button"
+                accessibilityLabel="Log out"
               >
-                <Ionicons name='log-out-outline' size={19} color={Palette.textSecondary} />
-                <Text style={styles.logoutText}>Log out</Text>
+                <Ionicons name="log-out-outline" size={19} color={Palette.textSecondary} />
+                <Text style={styles.snackbar}>Log out</Text>
               </Pressable>
             </View>
           }
@@ -214,9 +214,11 @@ const styles = StyleSheet.create({
     borderRadius: 8,
   },
   logoutContainer: {
+    backgroundColor: Palette.surfaceElevated,
     marginTop: 24,
     marginBottom: 20,
     alignItems: 'center',
+    justifyContent: 'center',
   },
   logoutButton: {
     flexDirection: 'row',
@@ -230,5 +232,8 @@ const styles = StyleSheet.create({
     color: Palette.textSecondary,
     fontSize: 14,
     fontWeight: '600',
+  },
+  snackbar: {
+    backgroundColor: Palette.surfaceElevated,
   },
 });

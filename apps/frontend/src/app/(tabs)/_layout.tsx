@@ -127,7 +127,7 @@ export default function TabsLayout() {
         <Tabs.Screen
           name='cards'
           options={{
-            title: 'Cards',
+            title: 'Tap',
             tabBarIcon: ({ color, size }) => (
               <Ionicons name='copy' size={size} color={String(color)} />
             ),
@@ -137,7 +137,7 @@ export default function TabsLayout() {
         <Tabs.Screen
           name='decks'
           options={{
-            title: 'Decks',
+            title: 'Track',
             tabBarIcon: ({ color, size }) => (
               <Ionicons name='layers' size={size} color={String(color)} />
             ),
@@ -147,7 +147,7 @@ export default function TabsLayout() {
         <Tabs.Screen
           name='trade'
           options={{
-            title: 'Trades',
+            title: 'Trade',
             tabBarIcon: ({ color, size }) => (
               <MaterialIcons name='swap-horiz' size={size} color={String(color)} />
             ),
@@ -157,7 +157,7 @@ export default function TabsLayout() {
         <Tabs.Screen
           name='messages'
           options={{
-            title: 'Messages',
+            title: 'Chat',
             tabBarBadge: unreadCount > 0 ? unreadCount : undefined,
             tabBarBadgeStyle: {
               backgroundColor: Palette.greenAccent,

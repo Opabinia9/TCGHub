@@ -20,7 +20,7 @@ export interface CardListProps {
 }
 
 export const FILTERS = [
-  'all',
+  'name',
   'set',
   'rarity',
   'colors',

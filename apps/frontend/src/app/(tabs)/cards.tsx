@@ -14,11 +14,11 @@ export default function CardsScreen() {
 
   return (
     <View style={layout.screen}>
-      <ScreenHeader title='EXPLORE CARDS' subtitle='Find cards to collect and trade.' />
+      <ScreenHeader title="EXPLORE" subtitle="Find cards to collect and trade." />
 
       <View style={layout.top}>
         <Searchbar
-          placeholder='Search your cards...'
+          placeholder="Search your cards..."
           value={searchQuery}
           onChangeText={setSearchQuery}
           style={searchStyles.searchbar}
@@ -60,7 +60,7 @@ export default function CardsScreen() {
           fetchlist={fetchCards}
           query={searchQuery}
           activeFilter={activeFilter}
-          emptyMessage='Unable to load cards'
+          emptyMessage="Unable to load cards"
         />
       </View>
     </View>

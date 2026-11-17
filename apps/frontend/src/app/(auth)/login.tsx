@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { StyleSheet, View } from 'react-native';
+import { Image, StyleSheet, View } from 'react-native';
 import { KeyboardAwareScrollView } from 'react-native-keyboard-controller';
 import { Button, Text, TextInput } from 'react-native-paper';
 import { Link, useRouter } from 'expo-router';
@@ -52,8 +52,10 @@ export default function Login() {
       bottomOffset={24}
     >
       <View style={styles.logoContainer}>
-        <Text style={styles.logo}>TCG HUB</Text>
-        <Text style={styles.subtitle}>YOUR NEXT TRADE STARTS HERE</Text>
+        <Image
+          source={require('@/assets/images/TapThatLogo.png')}
+          style={{ width: 300, height: 300 }}
+        />
       </View>
 
       <View style={styles.form}>

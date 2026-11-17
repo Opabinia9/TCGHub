@@ -56,7 +56,7 @@ type MyDeckApiResponse = {
 export function fetchDeck(deck_id: string) {
   return async function fetchDeckCards(
     search: string,
-    filter: FilterOption = 'all',
+    filter: FilterOption = 'name',
     page = 1,
     limit = 20,
   ): Promise<CardsPage> {
@@ -64,7 +64,7 @@ export function fetchDeck(deck_id: string) {
       page: String(page),
       limit: String(limit),
     });
-    if (filter === 'all') {
+    if (filter === 'name') {
       params.set('name', search);
     } else if (search) {
       params.set(filter, search);

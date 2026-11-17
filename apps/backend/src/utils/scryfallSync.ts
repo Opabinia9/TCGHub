@@ -56,9 +56,7 @@ async function insertBatch(batch: any[], batchNumber: number) {
     });
     console.log(`  ✓ Batch ${batchNumber}: Inserted ${batch.length} cards`);
   } catch (error) {
-    console.warn(
-      `  ⚠ Batch ${batchNumber} failed with createMany, trying individual inserts...`,
-    );
+    console.warn(`  ⚠ Batch ${batchNumber} failed with createMany, trying individual inserts...`);
     let successCount = 0;
     for (const item of batch) {
       try {
@@ -72,9 +70,7 @@ async function insertBatch(batch: any[], batchNumber: number) {
         console.error(`    ✗ Failed to insert ${item.scryfallId}:`, e);
       }
     }
-    console.log(
-      `  ✓ Batch ${batchNumber}: Inserted ${successCount}/${batch.length} cards`,
-    );
+    console.log(`  ✓ Batch ${batchNumber}: Inserted ${successCount}/${batch.length} cards`);
   }
 }
 
@@ -136,9 +132,7 @@ async function loadCards() {
         batch = [];
 
         const elapsed = ((Date.now() - startTime) / 1000).toFixed(1);
-        console.log(
-          `📈 Progress: ${insertedCount.toLocaleString()} in ${elapsed}s`,
-        );
+        console.log(`📈 Progress: ${insertedCount.toLocaleString()} in ${elapsed}s`);
       }
     } catch (error) {
       console.error(`❌ Error parsing line ${lineCount}:`, error);

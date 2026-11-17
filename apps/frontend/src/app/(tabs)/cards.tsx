@@ -14,10 +14,7 @@ export default function CardsScreen() {
 
   return (
     <View style={layout.screen}>
-      <ScreenHeader
-        title='EXPLORE CARDS'
-        subtitle='Find cards to collect and trade.'
-      />
+      <ScreenHeader title='EXPLORE CARDS' subtitle='Find cards to collect and trade.' />
 
       <View style={layout.top}>
         <Searchbar
@@ -35,11 +32,7 @@ export default function CardsScreen() {
 
         <View style={searchStyles.filterSection}>
           <View style={searchStyles.filterList}>
-            <ScrollView
-              horizontal
-              showsHorizontalScrollIndicator={false}
-              style={{ gap: 10 }}
-            >
+            <ScrollView horizontal showsHorizontalScrollIndicator={false} style={{ gap: 10 }}>
               {FILTERS.map((filter) => (
                 <Pressable
                   key={filter}

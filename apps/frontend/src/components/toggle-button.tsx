@@ -1,4 +1,3 @@
-
 import { Pressable, StyleSheet } from 'react-native';
 import { Text } from 'react-native-paper';
 import { Palette } from '@/constants/theme';
@@ -13,19 +12,11 @@ export function ToggleButton({ label, active, onPress }: ToggleButtonProps) {
   return (
     <Pressable
       onPress={onPress}
-      accessibilityRole="tab"
+      accessibilityRole='tab'
       accessibilityState={{ selected: active }}
-      style={[
-        buttonStyles.toggleButton,
-        active && buttonStyles.toggleButtonActive,
-      ]}
+      style={[buttonStyles.toggleButton, active && buttonStyles.toggleButtonActive]}
     >
-      <Text
-        style={[
-          buttonStyles.toggleText,
-          active && buttonStyles.toggleTextActive,
-        ]}
-      >
+      <Text style={[buttonStyles.toggleText, active && buttonStyles.toggleTextActive]}>
         {label}
       </Text>
     </Pressable>

@@ -1,4 +1,3 @@
-
 import { StyleSheet } from 'react-native';
 import { Palette } from '@/constants/theme';
 

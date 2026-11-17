@@ -1,4 +1,3 @@
-
 import { useState } from 'react';
 import { StyleSheet, View } from 'react-native';
 import { KeyboardAwareScrollView } from 'react-native-keyboard-controller';
@@ -54,7 +53,7 @@ export default function Signup() {
     <KeyboardAwareScrollView
       style={styles.container}
       contentContainerStyle={styles.content}
-      keyboardShouldPersistTaps="handled"
+      keyboardShouldPersistTaps='handled'
       bottomOffset={24}
     >
       <View style={styles.logoContainer}>
@@ -63,20 +62,18 @@ export default function Signup() {
       </View>
 
       <View style={styles.form}>
-        <Text variant="headlineMedium" style={styles.title}>
+        <Text variant='headlineMedium' style={styles.title}>
           Create your account
         </Text>
 
-        <Text style={styles.description}>
-          Join other Planeswalkers and find your next trade.
-        </Text>
+        <Text style={styles.description}>Join other Planeswalkers and find your next trade.</Text>
 
         <TextInput
-          label="Name"
+          label='Name'
           value={name}
           onChangeText={setName}
-          mode="outlined"
-          autoCapitalize="words"
+          mode='outlined'
+          autoCapitalize='words'
           outlineColor={Palette.border}
           activeOutlineColor={Palette.gold}
           textColor={Palette.text}
@@ -87,11 +84,11 @@ export default function Signup() {
         />
 
         <TextInput
-          label="Username"
+          label='Username'
           value={username}
           onChangeText={setUsername}
-          mode="outlined"
-          autoCapitalize="none"
+          mode='outlined'
+          autoCapitalize='none'
           autoCorrect={false}
           outlineColor={Palette.border}
           activeOutlineColor={Palette.gold}
@@ -103,12 +100,12 @@ export default function Signup() {
         />
 
         <TextInput
-          label="Email"
+          label='Email'
           value={email}
           onChangeText={setEmail}
-          mode="outlined"
-          keyboardType="email-address"
-          autoCapitalize="none"
+          mode='outlined'
+          keyboardType='email-address'
+          autoCapitalize='none'
           autoCorrect={false}
           outlineColor={Palette.border}
           activeOutlineColor={Palette.gold}
@@ -120,12 +117,12 @@ export default function Signup() {
         />
 
         <TextInput
-          label="Password"
+          label='Password'
           value={password}
           onChangeText={setPassword}
-          mode="outlined"
+          mode='outlined'
           secureTextEntry={!passwordVisible}
-          autoCapitalize="none"
+          autoCapitalize='none'
           outlineColor={Palette.border}
           activeOutlineColor={Palette.gold}
           textColor={Palette.text}
@@ -145,13 +142,11 @@ export default function Signup() {
         {error ? <Text style={styles.error}>{error}</Text> : null}
 
         {success ? (
-          <Text style={styles.success}>
-            Account created successfully! You can now sign in.
-          </Text>
+          <Text style={styles.success}>Account created successfully! You can now sign in.</Text>
         ) : null}
 
         <Button
-          mode="contained"
+          mode='contained'
           onPress={handleSignup}
           loading={loading}
           disabled={loading}
@@ -165,7 +160,7 @@ export default function Signup() {
 
         <View style={styles.loginContainer}>
           <Text style={styles.loginText}>Already have an account? </Text>
-          <Link href="/(auth)/login" style={styles.loginLink}>
+          <Link href='/(auth)/login' style={styles.loginLink}>
             Sign In
           </Link>
         </View>

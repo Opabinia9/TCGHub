@@ -68,8 +68,7 @@ export default function CreateDeckSheet({
             {card && (
               <Image
                 source={{
-                  uri:
-                    card.imageUris?.small ?? card.imageUris?.grid ?? undefined,
+                  uri: card.imageUris?.small ?? card.imageUris?.grid ?? undefined,
                 }}
                 style={styles.thumb}
                 contentFit='cover'
@@ -111,11 +110,7 @@ export default function CreateDeckSheet({
             />
           </View>
 
-          {card && (
-            <Text style={styles.note}>
-              This card will be added to the new deck.
-            </Text>
-          )}
+          {card && <Text style={styles.note}>This card will be added to the new deck.</Text>}
 
           {error ? <Text style={styles.error}>{error}</Text> : null}
 

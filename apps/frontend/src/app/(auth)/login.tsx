@@ -1,4 +1,3 @@
-
 import { useState } from 'react';
 import { StyleSheet, View } from 'react-native';
 import { KeyboardAwareScrollView } from 'react-native-keyboard-controller';
@@ -49,7 +48,7 @@ export default function Login() {
     <KeyboardAwareScrollView
       style={styles.container}
       contentContainerStyle={styles.content}
-      keyboardShouldPersistTaps="handled"
+      keyboardShouldPersistTaps='handled'
       bottomOffset={24}
     >
       <View style={styles.logoContainer}>
@@ -58,21 +57,19 @@ export default function Login() {
       </View>
 
       <View style={styles.form}>
-        <Text variant="headlineMedium" style={styles.title}>
+        <Text variant='headlineMedium' style={styles.title}>
           Welcome back
         </Text>
 
-        <Text style={styles.description}>
-          Sign in to connect with other Planeswalkers.
-        </Text>
+        <Text style={styles.description}>Sign in to connect with other Planeswalkers.</Text>
 
         <TextInput
-          label="Email"
+          label='Email'
           value={email}
           onChangeText={setEmail}
-          mode="outlined"
-          keyboardType="email-address"
-          autoCapitalize="none"
+          mode='outlined'
+          keyboardType='email-address'
+          autoCapitalize='none'
           autoCorrect={false}
           outlineColor={Palette.border}
           activeOutlineColor={Palette.gold}
@@ -84,12 +81,12 @@ export default function Login() {
         />
 
         <TextInput
-          label="Password"
+          label='Password'
           value={password}
           onChangeText={setPassword}
-          mode="outlined"
+          mode='outlined'
           secureTextEntry={!passwordVisible}
-          autoCapitalize="none"
+          autoCapitalize='none'
           outlineColor={Palette.border}
           activeOutlineColor={Palette.gold}
           textColor={Palette.text}
@@ -109,7 +106,7 @@ export default function Login() {
         {error ? <Text style={styles.error}>{error}</Text> : null}
 
         <Button
-          mode="contained"
+          mode='contained'
           onPress={handleLogin}
           loading={loading}
           disabled={loading}
@@ -122,7 +119,7 @@ export default function Login() {
         </Button>
 
         <Button
-          mode="outlined"
+          mode='outlined'
           onPress={() => router.replace('/(tabs)/cards')}
           textColor={Palette.text}
           style={styles.previewButton}
@@ -133,7 +130,7 @@ export default function Login() {
 
         <View style={styles.signupContainer}>
           <Text style={styles.signupText}>Don't have an account? </Text>
-          <Link href="/(auth)/signup" style={styles.signupLink}>
+          <Link href='/(auth)/signup' style={styles.signupLink}>
             Sign Up
           </Link>
         </View>

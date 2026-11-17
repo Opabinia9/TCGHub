@@ -128,7 +128,7 @@ export default function TradeList({ query }: TradeListProps) {
             uri: item.imageUris?.normal ?? item.imageUris?.grid ?? undefined,
           }}
           style={styles.cardImage}
-          contentFit="cover"
+          contentFit='cover'
         />
 
         <View style={styles.cardInfo}>
@@ -141,7 +141,7 @@ export default function TradeList({ query }: TradeListProps) {
           </Text>
 
           <View style={styles.sellerRow}>
-            <Ionicons name="person-outline" size={13} color={Palette.gold} />
+            <Ionicons name='person-outline' size={13} color={Palette.gold} />
             <Text style={styles.sellerText}>{item.username}</Text>
           </View>
         </View>
@@ -149,17 +149,17 @@ export default function TradeList({ query }: TradeListProps) {
         <View style={styles.actionRow}>
           <Pressable
             onPress={async () => await messageSeller(item.user_id, item.id)}
-            accessibilityRole="button"
+            accessibilityRole='button'
             accessibilityLabel={`Message the seller about ${item.name}`}
             style={styles.messageButton}
           >
-            <Ionicons name="chatbubble-outline" size={17} color={Palette.gold} />
+            <Ionicons name='chatbubble-outline' size={17} color={Palette.gold} />
             <Text style={styles.messageButtonText}>MESSAGE</Text>
           </Pressable>
 
           <Pressable
             onPress={() => toggleWishlist(item)}
-            accessibilityRole="button"
+            accessibilityRole='button'
             accessibilityState={{ selected: inWishlist }}
             accessibilityLabel={
               inWishlist ? `Remove ${item.name} from wishlist` : `Add ${item.name} to wishlist`

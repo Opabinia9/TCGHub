@@ -15,9 +15,7 @@ import { ToggleButton, buttonStyles } from '@/components/toggle-button';
 export default function Profile() {
   const router = useRouter();
 
-  const [bio, setBio] = useState(
-    'Magic player. Always looking for my next trade!',
-  );
+  const [bio, setBio] = useState('Magic player. Always looking for my next trade!');
   const [editedBio, setEditedBio] = useState(bio);
   const [isEditing, setIsEditing] = useState(false);
   const [tab, setTab] = useState<'trades' | 'wishlist'>('trades');
@@ -59,12 +57,7 @@ export default function Profile() {
     <View style={layout.screen}>
       <View style={layout.top}>
         <View style={styles.profileHeader}>
-          <Avatar.Icon
-            size={76}
-            icon='account'
-            color={Palette.gold}
-            style={styles.avatar}
-          />
+          <Avatar.Icon size={76} icon='account' color={Palette.gold} style={styles.avatar} />
 
           <View style={{ flex: 1, gap: 4 }}>
             <Text style={styles.name}>{session?.user.name}</Text>
@@ -127,16 +120,8 @@ export default function Profile() {
         </View>
 
         <View style={buttonStyles.toggle} accessibilityRole='tablist'>
-          <ToggleButton
-            label='MY TRADES'
-            active={isTrades}
-            onPress={() => setTab('trades')}
-          />
-          <ToggleButton
-            label='WISHLIST'
-            active={!isTrades}
-            onPress={() => setTab('wishlist')}
-          />
+          <ToggleButton label='MY TRADES' active={isTrades} onPress={() => setTab('trades')} />
+          <ToggleButton label='WISHLIST' active={!isTrades} onPress={() => setTab('wishlist')} />
         </View>
         <View style={{ paddingBottom: 5 }}>
           <Searchbar
@@ -158,11 +143,7 @@ export default function Profile() {
           fetchlist={isTrades ? fetchMyTrades : fetchWishlist}
           query={searchQuery}
           activeFilter='all'
-          emptyMessage={
-            isTrades
-              ? 'Unable to load your listings'
-              : 'Unable to load your wishlist'
-          }
+          emptyMessage={isTrades ? 'Unable to load your listings' : 'Unable to load your wishlist'}
           refreshOnFocus
           variant={isTrades ? 'trades' : 'wishlist'}
           footer={
@@ -173,11 +154,7 @@ export default function Profile() {
                 accessibilityRole='button'
                 accessibilityLabel='Log out'
               >
-                <Ionicons
-                  name='log-out-outline'
-                  size={19}
-                  color={Palette.textSecondary}
-                />
+                <Ionicons name='log-out-outline' size={19} color={Palette.textSecondary} />
                 <Text style={styles.logoutText}>Log out</Text>
               </Pressable>
             </View>

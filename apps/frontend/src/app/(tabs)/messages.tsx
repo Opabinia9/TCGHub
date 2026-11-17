@@ -11,11 +11,11 @@ export default function MessagesScreen() {
 
   return (
     <View style={styles.screen}>
-      <ScreenHeader title="MESSAGES" subtitle="Chats with buyers, sellers and traders." />
+      <ScreenHeader title='MESSAGES' subtitle='Chats with buyers, sellers and traders.' />
 
       <View style={styles.top}>
         <Searchbar
-          placeholder="Search messages…"
+          placeholder='Search messages…'
           value={searchQuery}
           onChangeText={setSearchQuery}
           style={searchStyles.searchbar}

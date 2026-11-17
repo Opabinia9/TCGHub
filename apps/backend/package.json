@@ -12,6 +12,16 @@
     "test": "NODE_ENV=test vitest",
     "prod": "tsx watch src/server.ts"
   },
+  "prettier": {
+    "useTabs": false,
+    "tabWidth": 2,
+    "semi": true,
+    "singleQuote": true,
+    "jsxSingleQuote": true,
+    "printWidth": 100,
+    "bracketSpacing": true,
+    "arrowParens": "always"
+  },
   "dependencies": {
     "@better-auth/expo": "^1.7.17",
     "@fastify/cors": "^11.4.0",

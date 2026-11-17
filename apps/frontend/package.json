@@ -5,6 +5,24 @@
   "engines": {
     "node": ">=26.12.0 <27.0.0"
   },
+  "private": true,
+  "scripts": {
+    "start": "expo start",
+    "reset-project": "node ./scripts/reset-project.js",
+    "android": "expo start --android",
+    "ios": "expo start --ios",
+    "web": "expo start --web"
+  },
+  "prettier": {
+    "useTabs": false,
+    "tabWidth": 2,
+    "semi": true,
+    "singleQuote": true,
+    "jsxSingleQuote": true,
+    "printWidth": 100,
+    "bracketSpacing": true,
+    "arrowParens": "always"
+  },
   "dependencies": {
     "@better-auth/expo": "^1.7.18",
     "@expo-google-fonts/barlow-condensed": "^0.4.1",
@@ -41,14 +59,5 @@
   "devDependencies": {
     "@types/react": "^19.3.0",
     "typescript": "~6.0.3"
-  },
-  "scripts": {
-    "start": "expo start",
-    "reset-project": "node ./scripts/reset-project.js",
-    "android": "expo start --android",
-    "ios": "expo start --ios",
-    "web": "expo start --web",
-    "lint": "expo lint"
-  },
-  "private": true
+  }
 }

@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { StyleSheet, View } from 'react-native';
 import { Searchbar } from 'react-native-paper';
-import ChatList from '@/components/ChatList';
+import ChatList from '@/components/chat-list';
 import ScreenHeader from '@/components/screen-header';
 import { Palette } from '@/constants/theme';
 import { searchStyles } from '@/constants/search-filter-styles';

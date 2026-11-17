@@ -1,4 +1,4 @@
-import Repository from '@/persistence/reposistory.js';
+import Repository from '@/persistence/repository.js';
 import {
   chatWithMessages,
   type ChatWithMembersCreationInterface,

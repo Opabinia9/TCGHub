@@ -10,11 +10,11 @@ import { layout, Palette } from '@/constants/theme';
 
 export default function CardsScreen() {
   const [searchQuery, setSearchQuery] = useState('');
-  const [activeFilter, setActiveFilter] = useState<FilterOption>('all');
+  const [activeFilter, setActiveFilter] = useState<FilterOption>('name');
 
   return (
     <View style={layout.screen}>
-      <ScreenHeader title='EXPLORE CARDS' subtitle='Find cards to collect and trade.' />
+      <ScreenHeader title='EXPLORE' subtitle='Find cards to collect and trade.' />
 
       <View style={layout.top}>
         <Searchbar

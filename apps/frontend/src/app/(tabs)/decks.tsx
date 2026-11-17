@@ -12,7 +12,7 @@ import { buttonStyles, ToggleButton } from '@/components/toggle-button';
 import CreateDeckSheet from '@/components/create-deck-sheet';
 import { fetchDecks, createDeck, type Deck } from '@/api/decks';
 
-type Tab = 'mine' | 'collection';
+type Tab = 'decks' | 'collection';
 
 const FILTERS = ['GAME', 'FORMAT', 'COLOUR'];
 
@@ -20,7 +20,7 @@ const FILTERS = ['GAME', 'FORMAT', 'COLOUR'];
 
 export default function Decks() {
   const params = useLocalSearchParams<{ tab?: string }>();
-  const [tab, setTab] = useState<Tab>('mine');
+  const [tab, setTab] = useState<Tab>('decks');
   const [searchQuery, setSearchQuery] = useState('');
   const [decks, setDecks] = useState<Deck[]>([]);
   const [loadingDecks, setLoadingDecks] = useState(true);
@@ -52,7 +52,7 @@ export default function Decks() {
       }
     }
 
-    if (tab === 'mine') {
+    if (tab === 'decks') {
       loadDecks();
     }
   }, [tab]);
@@ -85,7 +85,7 @@ export default function Decks() {
   return (
     <View style={layout.screen}>
       <ScreenHeader
-        title='DECKS'
+        title='COLLECTION'
         subtitle='Discover, build and share decks.'
         right={
           !isCollection && (
@@ -104,9 +104,9 @@ export default function Decks() {
 
       <View style={[layout.top, { flex: 1 }]}>
         <View style={buttonStyles.toggle} accessibilityRole='tablist'>
-          <ToggleButton label='MY DECKS' active={tab === 'mine'} onPress={() => setTab('mine')} />
+          <ToggleButton label='MY DECKS' active={tab === 'decks'} onPress={() => setTab('decks')} />
           <ToggleButton
-            label='MY COLLECTION'
+            label='MY CARDS'
             active={isCollection}
             onPress={() => setTab('collection')}
           />
@@ -126,26 +126,30 @@ export default function Decks() {
         />
 
         <View style={styles.filterRow}>
-          {FILTERS.map((label) => (
-            <Pressable
-              key={label}
-              onPress={() => console.log(label + ' filter pressed')}
-              hitSlop={4}
-              accessibilityRole='button'
-              accessibilityLabel={`Filter by ${label.toLowerCase()}`}
-              style={styles.filterChip}
-            >
-              <Text style={styles.filterText}>{label}</Text>
-              <Ionicons name='chevron-down' size={16} color={Palette.gold} />
-            </Pressable>
-          ))}
+          {tab === 'decks' ? (
+            FILTERS.map((label) => (
+              <Pressable
+                key={label}
+                onPress={() => console.log(label + ' filter pressed')}
+                hitSlop={4}
+                accessibilityRole='button'
+                accessibilityLabel={`Filter by ${label.toLowerCase()}`}
+                style={styles.filterChip}
+              >
+                <Text style={styles.filterText}>{label}</Text>
+                <Ionicons name='chevron-down' size={16} color={Palette.gold} />
+              </Pressable>
+            ))
+          ) : (
+            <View />
+          )}
         </View>
 
         {isCollection ? (
           <CardList
             fetchlist={fetchCollection}
             query={searchQuery}
-            activeFilter='all'
+            activeFilter='name'
             emptyMessage='Unable to load your collection'
             refreshOnFocus
           />

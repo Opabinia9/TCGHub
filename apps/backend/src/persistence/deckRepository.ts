@@ -1,4 +1,4 @@
-import Repository from '@/persistence/reposistory.js';
+import Repository from '@/persistence/repository.js';
 import type { DeckCardParams } from '@/routes/api/v1/routeSchemas.js';
 import {
   deckWithDeckCards,

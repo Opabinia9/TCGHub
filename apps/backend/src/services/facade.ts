@@ -1,9 +1,9 @@
-import UserRepository from '@/persistence/userReposistory.js';
+import UserRepository from '@/persistence/userRepository.js';
 import CardRepository from '@/persistence/cardRepository.js';
 import UserCardsRepository from '@/persistence/userCardsRepository.js';
 import DeckRepository from '@/persistence/deckRepository.js';
-import ChatRepository from '@/persistence/chatReposistory.js';
-import MessageRepository from '@/persistence/messageReposistory.js';
+import ChatRepository from '@/persistence/chatRepository.js';
+import MessageRepository from '@/persistence/messageRepository.js';
 import NotFoundError from '@/errortypes/NotFoundError.js';
 import type { ChatMember, Deck, DeckCard, Message, User, UserCard } from '@prisma/client';
 import type { AuthSignupBody, DeckCardParams } from '@/routes/api/v1/routeSchemas.js';

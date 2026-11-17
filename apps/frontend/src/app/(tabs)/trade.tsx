@@ -14,8 +14,8 @@ export default function TradeScreen() {
   return (
     <View style={styles.screen}>
       <ScreenHeader
-        title='LISTED CARDS'
-        subtitle='Buy, sell and trade with players near you.'
+        title="LISTINGS"
+        subtitle="Buy, sell and trade with players near you."
         right={
           <Pressable
             onPress={() =>
@@ -24,11 +24,11 @@ export default function TradeScreen() {
                 params: { tab: 'collection' },
               })
             }
-            accessibilityRole='button'
-            accessibilityLabel='List a card'
+            accessibilityRole="button"
+            accessibilityLabel="List a card"
             style={styles.listButton}
           >
-            <Ionicons name='add' size={18} color={Palette.white} />
+            <Ionicons name="add" size={18} color={Palette.white} />
             <Text style={styles.listButtonText}>LIST A CARD</Text>
           </Pressable>
         }
@@ -36,7 +36,7 @@ export default function TradeScreen() {
 
       <View style={[layout.top, { flex: 0 }]}>
         <Searchbar
-          placeholder='Search listed cards…'
+          placeholder="Search listed cards…"
           value={searchQuery}
           onChangeText={setSearchQuery}
           style={searchStyles.searchbar}

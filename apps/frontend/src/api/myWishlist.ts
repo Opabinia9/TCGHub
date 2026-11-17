@@ -15,7 +15,7 @@ type WishlistApiResponse = {
 
 export async function fetchWishlist(
   search: string,
-  filter: FilterOption = 'all',
+  filter: FilterOption = 'name',
   page = 1,
   limit = 20,
 ): Promise<WishlistPage> {

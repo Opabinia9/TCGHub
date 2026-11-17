@@ -22,7 +22,7 @@ type TradeListingsApiResponse = {
 
 export async function fetchTradeListings(
   search: string,
-  filter: FilterOption = 'all',
+  filter: FilterOption = 'name',
   page = 1,
   limit = 20,
 ): Promise<TradeListingsPage> {

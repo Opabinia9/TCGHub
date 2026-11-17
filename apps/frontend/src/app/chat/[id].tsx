@@ -101,9 +101,7 @@ export default function ChatScreen() {
         </View>
         <View style={chatStyles.headerText}>
           <Text style={chatStyles.name}>{chatTitle}</Text>
-          {chat.type === 'TRADE' && (
-            <Text style={chatStyles.distance}>DISTANCE NOT IMPLEMENTED</Text>
-          )}
+          {chat.type === 'TRADE'}
         </View>
         <Pressable
           onPress={() => console.log('More options pressed')}

@@ -227,7 +227,7 @@ export default function TradeList({ query }: TradeListProps) {
           wrapperStyle={{ bottom: insets.bottom + 64 }}
           style={styles.snackbar}
         >
-          {message ?? ''}
+          <Text style={{ color: 'white' }}>{message ?? ''}</Text>
         </Snackbar>
       </Portal>
     </View>

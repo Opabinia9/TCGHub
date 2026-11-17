@@ -1,5 +1,5 @@
 import type { ChatMember, PrismaClient } from '@prisma/client';
-import Repository from './reposistory.js';
+import Repository from './repository.js';
 import { prisma } from '@/utils/prisma.js';
 export default class ChatMemberRepository extends Repository<ChatMember> {
   db: PrismaClient;

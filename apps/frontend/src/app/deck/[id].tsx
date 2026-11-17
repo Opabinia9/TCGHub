@@ -50,7 +50,7 @@ export default function DeckScreen() {
         <CardList
           fetchlist={fetchlist}
           query={searchQuery}
-          activeFilter='all'
+          activeFilter='name'
           emptyMessage='This deck has no cards yet'
           refreshOnFocus
         />

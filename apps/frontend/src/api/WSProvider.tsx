@@ -5,6 +5,7 @@ import { io, Socket } from 'socket.io-client';
 const WSContext = createContext<SocketService | undefined>(undefined);
 
 type SocketService = {
+  socket: Socket | undefined;
   emit: (event: string, data: {}) => void;
   on: (event: string, cb: any) => void;
   off: (event: string) => void;
@@ -15,7 +16,7 @@ type Props = { children: ReactNode };
 export const WSProvider = ({ children }: Props) => {
   const { data: userSession } = authClient.useSession();
   const [socketAccessToken, setSocketAccessToken] = useState('');
-  const socket = useRef<Socket>(undefined);
+  const [socket, setSocket] = useState<Socket>();
   const refresh = useRef<boolean>(false);
 
   useEffect(() => {
@@ -27,46 +28,49 @@ export const WSProvider = ({ children }: Props) => {
 
   useEffect(() => {
     if (socketAccessToken) {
-      if (socket.current) {
-        socket.current.disconnect();
+      if (socket) {
+        socket.disconnect();
       }
-      socket.current = io(`http://${process.env.EXPO_PUBLIC_API_URL}/`, {
-        transports: ['websocket'],
-        withCredentials: true,
-        extraHeaders: {
-          Authorization: `Bearer ${socketAccessToken}`,
-        },
-      });
-      socket.current.on('connect_error', (error) => {
+      setSocket(
+        io(`http://${process.env.EXPO_PUBLIC_API_URL}/`, {
+          transports: ['websocket'],
+          withCredentials: true,
+          extraHeaders: {
+            Authorization: `Bearer ${socketAccessToken}`,
+          },
+        }),
+      );
+
+      socket?.on('connect_error', (error) => {
         if (error.message === 'Authentication error') {
           console.log('Auth connection error: ', error.message);
         }
       });
       refresh.current = false;
       return () => {
-        if (socket.current) {
-          socket.current.disconnect();
+        if (socket) {
+          socket.disconnect();
         }
       };
     }
   }, [socketAccessToken, refresh]);
 
   const emit = (event: string, data = {}) => {
-    socket.current?.emit(event, data);
+    socket?.emit(event, data);
   };
 
   const on = (event: string, cb: () => any) => {
-    socket.current?.on(event, cb);
+    socket?.on(event, cb);
   };
 
   const off = (event: string) => {
-    socket.current?.off(event);
+    socket?.off(event);
   };
 
   const disconnect = () => {
-    if (socket.current) {
-      socket.current.disconnect();
-      socket.current = undefined;
+    if (socket) {
+      socket.disconnect();
+      setSocket(undefined);
     }
   };
   const connect = () => {
@@ -74,6 +78,7 @@ export const WSProvider = ({ children }: Props) => {
   };
 
   const socketService = {
+    socket,
     emit,
     on,
     off,

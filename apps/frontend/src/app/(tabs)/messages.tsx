@@ -1,4 +1,3 @@
-
 import { useState } from 'react';
 import { StyleSheet, View } from 'react-native';
 import { Searchbar } from 'react-native-paper';
@@ -12,10 +11,7 @@ export default function MessagesScreen() {
 
   return (
     <View style={styles.screen}>
-      <ScreenHeader
-        title="MESSAGES"
-        subtitle="Chats with buyers, sellers and traders."
-      />
+      <ScreenHeader title="MESSAGES" subtitle="Chats with buyers, sellers and traders." />
 
       <View style={styles.top}>
         <Searchbar

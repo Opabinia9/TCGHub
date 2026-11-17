@@ -1,4 +1,3 @@
-
 import { useCallback, useState } from 'react';
 import { ActivityIndicator, Pressable, StyleSheet, Text, View } from 'react-native';
 import { FlatList } from 'react-native-gesture-handler';
@@ -10,8 +9,8 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import type { ListingCard } from '@/api/types';
 import { fetchTradeListings } from '@/api/tradeListings';
 import { fetchWishlistIds, updateCollectionCard } from '@/api/collection';
-import { createTradeChat, fetchChats } from '@/api/chats';
-import { useQuery } from '@tanstack/react-query';
+import { ChatsList, ChatsListItem, createTradeChat, fetchChat, fetchChats } from '@/api/chats';
+import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { authClient } from '@/utils/auth-client';
 import { Palette } from '@/constants/theme';
 
@@ -28,12 +27,12 @@ export default function TradeList({ query }: TradeListProps) {
   const [wishlistIds, setWishlistIds] = useState<Set<string>>(new Set());
   const [message, setMessage] = useState<string | null>(null);
 
+  const queryClient = useQueryClient();
+  const selfId = authClient.useSession().data?.user.id;
   const { data: chats } = useQuery({
-    queryKey: ['chats'],
+    queryKey: ['chats', selfId],
     queryFn: fetchChats,
   });
-
-  const selfId = authClient.useSession().data?.user.id;
 
   // Load the listings and your wishlist every time the Trades tab comes into view.
   useFocusEffect(
@@ -42,10 +41,7 @@ export default function TradeList({ query }: TradeListProps) {
       setLoading(true);
       setError(null);
 
-      Promise.all([
-        fetchTradeListings(''),
-        fetchWishlistIds().catch(() => new Set<string>()),
-      ])
+      Promise.all([fetchTradeListings(''), fetchWishlistIds().catch(() => new Set<string>())])
         .then(([page, ids]) => {
           if (cancelled) return;
           setListings(page.items as ListingCard[]);
@@ -108,21 +104,22 @@ export default function TradeList({ query }: TradeListProps) {
     }
 
     const chatId = await createTradeChat(sellerId, cardId);
+    const chat: ChatsListItem = await fetchChat(chatId);
+    await queryClient.cancelQueries({ queryKey: ['chats', selfId] });
+    queryClient.setQueryData(['chats', selfId], (old: ChatsList | undefined) => {
+      return old ? [...old, chat] : [chat];
+    });
     router.push({ pathname: '/chat/[id]', params: { id: chatId } });
   };
 
   // Only show listings whose card name contains the search text.
   const searchText = query.trim().toLowerCase();
-  const shownListings = listings.filter((item) =>
-    item.name.toLowerCase().includes(searchText),
-  );
+  const shownListings = listings.filter((item) => item.name.toLowerCase().includes(searchText));
 
   const renderItem = ({ item }: { item: ListingCard }) => {
     const inWishlist = wishlistIds.has(item.id);
     const condition =
-      item.condition && item.condition !== 'unmarked'
-        ? item.condition
-        : 'Condition not set';
+      item.condition && item.condition !== 'unmarked' ? item.condition : 'Condition not set';
 
     return (
       <View style={styles.card}>
@@ -144,11 +141,7 @@ export default function TradeList({ query }: TradeListProps) {
           </Text>
 
           <View style={styles.sellerRow}>
-            <Ionicons
-              name="person-outline"
-              size={13}
-              color={Palette.gold}
-            />
+            <Ionicons name="person-outline" size={13} color={Palette.gold} />
             <Text style={styles.sellerText}>{item.username}</Text>
           </View>
         </View>
@@ -160,11 +153,7 @@ export default function TradeList({ query }: TradeListProps) {
             accessibilityLabel={`Message the seller about ${item.name}`}
             style={styles.messageButton}
           >
-            <Ionicons
-              name="chatbubble-outline"
-              size={17}
-              color={Palette.gold}
-            />
+            <Ionicons name="chatbubble-outline" size={17} color={Palette.gold} />
             <Text style={styles.messageButtonText}>MESSAGE</Text>
           </Pressable>
 
@@ -173,14 +162,9 @@ export default function TradeList({ query }: TradeListProps) {
             accessibilityRole="button"
             accessibilityState={{ selected: inWishlist }}
             accessibilityLabel={
-              inWishlist
-                ? `Remove ${item.name} from wishlist`
-                : `Add ${item.name} to wishlist`
+              inWishlist ? `Remove ${item.name} from wishlist` : `Add ${item.name} to wishlist`
             }
-            style={[
-              styles.wishlistButton,
-              inWishlist && styles.wishlistButtonActive,
-            ]}
+            style={[styles.wishlistButton, inWishlist && styles.wishlistButtonActive]}
           >
             <Ionicons
               name={inWishlist ? 'heart' : 'heart-outline'}

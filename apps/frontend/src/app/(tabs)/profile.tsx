@@ -5,7 +5,7 @@ import { Ionicons } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
 import CardList from '@/components/card-list';
 import { authClient } from '@/utils/auth-client';
-import { QueryClient } from '@tanstack/react-query';
+import { useQueryClient } from '@tanstack/react-query';
 import { fetchMyTrades } from '@/api/myTrades';
 import { fetchWishlist } from '@/api/myWishlist';
 import { searchStyles } from '@/constants/search-filter-styles';
@@ -23,7 +23,7 @@ export default function Profile() {
   const [tab, setTab] = useState<'trades' | 'wishlist'>('trades');
   const [searchQuery, setSearchQuery] = useState('');
 
-  const queryClient = new QueryClient();
+  const queryClient = useQueryClient();
   const { data: session } = authClient.useSession();
   const isTrades = tab === 'trades';
 

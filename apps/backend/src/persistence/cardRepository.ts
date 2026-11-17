@@ -1,4 +1,4 @@
-import Repository from '@/persistence/reposistory.js';
+import Repository from '@/persistence/repository.js';
 import { prisma } from '@/utils/prisma.js';
 import type { Prisma, PrismaClient } from '@prisma/client';
 import type { CardSearchFilters } from '@/types/cardObject.js';

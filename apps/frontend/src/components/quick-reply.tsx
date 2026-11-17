@@ -15,7 +15,7 @@ export default function QuickReply({ replies, setDraft }: Props): ReactNode {
         <Pressable
           key={reply}
           onPress={() => setDraft(reply)}
-          accessibilityRole="button"
+          accessibilityRole='button'
           style={chatStyles.quickReply}
         >
           <Text style={chatStyles.quickReplyText}>{reply}</Text>

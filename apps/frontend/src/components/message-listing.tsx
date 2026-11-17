@@ -21,7 +21,7 @@ export default function MessageListing({ sellerId, cardId }: Props): ReactNode {
     <View>
       <Pressable
         onPress={() => console.log('View listing', cardId)}
-        accessibilityRole="button"
+        accessibilityRole='button'
         accessibilityLabel={`View listing: ${cardId}`}
         style={chatStyles.listing}
       >
@@ -32,7 +32,7 @@ export default function MessageListing({ sellerId, cardId }: Props): ReactNode {
               uri: trade?.Card.imageUris?.small ?? trade?.Card.imageUris?.normal ?? undefined,
             }}
             style={chatStyles.cardImage}
-            contentFit="cover"
+            contentFit='cover'
           />
         </View>
         <View style={chatStyles.listingText}>

@@ -79,10 +79,7 @@ export default class DecksController {
     }
   }
 
-  async getUserDecks(
-    request: FastifyRequest,
-    reply: FastifyReply,
-  ): Promise<FastifyReply> {
+  async getUserDecks(request: FastifyRequest, reply: FastifyReply): Promise<FastifyReply> {
     const { userId } = request.retriveSession(request).session;
     return reply.code(200).send(await facade.getUserDecks(userId));
   }

@@ -107,11 +107,11 @@ export default function ChatScreen() {
         </View>
         <Pressable
           onPress={() => console.log('More options pressed')}
-          accessibilityRole="button"
-          accessibilityLabel="More options"
+          accessibilityRole='button'
+          accessibilityLabel='More options'
           style={chatStyles.iconButton}
         >
-          <Ionicons name="ellipsis-vertical" size={22} color={Palette.gold} />
+          <Ionicons name='ellipsis-vertical' size={22} color={Palette.gold} />
         </Pressable>
       </View>
 

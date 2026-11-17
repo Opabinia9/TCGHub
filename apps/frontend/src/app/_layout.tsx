@@ -27,12 +27,12 @@ export default function RootLayout() {
       <GestureHandlerRootView style={{ flex: 1 }}>
         <WSProvider>
           <PaperProvider theme={theme}>
-            <StatusBar style="light" />
+            <StatusBar style='light' />
             <SafeAreaView edges={['top']} style={{ flex: 1, backgroundColor: '#101713' }}>
               <KeyboardProvider statusBarTranslucent navigationBarTranslucent>
                 <Stack screenOptions={{ headerShown: false }}>
-                  <Stack.Screen name="(auth)" />
-                  <Stack.Screen name="(tabs)" />
+                  <Stack.Screen name='(auth)' />
+                  <Stack.Screen name='(tabs)' />
                 </Stack>
               </KeyboardProvider>
             </SafeAreaView>

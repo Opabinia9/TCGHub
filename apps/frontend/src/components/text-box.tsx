@@ -25,22 +25,22 @@ export function TextBox({ chat, draftState: { draft, setDraft } }: Props) {
         value={draft}
         onChangeText={setDraft}
         onSubmitEditing={send}
-        placeholder="Message…"
+        placeholder='Message…'
         placeholderTextColor={Palette.textSecondary}
         selectionColor={Palette.gold}
         cursorColor={Palette.gold}
-        returnKeyType="send"
+        returnKeyType='send'
         accessibilityLabel={`Message ${chat.name}`}
         style={chatStyles.input}
       />
       <Pressable
         onPress={send}
         disabled={!draft.trim()}
-        accessibilityRole="button"
-        accessibilityLabel="Send message"
+        accessibilityRole='button'
+        accessibilityLabel='Send message'
         style={[chatStyles.sendButton, !draft.trim() && chatStyles.sendButtonDisabled]}
       >
-        <Ionicons name="arrow-up" size={22} color={Palette.white} />
+        <Ionicons name='arrow-up' size={22} color={Palette.white} />
       </Pressable>
     </View>
   );

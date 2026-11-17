@@ -6,27 +6,14 @@ import {
   type MagicCard,
   type Pagination,
 } from '@/api/types';
-import {
-  ActivityIndicator,
-  Pressable,
-  View,
-  StyleSheet,
-  Modal,
-} from 'react-native';
+import { ActivityIndicator, Pressable, View, StyleSheet, Modal } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { Image } from 'expo-image';
 import { FlatList } from 'react-native-gesture-handler';
 import { Menu, Text, Portal, Snackbar } from 'react-native-paper';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
-import AddToSheet, {
-  type Condition,
-  type SheetType,
-} from '@/components/add-to-sheet';
-import {
-  fetchOwnedQuantities,
-  fetchWishlistIds,
-  updateCollectionCard,
-} from '@/api/collection';
+import AddToSheet, { type Condition, type SheetType } from '@/components/add-to-sheet';
+import { fetchOwnedQuantities, fetchWishlistIds, updateCollectionCard } from '@/api/collection';
 import { fetchCards } from '@/api/cards';
 import { fetchDecks, addCardToDeck, type Deck, createDeck } from '@/api/decks';
 import { Palette } from '@/constants/theme';
@@ -34,15 +21,11 @@ import CreateDeckSheet from './create-deck-sheet';
 
 // Draws an Ionicons icon in our green, for a menu item.
 function menuIcon(name: keyof typeof Ionicons.glyphMap) {
-  return ({ size }: { size: number }) => (
-    <Ionicons name={name} size={size} color={Palette.gold} />
-  );
+  return ({ size }: { size: number }) => <Ionicons name={name} size={size} color={Palette.gold} />;
 }
 
 function conditionLabel(condition: string) {
-  return condition && condition !== 'unmarked'
-    ? condition
-    : 'Condition not set';
+  return condition && condition !== 'unmarked' ? condition : 'Condition not set';
 }
 
 export default function CardList(props: CardListProps) {
@@ -79,9 +62,7 @@ export default function CardList(props: CardListProps) {
 
   const [message, setMessage] = useState<string | null>(null);
   const [wishlistIds, setWishlistIds] = useState<Set<string>>(new Set());
-  const [ownedQuantities, setOwnedQuantities] = useState<Map<string, number>>(
-    new Map(),
-  );
+  const [ownedQuantities, setOwnedQuantities] = useState<Map<string, number>>(new Map());
 
   const insets = useSafeAreaInsets();
 
@@ -308,12 +289,7 @@ export default function CardList(props: CardListProps) {
     const version = listVersionRef.current;
 
     try {
-      const result = await props.fetchlist(
-        searchText,
-        props.activeFilter,
-        pagination.page + 1,
-        20,
-      );
+      const result = await props.fetchlist(searchText, props.activeFilter, pagination.page + 1, 20);
 
       if (version !== listVersionRef.current) return;
 
@@ -389,9 +365,7 @@ export default function CardList(props: CardListProps) {
         onPress={() => setSelectedCard(card)}
         accessibilityRole='button'
         accessibilityLabel={`View ${card.name}${
-          (ownedQuantities.get(card.id) ?? 0) > 0
-            ? `, you own ${ownedQuantities.get(card.id)}`
-            : ''
+          (ownedQuantities.get(card.id) ?? 0) > 0 ? `, you own ${ownedQuantities.get(card.id)}` : ''
         }${wishlistIds.has(card.id) ? ', on your wishlist' : ''}`}
         style={styles.imageContainer}
       >
@@ -413,23 +387,18 @@ export default function CardList(props: CardListProps) {
           {card.setName || ' '}
         </Text>
 
-        {((ownedQuantities.get(card.id) ?? 0) > 0 ||
-          wishlistIds.has(card.id)) && (
+        {((ownedQuantities.get(card.id) ?? 0) > 0 || wishlistIds.has(card.id)) && (
           <View style={styles.tagRow}>
             {(ownedQuantities.get(card.id) ?? 0) > 0 && (
               <View style={styles.tag}>
-                <Text style={styles.tagText}>
-                  OWNED ×{ownedQuantities.get(card.id)}
-                </Text>
+                <Text style={styles.tagText}>OWNED ×{ownedQuantities.get(card.id)}</Text>
               </View>
             )}
 
             {wishlistIds.has(card.id) && (
               <View style={[styles.tag, styles.tagWishlist]}>
                 <Ionicons name='heart' size={11} color='#FFFFFF' />
-                <Text style={[styles.tagText, styles.tagTextLight]}>
-                  WISHLIST
-                </Text>
+                <Text style={[styles.tagText, styles.tagTextLight]}>WISHLIST</Text>
               </View>
             )}
           </View>
@@ -447,9 +416,7 @@ export default function CardList(props: CardListProps) {
             <Text style={styles.cardPriceLabel}>
               {card.finishes.includes('nonfoil') ? '' : 'foil'}
             </Text>
-            <Text style={styles.cardPrice}>
-              {card.prices.usd ? `$${card.prices.usd}` : '—'}
-            </Text>
+            <Text style={styles.cardPrice}>{card.prices.usd ? `$${card.prices.usd}` : '—'}</Text>
           </View>
 
           {variant === 'trades' ? (
@@ -499,10 +466,7 @@ export default function CardList(props: CardListProps) {
                   accessibilityRole='button'
                   accessibilityLabel={`Add ${card.name} to…`}
                   hitSlop={4}
-                  style={[
-                    styles.addButton,
-                    menuCardId === card.id && styles.addButtonActive,
-                  ]}
+                  style={[styles.addButton, menuCardId === card.id && styles.addButtonActive]}
                 >
                   <Ionicons
                     name='add'
@@ -513,14 +477,8 @@ export default function CardList(props: CardListProps) {
               }
             >
               <Menu.Item
-                leadingIcon={menuIcon(
-                  wishlistIds.has(card.id) ? 'heart' : 'heart-outline',
-                )}
-                title={
-                  wishlistIds.has(card.id)
-                    ? 'Remove from wishlist'
-                    : 'Add to wishlist'
-                }
+                leadingIcon={menuIcon(wishlistIds.has(card.id) ? 'heart' : 'heart-outline')}
+                title={wishlistIds.has(card.id) ? 'Remove from wishlist' : 'Add to wishlist'}
                 titleStyle={styles.menuItemText}
                 onPress={() => toggleWishlist(card)}
               />
@@ -580,11 +538,7 @@ export default function CardList(props: CardListProps) {
             <ActivityIndicator style={styles.emptyState} color={Palette.gold} />
           ) : error ? (
             <View style={styles.emptyState}>
-              <Ionicons
-                name='alert-circle-outline'
-                size={36}
-                color={Palette.gold}
-              />
+              <Ionicons name='alert-circle-outline' size={36} color={Palette.gold} />
               <Text style={styles.emptyTitle}>Something went wrong</Text>
               <Text style={styles.emptyText}>{error}</Text>
             </View>
@@ -592,9 +546,7 @@ export default function CardList(props: CardListProps) {
             <View style={styles.emptyState}>
               <Ionicons name='search-outline' size={36} color={Palette.gold} />
               <Text style={styles.emptyTitle}>No cards found</Text>
-              <Text style={styles.emptyText}>
-                Try another search or category.
-              </Text>
+              <Text style={styles.emptyText}>Try another search or category.</Text>
             </View>
           )
         }
@@ -604,15 +556,10 @@ export default function CardList(props: CardListProps) {
 
             <View style={styles.footer}>
               {loadingMore && (
-                <ActivityIndicator
-                  style={{ marginBottom: 20 }}
-                  color={Palette.gold}
-                />
+                <ActivityIndicator style={{ marginBottom: 20 }} color={Palette.gold} />
               )}
 
-              <Text style={styles.footerText}>
-                TCG HUB · YOUR NEXT TRADE STARTS HERE
-              </Text>
+              <Text style={styles.footerText}>TCG HUB · YOUR NEXT TRADE STARTS HERE</Text>
             </View>
           </>
         }
@@ -685,9 +632,7 @@ export default function CardList(props: CardListProps) {
               <View>
                 <Text style={styles.previewPriceLabel}>MARKET PRICE</Text>
                 <Text style={styles.previewPrice}>
-                  {selectedCard.prices.usd
-                    ? `$${selectedCard.prices.usd}`
-                    : '—'}
+                  {selectedCard.prices.usd ? `$${selectedCard.prices.usd}` : '—'}
                 </Text>
               </View>
 
@@ -696,10 +641,7 @@ export default function CardList(props: CardListProps) {
                 accessibilityRole='button'
                 accessibilityLabel={`Add ${selectedCard.name} to…`}
                 accessibilityState={{ expanded: previewMenuOpen }}
-                style={[
-                  styles.previewAddButton,
-                  previewMenuOpen && styles.previewAddButtonActive,
-                ]}
+                style={[styles.previewAddButton, previewMenuOpen && styles.previewAddButtonActive]}
               >
                 <Ionicons name='add' size={20} color='#FFFFFF' />
                 <Text style={styles.previewAddText}>ADD TO</Text>
@@ -709,14 +651,10 @@ export default function CardList(props: CardListProps) {
                 <View style={[styles.menu, styles.previewMenu]}>
                   <Menu.Item
                     leadingIcon={menuIcon(
-                      wishlistIds.has(selectedCard.id)
-                        ? 'heart'
-                        : 'heart-outline',
+                      wishlistIds.has(selectedCard.id) ? 'heart' : 'heart-outline',
                     )}
                     title={
-                      wishlistIds.has(selectedCard.id)
-                        ? 'Remove from wishlist'
-                        : 'Add to wishlist'
+                      wishlistIds.has(selectedCard.id) ? 'Remove from wishlist' : 'Add to wishlist'
                     }
                     titleStyle={styles.menuItemText}
                     onPress={() => toggleWishlist(selectedCard)}
@@ -790,17 +728,10 @@ export default function CardList(props: CardListProps) {
             </View>
 
             {loadingDecks ? (
-              <ActivityIndicator
-                style={styles.deckPickerLoading}
-                color={Palette.gold}
-              />
+              <ActivityIndicator style={styles.deckPickerLoading} color={Palette.gold} />
             ) : decks.length === 0 ? (
               <View style={styles.deckPickerEmpty}>
-                <Ionicons
-                  name='layers-outline'
-                  size={32}
-                  color={Palette.gold}
-                />
+                <Ionicons name='layers-outline' size={32} color={Palette.gold} />
                 <Text style={styles.deckPickerEmptyTitle}>No decks found</Text>
                 <Pressable
                   style={styles.deckPickerRow}
@@ -811,9 +742,7 @@ export default function CardList(props: CardListProps) {
                   <View style={styles.deckPickerIcon}>
                     <Ionicons name='add' size={20} color={Palette.gold} />
                   </View>
-                  <Text style={styles.deckPickerRowText}>
-                    Create a new deck
-                  </Text>
+                  <Text style={styles.deckPickerRowText}>Create a new deck</Text>
                 </Pressable>
               </View>
             ) : (
@@ -829,9 +758,7 @@ export default function CardList(props: CardListProps) {
                     <View style={styles.deckPickerIcon}>
                       <Ionicons name='add' size={20} color={Palette.gold} />
                     </View>
-                    <Text style={styles.deckPickerRowText}>
-                      Create a new deck
-                    </Text>
+                    <Text style={styles.deckPickerRowText}>Create a new deck</Text>
                   </Pressable>
                 }
                 keyExtractor={(deck) => deck.id}
@@ -843,11 +770,7 @@ export default function CardList(props: CardListProps) {
                     disabled={savingDeckId !== null}
                   >
                     <View style={styles.deckPickerIcon}>
-                      <Ionicons
-                        name='layers-outline'
-                        size={20}
-                        color={Palette.gold}
-                      />
+                      <Ionicons name='layers-outline' size={20} color={Palette.gold} />
                     </View>
 
                     <Text style={styles.deckPickerRowText} numberOfLines={1}>
@@ -857,11 +780,7 @@ export default function CardList(props: CardListProps) {
                     {savingDeckId === deck.id ? (
                       <ActivityIndicator color={Palette.gold} />
                     ) : (
-                      <Ionicons
-                        name='add-circle-outline'
-                        size={22}
-                        color={Palette.gold}
-                      />
+                      <Ionicons name='add-circle-outline' size={22} color={Palette.gold} />
                     )}
                   </Pressable>
                 )}

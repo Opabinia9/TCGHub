@@ -33,7 +33,9 @@ export function AnimatedSplashOverlay() {
     },
   });
 
-  const image = <Image style={styles.image} source={require('@/assets/images/tcghub-icon-1024.png')} />;
+  const image = (
+    <Image style={styles.image} source={require('@/assets/images/tcghub-icon-1024.png')} />
+  );
 
   return animate ? (
     <Animated.View
@@ -43,7 +45,8 @@ export function AnimatedSplashOverlay() {
           scheduleOnRN(setVisible, false);
         }
       })}
-      style={styles.splashOverlay}>
+      style={styles.splashOverlay}
+    >
       {image}
     </Animated.View>
   ) : (
@@ -53,7 +56,8 @@ export function AnimatedSplashOverlay() {
           setAnimate(true);
         });
       }}
-      style={styles.splashOverlay}>
+      style={styles.splashOverlay}
+    >
       {image}
     </View>
   );

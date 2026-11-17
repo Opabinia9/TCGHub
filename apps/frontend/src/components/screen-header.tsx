@@ -1,4 +1,3 @@
-
 import type { ReactNode } from 'react';
 import { StyleSheet, View } from 'react-native';
 import { Text } from 'react-native-paper';
@@ -10,15 +9,11 @@ type ScreenHeaderProps = {
   right?: ReactNode;
 };
 
-export default function ScreenHeader({
-  title,
-  subtitle,
-  right,
-}: ScreenHeaderProps) {
+export default function ScreenHeader({ title, subtitle, right }: ScreenHeaderProps) {
   return (
     <View style={styles.wrapper}>
       <View style={styles.row}>
-        <Text style={styles.title} numberOfLines={1} accessibilityRole="header">
+        <Text style={styles.title} numberOfLines={1} accessibilityRole='header'>
           {title}
         </Text>
         {right}

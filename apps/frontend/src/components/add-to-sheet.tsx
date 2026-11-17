@@ -1,4 +1,3 @@
-
 import { useState } from 'react';
 import { Modal, Pressable, StyleSheet, View } from 'react-native';
 import { Text } from 'react-native-paper';
@@ -26,12 +25,7 @@ type AddToSheetProps = {
   onConfirm: (quantity: number, condition: Condition) => void;
 };
 
-export default function AddToSheet({
-  type,
-  card,
-  onClose,
-  onConfirm,
-}: AddToSheetProps) {
+export default function AddToSheet({ type, card, onClose, onConfirm }: AddToSheetProps) {
   const insets = useSafeAreaInsets();
   const [quantity, setQuantity] = useState(1);
   const [condition, setCondition] = useState<Condition>('Near mint');
@@ -43,7 +37,7 @@ export default function AddToSheet({
     <Modal
       visible
       transparent
-      animationType="slide"
+      animationType='slide'
       statusBarTranslucent
       navigationBarTranslucent
       onRequestClose={onClose}
@@ -52,8 +46,8 @@ export default function AddToSheet({
         <Pressable
           style={styles.backdrop}
           onPress={onClose}
-          accessibilityRole="button"
-          accessibilityLabel="Close"
+          accessibilityRole='button'
+          accessibilityLabel='Close'
         />
 
         <View style={[styles.sheet, { paddingBottom: insets.bottom + 20 }]}>
@@ -65,7 +59,7 @@ export default function AddToSheet({
                 uri: card.imageUris?.small ?? card.imageUris?.grid ?? undefined,
               }}
               style={styles.thumb}
-              contentFit="cover"
+              contentFit='cover'
             />
 
             <View style={styles.headerText}>
@@ -77,11 +71,11 @@ export default function AddToSheet({
 
             <Pressable
               onPress={onClose}
-              accessibilityRole="button"
-              accessibilityLabel="Close"
+              accessibilityRole='button'
+              accessibilityLabel='Close'
               style={styles.closeButton}
             >
-              <Ionicons name="close" size={20} color={Palette.text} />
+              <Ionicons name='close' size={20} color={Palette.text} />
             </Pressable>
           </View>
 
@@ -89,7 +83,7 @@ export default function AddToSheet({
             <View>
               <Text style={styles.label}>CONDITION</Text>
 
-              <View style={styles.chips} accessibilityRole="radiogroup">
+              <View style={styles.chips} accessibilityRole='radiogroup'>
                 {CONDITIONS.map((option) => {
                   const selected = option === condition;
 
@@ -97,19 +91,11 @@ export default function AddToSheet({
                     <Pressable
                       key={option}
                       onPress={() => setCondition(option)}
-                      accessibilityRole="radio"
+                      accessibilityRole='radio'
                       accessibilityState={{ checked: selected }}
-                      style={[
-                        styles.chip,
-                        selected && styles.chipSelected,
-                      ]}
+                      style={[styles.chip, selected && styles.chipSelected]}
                     >
-                      <Text
-                        style={[
-                          styles.chipText,
-                          selected && styles.chipTextSelected,
-                        ]}
-                      >
+                      <Text style={[styles.chipText, selected && styles.chipTextSelected]}>
                         {option}
                       </Text>
                     </Pressable>
@@ -129,41 +115,37 @@ export default function AddToSheet({
               <Pressable
                 onPress={() => setQuantity((q) => Math.max(1, q - 1))}
                 disabled={quantity <= 1}
-                accessibilityRole="button"
-                accessibilityLabel="Decrease quantity"
-                style={[
-                  styles.stepButton,
-                  quantity <= 1 && styles.stepButtonDisabled,
-                ]}
+                accessibilityRole='button'
+                accessibilityLabel='Decrease quantity'
+                style={[styles.stepButton, quantity <= 1 && styles.stepButtonDisabled]}
               >
-                <Ionicons name="remove" size={20} color={Palette.text} />
+                <Ionicons name='remove' size={20} color={Palette.text} />
               </Pressable>
 
-              <Text style={styles.quantity} accessibilityLiveRegion="polite">
+              <Text style={styles.quantity} accessibilityLiveRegion='polite'>
                 {quantity}
               </Text>
 
               <Pressable
                 onPress={() => setQuantity((q) => Math.min(99, q + 1))}
-                accessibilityRole="button"
-                accessibilityLabel="Increase quantity"
+                accessibilityRole='button'
+                accessibilityLabel='Increase quantity'
                 style={[styles.stepButton, styles.stepButtonPlus]}
               >
-                <Ionicons name="add" size={20} color={Palette.white} />
+                <Ionicons name='add' size={20} color={Palette.white} />
               </Pressable>
             </View>
           </View>
 
           {isListing && (
             <Text style={styles.note}>
-              Listing a card also adds it to your collection, and removes it
-              from your wishlist.
+              Listing a card also adds it to your collection, and removes it from your wishlist.
             </Text>
           )}
 
           <Pressable
             onPress={() => onConfirm(quantity, condition)}
-            accessibilityRole="button"
+            accessibilityRole='button'
             style={styles.confirmButton}
           >
             <Text style={styles.confirmText}>{title}</Text>

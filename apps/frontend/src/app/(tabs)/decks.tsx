@@ -60,9 +60,7 @@ export default function Decks() {
   const isCollection = tab === 'collection';
   const query = searchQuery.trim().toLowerCase();
 
-  const filteredDecks = decks.filter((deck) =>
-    deck.deck_name.toLowerCase().includes(query),
-  );
+  const filteredDecks = decks.filter((deck) => deck.deck_name.toLowerCase().includes(query));
 
   function openCreate() {
     setCreateError(null);
@@ -106,11 +104,7 @@ export default function Decks() {
 
       <View style={[layout.top, { flex: 1 }]}>
         <View style={buttonStyles.toggle} accessibilityRole='tablist'>
-          <ToggleButton
-            label='MY DECKS'
-            active={tab === 'mine'}
-            onPress={() => setTab('mine')}
-          />
+          <ToggleButton label='MY DECKS' active={tab === 'mine'} onPress={() => setTab('mine')} />
           <ToggleButton
             label='MY COLLECTION'
             active={isCollection}
@@ -119,9 +113,7 @@ export default function Decks() {
         </View>
 
         <Searchbar
-          placeholder={
-            isCollection ? 'Search your collection…' : 'Search for a deck…'
-          }
+          placeholder={isCollection ? 'Search your collection…' : 'Search for a deck…'}
           value={searchQuery}
           onChangeText={setSearchQuery}
           style={searchStyles.searchbar}
@@ -166,9 +158,7 @@ export default function Decks() {
             {loadingDecks ? (
               <Text style={styles.emptyMessage}>Loading decks...</Text>
             ) : deckError ? (
-              <Text style={styles.emptyMessage}>
-                Unable to load your decks.
-              </Text>
+              <Text style={styles.emptyMessage}>Unable to load your decks.</Text>
             ) : (
               <>
                 <View style={styles.deckList}>
@@ -179,9 +169,7 @@ export default function Decks() {
 
                 {filteredDecks.length === 0 && (
                   <Text style={styles.emptyMessage}>
-                    {query
-                      ? `No decks match "${searchQuery}".`
-                      : 'No decks yet.'}
+                    {query ? `No decks match "${searchQuery}".` : 'No decks yet.'}
                   </Text>
                 )}
               </>
@@ -206,9 +194,7 @@ export default function Decks() {
 function DeckRow({ deck }: { deck: Deck }) {
   return (
     <View style={styles.deckRow}>
-      <View
-        style={[styles.deckArt, { backgroundColor: Palette.greenAccent }]}
-      />
+      <View style={[styles.deckArt, { backgroundColor: Palette.greenAccent }]} />
 
       <View style={styles.deckInfo}>
         <Text style={styles.deckName} numberOfLines={1}>

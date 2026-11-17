@@ -48,7 +48,7 @@ export function ChatRow({ chat, trades }: Props) {
   return (
     <Pressable
       onPress={() => router.push({ pathname: '/chat/[id]', params: { id: chat.id } })}
-      accessibilityRole="button"
+      accessibilityRole='button'
       accessibilityLabel={`${chatTitle}, about ${cardName}${unread ? ', unread' : ''}: ${preview}`}
       style={chatStyles.row}
     >

@@ -1,12 +1,7 @@
 import { ENV } from '@/api/env';
 import type { DeckCard } from '@/api/types';
 import { authClient } from '@/utils/auth-client';
-import {
-  toCollectionCard,
-  type FilterOption,
-  type UserCard,
-  type Pagination,
-} from './types';
+import { toCollectionCard, type FilterOption, type UserCard, type Pagination } from './types';
 import { CardsPage } from './cards';
 
 export type Deck = {

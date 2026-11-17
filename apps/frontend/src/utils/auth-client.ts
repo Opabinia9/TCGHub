@@ -8,7 +8,6 @@ export const authClient = createAuthClient({
   baseURL: `http://${ENV.EXPO_PUBLIC_API_URL}`,
   plugins: [
     expoClient({
-     
       storagePrefix: 'tcghub',
       storage: SecureStore,
       cookiePrefix: 'better-auth',

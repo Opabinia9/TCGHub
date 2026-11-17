@@ -115,7 +115,13 @@ export type MagicCard = {
 };
 
 export type CardCategory =
-  'Creature' | 'Sorcery' | 'Enchantment' | 'Instant' | 'Artifact' | 'Land' | null;
+  | 'Creature'
+  | 'Sorcery'
+  | 'Enchantment'
+  | 'Instant'
+  | 'Artifact'
+  | 'Land'
+  | null;
 
 export function toCategory(typeLine: string): CardCategory {
   const type = typeLine.toLowerCase();

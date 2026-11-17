@@ -33,6 +33,8 @@ export default function ChatScreen() {
     queryFn: async () => await fetchChat(chatId),
   });
   const selfIsSeller = selfId === chat?.sellerId;
+  const seller = chat?.members.find((member) => member.id === chat.sellerId);
+  const sellerName = seller?.username || seller?.name;
   const chatTitle: string =
     chat?.name ??
     chat?.members.reduce((acc, cur) => (cur.id !== selfId ? cur : acc)).username ??
@@ -113,7 +115,12 @@ export default function ChatScreen() {
         </Pressable>
       </View>
 
-      <MessageListing sellerId={chat.sellerId} cardId={chat.cardId} />
+      <MessageListing
+        sellerId={chat.sellerId}
+        cardId={chat.cardId}
+        sellerName={sellerName}
+        isOwnListing={selfIsSeller}
+      />
 
       <FlatList
         inverted

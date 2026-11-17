@@ -6,7 +6,14 @@ import {
   type MagicCard,
   type Pagination,
 } from '@/api/types';
-import { ActivityIndicator, Pressable, View, StyleSheet, Modal } from 'react-native';
+import {
+  ActivityIndicator,
+  Pressable,
+  View,
+  StyleSheet,
+  Modal,
+  type FlatList as RNFlatList,
+} from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { Image } from 'expo-image';
 import { FlatList } from 'react-native-gesture-handler';
@@ -38,6 +45,8 @@ export default function CardList(props: CardListProps) {
   const listVersionRef = useRef(0);
   const cardsRef = useRef<MagicCard[]>([]);
   cardsRef.current = cards;
+  const listRef = useRef<RNFlatList<MagicCard>>(null);
+  const [showScrollTop, setShowScrollTop] = useState(false);
   const [selectedCard, setSelectedCard] = useState<MagicCard | null>(null);
 
   const searchText = props.query.trim().toLowerCase();
@@ -364,9 +373,8 @@ export default function CardList(props: CardListProps) {
       <Pressable
         onPress={() => setSelectedCard(card)}
         accessibilityRole="button"
-        accessibilityLabel={`View ${card.name}${
-          (ownedQuantities.get(card.id) ?? 0) > 0 ? `, you own ${ownedQuantities.get(card.id)}` : ''
-        }${wishlistIds.has(card.id) ? ', on your wishlist' : ''}`}
+        accessibilityLabel={`View ${card.name}${(ownedQuantities.get(card.id) ?? 0) > 0 ? `, you own ${ownedQuantities.get(card.id)}` : ''
+          }${wishlistIds.has(card.id) ? ', on your wishlist' : ''}`}
         style={styles.imageContainer}
       >
         <Image
@@ -520,6 +528,9 @@ export default function CardList(props: CardListProps) {
   return (
     <View style={{ flex: 1 }}>
       <FlatList
+        ref={listRef}
+        onScroll={(event) => setShowScrollTop(event.nativeEvent.contentOffset.y > 800)}
+        scrollEventThrottle={16}
         data={filteredCards}
         renderItem={renderItem}
         keyExtractor={(item) => item.id}
@@ -569,6 +580,17 @@ export default function CardList(props: CardListProps) {
           </>
         }
       />
+
+      {showScrollTop && (
+        <Pressable
+          onPress={() => listRef.current?.scrollToOffset({ offset: 0, animated: true })}
+          style={styles.scrollTopButton}
+          accessibilityRole='button'
+          accessibilityLabel='Scroll back to top'
+        >
+          <Ionicons name='arrow-up' size={24} color={Palette.white} />
+        </Pressable>
+      )}
 
       {/* Fullscreen card preview */}
       <Modal
@@ -825,6 +847,22 @@ export default function CardList(props: CardListProps) {
 const styles = StyleSheet.create({
   container: {
     backgroundColor: Palette.background,
+  },
+  scrollTopButton: {
+    position: 'absolute',
+    right: 16,
+    bottom: 16,
+    width: 48,
+    height: 48,
+    borderRadius: 24,
+    backgroundColor: Palette.greenAccent,
+    alignItems: 'center',
+    justifyContent: 'center',
+    shadowColor: '#000',
+    shadowOpacity: 0.25,
+    shadowRadius: 6,
+    shadowOffset: { width: 0, height: 3 },
+    elevation: 5,
   },
   footer: {
     marginTop: 30,
